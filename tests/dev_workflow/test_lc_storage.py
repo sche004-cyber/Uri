@@ -110,6 +110,17 @@ def test_r2_04_test_command_secrets_are_redacted_but_identity_uses_raw_args(runs
     assert all(secret not in printed for secret in ("hunter2", key, "separated-secret"))
 
 
+def test_r1_02_curl_joined_user_credentials_never_enter_records(runs, repo):
+    argv = pyc("pass") + ["--user=alice:hunter2", "-ubob:othersecret"]
+    rec = tr.start(argv, name="curl-credentials", timeout_s=30, cwd=str(repo), root=runs)
+    stored = (runs / rec["id"] / "run.json").read_text(encoding="utf-8")
+    shown = json.dumps(rec) + json.dumps(tr.status(runs, rec["id"]))
+    assert all(secret not in stored + shown for secret in ("hunter2", "othersecret"))
+    assert "alice:" in stored and "bob:" in stored
+    assert tr.reuse_key(argv, tr.tree_state(repo)) != tr.reuse_key(
+        pyc("pass") + ["--user=alice:different", "-ubob:othersecret"], tr.tree_state(repo))
+
+
 def test_r3_02_separated_secret_flags_stay_out_of_records_and_cli(runs, repo, capsys):
     argv = pyc("pass") + ["--api_key", "hunter2", "--client-secret", "othersecret",
                            "--access-token", "thirdsecret"]
@@ -645,6 +656,26 @@ def test_dm8_rebuild_reproduces_index(mem):
     try:
         after = sorted((r["id"], r["tier"], r["stale"]) for r in ix2.db.execute("SELECT id, tier, stale FROM items"))
         assert after == before and ix2.meta("derived") is True
+    finally:
+        ix2.close()
+    mem["ix"] = dm.Index(path)
+
+
+def test_r1_03_rebuild_after_index_deletion_recovers_all_sources(mem):
+    ix = mem["ix"]
+    dm.refresh(ix, mem["cfg"])
+    before = sorted((r["id"], r["source"]) for r in ix.db.execute("SELECT id, source FROM items"))
+    path = ix.path
+    ix.close()
+    path.unlink()
+    r = cli("devmemory", "--index", str(path), "rebuild")
+    assert r.returncode == 0, r.stderr
+    ix2 = dm.Index(path)
+    try:
+        after = sorted((r["id"], r["source"]) for r in ix2.db.execute("SELECT id, source FROM items"))
+        assert after == before
+        assert set(ix2.meta("config")["decisions"]) == set(mem["cfg"]["decisions"])
+        assert ix2.meta("config")["receipts_roots"] == mem["cfg"]["receipts_roots"]
     finally:
         ix2.close()
     mem["ix"] = dm.Index(path)
@@ -1330,10 +1361,64 @@ def test_fb1_n01_ignored_content_is_never_automatic(sandbox):
     assert (back / "uri_workspace" / "evidence" / "live_run_1.json").exists()
 
 
+def test_r1_01_ignored_noncache_file_inside_worktree_cache_requires_archive(sandbox):
+    sb = sandbox
+    wt = sb["paths"]["disposable"]
+    (sb["repo"] / ".gitignore").write_text("__pycache__/\n")
+    _git(sb["repo"], "add", ".gitignore")
+    _git(sb["repo"], "commit", "-q", "-m", "ignore")
+    head = _git(sb["repo"], "rev-parse", "HEAD")
+    _git(sb["repo"], "update-ref", CANON, head)
+    _git(wt, "checkout", "-q", "--detach", head)
+    cache = wt / "__pycache__"
+    cache.mkdir()
+    (cache / "notes.txt").write_text("preserve this")
+    item = _by_path(_plan(sb))["disposable"]
+    assert item["cls"] == "DIRTY" and "__pycache__/notes.txt" in item["ignored"]
+    plan = _plan(sb)
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    hk.apply(pf, journal_dir=sb["tmp"] / "j1")
+    assert (cache / "notes.txt").exists()
+    refused = hk.apply(pf, journal_dir=sb["tmp"] / "j2", approve=[item["id"]])
+    assert next(x for x in refused["results"] if x.get("item") == item["id"])["outcome"] == "REFUSED"
+    done = hk.apply(pf, journal_dir=sb["tmp"] / "j3", approve=[item["id"]], archive_root=sb["tmp"] / "ar")
+    row = next(x for x in done["results"] if x.get("item") == item["id"])
+    assert row["outcome"] == "DONE" and hk.verify_archive(row["archive"], sb["tmp"] / "ar")["ok"]
+    back = sb["tmp"] / "restored"
+    hk.restore(row["archive"], sb["tmp"] / "ar", back)
+    assert (back / "__pycache__" / "notes.txt").read_text() == "preserve this"
+
+
+@pytest.mark.parametrize("cache_name", ["__pycache__", ".pytest_cache"])
+def test_r1_01_noncache_file_inside_standalone_cache_requires_archive(sandbox, cache_name):
+    sb = sandbox
+    cache = sb["roots"] / "tmpstuff" / cache_name
+    cache.mkdir(exist_ok=True)
+    (cache / "notes.txt").write_text("preserve this")
+    plan = _plan(sb)
+    item = next(x for x in plan["items"] if x["kind"] == "cache" and x["path"] == str(cache))
+    assert item["cls"] == "DIRTY" and "notes.txt" in item["ignored"]
+    assert not any(str(cache) in x.get("paths", []) for x in plan["items"] if x["kind"] == "caches")
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    hk.apply(pf, journal_dir=sb["tmp"] / "j1")
+    assert (cache / "notes.txt").exists()
+    refused = hk.apply(pf, journal_dir=sb["tmp"] / "j2", approve=[item["id"]])
+    assert next(x for x in refused["results"] if x.get("item") == item["id"])["outcome"] == "REFUSED"
+    done = hk.apply(pf, journal_dir=sb["tmp"] / "j3", approve=[item["id"]], archive_root=sb["tmp"] / "ar")
+    row = next(x for x in done["results"] if x.get("item") == item["id"])
+    assert row["outcome"] == "DONE" and hk.verify_archive(row["archive"], sb["tmp"] / "ar")["ok"]
+    back = sb["tmp"] / "restored"
+    hk.restore(row["archive"], sb["tmp"] / "ar", back)
+    assert (back / "notes.txt").read_text() == "preserve this"
+
+
 def test_fb1_n01_only_pure_caches_count_as_regenerable():
     assert hk._regenerable("__pycache__/") and hk._regenerable("pkg/__pycache__/") and hk._regenerable("a/b.pyc")
     assert hk._regenerable(".pytest_cache/")
-    for e in (".env", "credentials.json", "uri_workspace/evidence/", "work/c1/", "uri_ui/build/", "temp_evidence/"):
+    for e in (".env", "credentials.json", "uri_workspace/evidence/", "work/c1/", "uri_ui/build/", "temp_evidence/",
+              "__pycache__/notes.txt", ".pytest_cache/notes.txt"):
         assert not hk._regenerable(e), e
 
 
@@ -1360,6 +1445,8 @@ def test_fb1_n03_secret_flags_redacted():
         assert secret not in joined, secret
     assert "keep/me" in safe and "test_x" in safe and "user:" in joined   # non-secret arguments stay readable
     assert argv[2] == "hunter2"                                          # identity (raw argv) is not modified
+    joined_curl = " ".join(tr._safe_argv(["curl", "--user=alice:hunter2", "-ubob:othersecret"]))
+    assert "hunter2" not in joined_curl and "othersecret" not in joined_curl
 
 
 def test_fb1_n04_branch_checked_out_after_inventory_is_kept(sandbox):

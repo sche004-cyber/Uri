@@ -43,6 +43,7 @@ import sys
 from pathlib import Path
 
 from scripts.dev_workflow.task_ledger import Ledger, LedgerError, TERMINAL, is_secret_path, redact, redact_obj
+from scripts.dev_workflow.milestones.store import atomic_write_bytes
 
 SCHEMA = 1
 KNOWLEDGE_KINDS = ("lesson", "failed_approach", "environment", "procedure")
@@ -479,10 +480,17 @@ def _sources(cfg: dict) -> list[tuple[str, callable]]:
     return out, g
 
 
+def _source_config_path(index: Path) -> Path:
+    """Source selection survives deletion of the derived SQLite index."""
+    return Path(str(index) + ".sources.json")
+
+
 def refresh(ix: Index, cfg: dict | None = None, force: bool = False) -> dict:
     if cfg is not None:
         ix.set_meta("config", cfg)
     cfg = ix.meta("config", {}) or {}
+    if cfg:
+        atomic_write_bytes(_source_config_path(ix.path), json.dumps(cfg, sort_keys=True).encode("utf-8"))
     sources, g = _sources(cfg)
     report = {"canonical": g.canonical, "sources": {}}
     for name, fn in sources:
@@ -677,6 +685,7 @@ def main(argv=None) -> int:
             return 0
         if a.cmd == "rebuild":
             p = Path(a.index) if a.index else default_path()
+            cfg_old = {}
             if p.exists():
                 # FB-1 N-05: never delete a file that is not a derived index (e.g. a ledger given by mistake)
                 probe = sqlite3.connect(p.resolve().as_uri() + "?mode=ro", uri=True)
@@ -690,9 +699,18 @@ def main(argv=None) -> int:
                     probe.close()
                 if not derived or tables & {"tasks", "events", "context"}:
                     raise MemoryError_(f"{p} is not a derived devmemory index; refusing to delete it")
-            old = Index(p)
-            cfg_old = old.meta("config", {}) or {}
-            old.close()
+                old = Index(p)
+                cfg_old = old.meta("config", {}) or {}
+                old.close()
+            else:
+                source_config = _source_config_path(p)
+                if source_config.is_file():
+                    try:
+                        cfg_old = json.loads(source_config.read_text(encoding="utf-8"))
+                    except (OSError, ValueError) as e:
+                        raise MemoryError_(f"cannot read rebuild source configuration {source_config}: {e}") from e
+            if not isinstance(cfg_old, dict) or not cfg_old:
+                raise MemoryError_("rebuild source configuration is missing; refresh with explicit sources first")
             for suffix in ("", "-wal", "-shm"):
                 q = Path(str(p) + suffix)
                 if q.exists():

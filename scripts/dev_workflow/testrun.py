@@ -112,6 +112,12 @@ def _safe_argv(argv: list[str]) -> list[str]:
     safe = [redact(arg)[0] for arg in argv]
     mark = "[REDACTED:cli_secret]"
     for i, arg in enumerate(argv):
+        if arg.startswith("--user="):
+            safe[i] = "--user=" + arg.split("=", 1)[1].split(":", 1)[0] + ":" + mark \
+                if ":" in arg.split("=", 1)[1] else "--user=" + mark
+        elif arg.startswith("-u") and arg != "-u" and not arg.startswith("--"):
+            value = arg[2:]
+            safe[i] = "-u" + value.split(":", 1)[0] + ":" + mark if ":" in value else "-u" + mark
         if _secret_flag(arg):
             if "=" in arg:
                 safe[i] = arg.split("=", 1)[0] + "=" + mark

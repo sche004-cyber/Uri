@@ -486,15 +486,33 @@ def _regenerable(entry: str) -> bool:
     """Ignored entries that are pure caches (rebuilt automatically). Everything else ignored - .env, credentials,
     uri_workspace/evidence, work/c1 checkpoints, build outputs - is content outside git (FB-1 N-01)."""
     parts = [x for x in entry.replace("\\", "/").split("/") if x]
-    return bool(parts) and (any(x in CACHE_DIRS for x in parts) or parts[-1].endswith((".pyc", ".pyo")))
+    if not parts:
+        return False
+    if parts[-1] in CACHE_DIRS:  # A directory name alone says nothing about its contents.
+        return True
+    if parts[-1].endswith((".pyc", ".pyo")):
+        return True
+    for i, part in enumerate(parts):
+        if part == ".pytest_cache" and tuple(parts[i + 1:]) in {
+            (".gitignore",), ("CACHEDIR.TAG",), ("README.md",),
+            ("v", "cache", "nodeids"), ("v", "cache", "lastfailed"), ("v", "cache", "stepwise"),
+        }:
+            return True
+    return False
 
 
 def _ignored_content(path: Path) -> list[str] | None:
     """Ignored, untracked entries of a worktree that are not regenerable caches (None: git failed)."""
-    rc, out, _ = git(path, "ls-files", "-z", "--others", "--ignored", "--exclude-standard", "--directory")
-    if rc != 0:
+    rc, collapsed, _ = git(path, "ls-files", "-z", "--others", "--ignored", "--exclude-standard", "--directory")
+    # --directory preserves concise non-cache reporting, but a second file-level listing is required to inspect
+    # everything beneath ignored cache directories.
+    rc_files, files, _ = git(path, "ls-files", "-z", "--others", "--ignored", "--exclude-standard")
+    if rc != 0 or rc_files != 0:
         return None
-    return sorted(e for e in out.split("\0") if e and not _regenerable(e))
+    visible = {e for e in collapsed.split("\0") if e and not _regenerable(e)}
+    visible.update(e for e in files.split("\0") if e and not _regenerable(e)
+                   and any(part in CACHE_DIRS for part in e.replace("\\", "/").split("/")))
+    return sorted(visible)
 
 
 def classify_worktree(ctx: Ctx, w: dict) -> dict:
@@ -640,18 +658,24 @@ def _caches(root: Path) -> list[Path]:
 
 def classify_cache(ctx: Ctx, path: Path, parent: Path) -> dict:
     markers = _markers(path, cache=True)
+    other = sorted((d / f).relative_to(path).as_posix()
+                   for d, _dirs, files in walk(path, skip=frozenset(), max_depth=None)
+                   for f in files if not _regenerable((d / f).relative_to(parent).as_posix()))
     cited = ctx.cited_under(str(path))
     ancestors = [parent]
     ancestors.extend(a for a in path.parents if a != parent and norm(a).startswith(norm(parent) + "/"))
     protected = [str(a) for a in ancestors if ctx.dir_class(a) in NEVER]
-    cls = "PROTECTED" if protected else "ESSENTIAL_EVIDENCE" if markers or cited else "CACHE"
+    cls = "PROTECTED" if protected else "ESSENTIAL_EVIDENCE" if markers or cited else "DIRTY" if other else "CACHE"
     snapshot, links = content_snapshot(path)
     return {"id": "cache:" + sha_text(norm(path))[:12], "kind": "cache", "path": str(path),
-            "cls": cls, "action": "delete (regenerable)" if cls == "CACHE" else "none",
+            "cls": cls, "action": ("delete (regenerable)" if cls == "CACHE" else
+                                    "archive-then-remove (needs --approve)" if cls == "DIRTY" else "none"),
             "reasons": (["protected or evidence-bearing ancestor: " + ", ".join(protected)] if protected else
                         ["evidence markers or authoritative references"] if cls == "ESSENTIAL_EVIDENCE" else
+                        [f"{len(other)} non-cache file(s) inside cache directory"] if cls == "DIRTY" else
                         ["regenerable cache"]), "evidence": markers[:20], "evidence_count": len(markers),
-            "cited": cited, "parent_path": str(parent), "fingerprint": snapshot, "links": links}
+            "ignored": other[:20], "ignored_count": len(other), "cited": cited,
+            "parent_path": str(parent), "fingerprint": snapshot, "links": links}
 
 
 def cache_group(parent: Path, parent_id: str, members: list[dict]) -> dict:
@@ -1038,7 +1062,7 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
             clean_kept = (it["kind"] == "worktree" and cur.get("dirty") == 0 and not cur.get("evidence_count")
                           and cur.get("ignored_count") == 0 and cur.get("hidden_count") == 0
                           and cur.get("reach") in ("CANONICAL", "REMOTE", "LOCAL"))
-            needs_archive = approved_only and it["kind"] in ("worktree", "dir") and not clean_kept
+            needs_archive = approved_only and it["kind"] in ("worktree", "dir", "cache") and not clean_kept
             if needs_archive and not archive_root:
                 r["outcome"] = "REFUSED"
                 r["why"] = "archive-then-remove needs --archive-root"
@@ -1047,7 +1071,7 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
                       "caches": "rmtree-caches", "branch": "delete-ref"}[it["kind"]]
             if it["cls"] == "PRUNABLE":
                 action = "worktree-prune"
-            elif it["kind"] == "worktree" and needs_archive:
+            elif it["kind"] in ("worktree", "cache") and needs_archive:
                 action = "archive-then-remove"
             journal.append("INTENT", {"plan_id": plan["plan_id"], "item": it["id"], "action": action,
                                       "path": it["path"], "paths": it.get("paths"), "fingerprint": it["fingerprint"],
