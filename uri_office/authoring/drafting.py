@@ -40,9 +40,16 @@ def choose_layout(instruction: str) -> str | None:
 
 _MONTHS = ("january|february|march|april|may|june|july|august|september|october|november|december|"
            "jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec")
+_MONTHS_NOT_MAY = _MONTHS.replace("may|", "")
 # FB2 R3-01: "3rd November", "November 3", "3 Nov", "15th August" are dates with or without a year.
-_DATE_WORDS = re.compile(r"\b\d{1,2}(?:st|nd|rd|th)?\s+(?:" + _MONTHS + r")\b\.?(?:,?\s+\d{4}\b)?"
-                         r"|\b(?:" + _MONTHS + r")\b\.?\s+\d{1,2}(?:st|nd|rd|th)?\b(?:,?\s+\d{4}\b)?", re.I)
+# FB3 R4-02: "may" is a month only when written "May": after a day ("3 May", "3rd May 2026"), or before a day with
+# an ordinal or a year ("May 3rd", "May 3, 2026"); "aged 55 may apply" and a sentence starting "May 3 officers"
+# are not dates. A day must be 1 to 31.
+_DATE_WORDS = re.compile(
+    r"\b\d{1,2}(?:st|nd|rd|th)?\s+(?i:" + _MONTHS_NOT_MAY + r")\b\.?(?:,?\s+\d{4}\b)?"
+    r"|\b(?i:" + _MONTHS_NOT_MAY + r")\b\.?\s+\d{1,2}(?:st|nd|rd|th)?\b(?:,?\s+\d{4}\b)?"
+    r"|\b\d{1,2}(?:st|nd|rd|th)?\s+May\b(?:,?\s+\d{4}\b)?"
+    r"|\bMay\s+\d{1,2}(?:st|nd|rd|th)\b(?:,?\s+\d{4}\b)?|\bMay\s+\d{1,2},?\s+\d{4}\b")
 _DATE_NUM = re.compile(r"^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$|^\d{4}-\d{2}-\d{2}$")
 _REF = re.compile(r"\b(?:F\.\s?)?No\.\s*([A-Za-z0-9][\w./()-]*\d[\w./()-]*)", re.I)
 _AMOUNT_PREFIX = re.compile(r"(?:rs\.?|inr|₹)\s*$", re.I)
@@ -65,8 +72,15 @@ _NUM_WORD = (r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve
              r"lakhs?|crores?)")
 _NUM_WORDS = re.compile(r"\b" + _NUM_WORD + r"(?:[\s-]+(?:and\s+)?" + _NUM_WORD + r")*\b", re.I)
 # FB2 R3-02: the unit after a number is part of the fact ("7 days" is not "7 weeks", "10:30 AM" not "10:30 PM").
+# FB3 R4-04: plus common office units (plan 16 lists exactly these).
+UNITS = ("lakh", "crore", "thousand", "hundred", "day", "week", "month", "year", "hour", "minute", "per cent",
+         "percent", "am", "pm", "a.m.", "p.m.", "km", "kg", "metre", "meter", "kilometre", "kilometer", "kilogram",
+         "litre", "liter", "post", "vacancy", "copy", "page", "person", "member", "officer", "employee", "set",
+         "unit", "seat", "file", "room", "nos")
 _UNIT = re.compile(r"^\s+(lakhs?|crores?|thousand|hundred|days?|weeks?|months?|years?|hours?|minutes?|"
-                   r"per\s?cent|a\.m\.|p\.m\.|am|pm)(?!\w)", re.I)
+                   r"per\s?cent|percent|a\.m\.|p\.m\.|am|pm|kms?|kgs?|kilo(?:metre|meter|gram)s?|metres?|meters?|"
+                   r"litres?|liters?|posts?|vacanc(?:y|ies)|cop(?:y|ies)|pages?|persons?|members?|officers?|"
+                   r"employees?|sets?|units?|seats?|files?|rooms?|nos\.?)(?!\w)", re.I)
 _UNIT_DOTTED = re.compile(r"^\s+(a\.m\.|p\.m\.)", re.I)
 _NUM_WORD_RX = re.compile(_NUM_WORD, re.I)
 _SMALL_NUMS = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"}
@@ -95,6 +109,9 @@ def extract_facts(instruction: str) -> list:
         return any(a < y and x < b for x, y in spans)
 
     for m in _DATE_WORDS.finditer(text):
+        day = re.search(r"\b\d{1,2}(?=(?:st|nd|rd|th)?\b)", m.group(0))
+        if day and not 1 <= int(day.group(0)) <= 31:           # FB3 R4-02: "55 May" is not a date
+            continue
         add("date", m.group(0).rstrip(_TRAIL), m.start(), m.end())
     for m in _REF.finditer(text):
         if not taken(m.start(1), m.end(1)):
@@ -104,6 +121,8 @@ def extract_facts(instruction: str) -> list:
             continue
         tok = _strip(m.group(0))
         tok = re.sub(r"^(?:rs\.?|inr|₹)", "", tok, flags=re.I)
+        if tok.endswith("/-"):                    # FB3 R4-02: "Rs 2,50,000/-" is an amount, not a reference
+            tok = tok[:-2]
         if not re.search(r"\d", tok):
             continue
         if _DATE_NUM.match(tok):
@@ -120,10 +139,9 @@ def extract_facts(instruction: str) -> list:
             if u:
                 tok, end = f"{tok} {u.group(1)}", end + u.end()
         add(kind, tok, m.start(), end)
-    for m in _NAMES.finditer(text):
-        if taken(m.start(), m.end()):           # FB2 R3-04: "F.No. A-12/2026" is a reference, not a name
-            continue
-        words = m.group(0).split()
+
+    def _name_candidate(words, start):
+        words = [w.lstrip(_LEAD) for w in words]
         hon = [i for i, w in enumerate(words) if i > 0 and re.fullmatch(_HONORIFIC, w)]
         if hon:                                   # "Relieve Shri Ram Kumar": the name starts at the honorific
             words = words[hon[0]:]
@@ -131,12 +149,29 @@ def extract_facts(instruction: str) -> list:
             words.pop(0)
         while words and (words[-1].lower().rstrip(".") in _NOT_NAME or words[-1].lower().rstrip(".") in _MONTH_SET):
             words.pop()
-        honorific = bool(words) and re.fullmatch(_HONORIFIC, words[0]) is not None
-        if len(words) >= 2 or (honorific and len(words) >= 2):
+        if len(words) >= 2:
             name = " ".join(words).rstrip(_TRAIL)
             if not any(name.lower() in f["text"].lower() or f["text"].lower() in name.lower()
                        for f in out if f["kind"] == "name"):
-                add("name", name, m.start())
+                add("name", name, start)
+
+    for m in _NAMES.finditer(text):
+        # FB2 R3-04 / FB3 R4-01: words inside a date or reference ("F.No. A-12/2026-Estt.", "3rd November") are not
+        # part of a name, but the rest of the run still is ("... Estt. Shri Ram Kumar" keeps "Shri Ram Kumar").
+        segments, seg = [], []
+        for w in re.finditer(r"\S+", m.group(0)):
+            a, b = m.start() + w.start(), m.start() + w.end()
+            if taken(a, b):
+                if seg:
+                    segments.append(seg)
+                seg = []
+            else:
+                seg.append((a, w.group(0)))
+        if seg:
+            segments.append(seg)
+        for seg in segments:
+            _name_candidate([w for _, w in seg], seg[0][0])
+
     # FB1 R2-03: one capitalised word after a cue ("a memo to Ramesh", "from Sharma") is a name too.
     for m in _CUE_NAME.finditer(text):
         w = m.group(1).rstrip(_TRAIL)
@@ -179,7 +214,10 @@ def fact_present(fact: str, draft_text: str) -> bool:
     for m in rx.finditer(hay):
         # FB2 R3-02: a number word right before or after extends the number ("twenty five thousand five hundred")
         if _NUM_WORD_RX.match(t.split()[-1]) or _NUM_WORD_RX.fullmatch(t.split()[0]) or t.split()[0][:1].isdigit():
-            if re.match(r"[\s-]+(?:and\s+)?" + _NUM_WORD + r"\b", hay[m.end():], re.I):
+            # FB3 R4-02: "and <number word>" continues the number only when another number word follows it
+            # ("two lakh and fifty thousand"), not in "Rs. 25,000 and one laptop" or "10 days and one half day".
+            if re.match(r"[\s-]+" + _NUM_WORD + r"\b", hay[m.end():], re.I) or \
+                    re.match(r"\s+and\s+" + _NUM_WORD + r"[\s-]+" + _NUM_WORD + r"\b", hay[m.end():], re.I):
                 continue
             if re.search(r"\b" + _NUM_WORD + r"[\s-]+(?:and\s+)?$", hay[:m.start()], re.I) and \
                     not t.split()[0][:1].isdigit():

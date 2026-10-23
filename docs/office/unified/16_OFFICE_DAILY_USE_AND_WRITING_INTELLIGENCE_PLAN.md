@@ -180,9 +180,43 @@ Repairs after fallback review FB2 of d94961c7 (REJECT; record
   150 s of it, and OCR gets what is left (at most 180 s).
 - R3-07: the status note above is corrected.
 
+Repairs after fallback review FB3 of da62f66d (REJECT; record
+`D:/uri-dev/lifecycle/OFFICE-DAILY-USE-r3/fallback/FB3_subagent_da62f66d.audit.txt`; R3-06 was NOT FIXED there):
+- R4-01 corrects R3-04. The R3-04 repair dropped a whole run of capitalised words when it touched a date or a
+  reference. So in "3rd November Dr Anil Sharma" and "F.No. A-12/2026-Estt. Shri Ram Kumar" only the first name was
+  checked, and a changed surname passed silently (d94961c7 had warned). Now only the words inside the date or
+  reference are dropped, and the rest of the run is still a name.
+- R4-02: "and <number word>" continues a number only when another number word follows it ("two lakh and fifty
+  thousand"), not in "Rs. 25,000 and one laptop" or "10 days and one half day". "may" is a month only when written
+  "May" after a day ("3 May") or before a day with an ordinal or a year ("May 3rd", "May 3, 2026"); a day must be 1 to
+  31. "Rs 2,50,000/-" is the amount "2,50,000".
+- R4-03 corrects R3-06. The R3-06 claim of "one 200 s deadline" was not true: page rendering used the raster
+  worker's own 60 s and was not bounded, and a simulated request reached 256 s. Every wait is now bounded by the time
+  left:
+  - the text worker gets at most 150 s;
+  - each page render gets at most 60 s;
+  - each OCR run gets at most 90 s;
+  - all text and OCR work ends 15 s before the 200 s deadline (at 185 s from arrival).
+
+  The real bound on waiting is therefore 185 s plus the few seconds a stopped worker or Tesseract takes to exit. The
+  remaining 15 s cover building the To Word document. That building (python-docx and the sanitizer on at most 500,000
+  characters) is not itself time-limited. Whether a real WinRT page render ever comes close to 60 s is not measured.
+- R4-04: common office units were added (choice: extend the list and state it exactly). Units that count as part of a
+  number:
+  - lakh(s), crore(s), thousand, hundred;
+  - day(s), week(s), month(s), year(s), hour(s), minute(s);
+  - per cent / percent, AM/PM, a.m./p.m.;
+  - km(s), kg(s), kilometre(s), kilometer(s), kilogram(s), metre(s), meter(s), litre(s), liter(s);
+  - post(s), vacancy/vacancies, copy/copies, page(s), person(s), member(s), officer(s), employee(s), set(s), unit(s),
+    seat(s), file(s), room(s), nos.
+
+  Any other word after a number is not part of the fact ("5 miles" is checked only as "5").
+
 Fact-check limitations that remain:
 - lowercase names ("ramesh kumar") and a single name without a cue word;
+- a single all-capitals word such as a cadre ("LDC" against "UDC") is not a fact;
 - ordinal and fraction words ("first", "half");
+- "and <number word>" followed by a noun ("Rs. 25,000 and fifty rupees more") is not read as part of the number;
 - a fact written differently in the draft: "11 AM" against "11 a.m." or "23rd" against "23" is reported, not matched;
 - a digit followed by a number word in the draft ("12 thousand" against "12") is reported;
 - swapped numbers and a fact present but used in the wrong place;

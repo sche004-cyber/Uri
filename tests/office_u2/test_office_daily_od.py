@@ -391,7 +391,7 @@ class TextHub:
                 break
         return {"ok": True, "pages": out, "chars": total, "truncated": trunc}
 
-    def page_png(self, pdf, cache, n, width):
+    def page_png(self, pdf, cache, n, width, timeout=None):
         self.rendered.append((n, width))
         return self.png
 

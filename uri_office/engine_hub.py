@@ -109,10 +109,12 @@ class EngineHub:
         os.utime(d)
         return d
 
-    def page_png(self, pdf: Path, cache: Path, page: int, width: int) -> Path:
+    def page_png(self, pdf: Path, cache: Path, page: int, width: int, timeout: float = 60.0) -> Path:
+        """`timeout` (FB3 R4-03): a caller with its own deadline (OCR) passes the time it has left."""
         target = cache / f"p{page}_w{width}.png"
         if not target.exists():
-            r = self.raster_request("render", pdf=str(pdf), out_dir=str(cache), pages=[page], width=width)
+            r = self.raster_request("render", pdf=str(pdf), out_dir=str(cache), pages=[page], width=width,
+                                    timeout=max(1.0, float(timeout)))
             if not r.get("ok") or not target.exists():
                 raise OfficeError("PREVIEW_UNAVAILABLE", r.get("error", "render failed"), 422)
             self.prune_cache()
