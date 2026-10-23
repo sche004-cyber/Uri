@@ -192,6 +192,29 @@ Each criterion has a test ID. "Test" means an automated test in `tests/dev_workf
 | C-10 (I-2) | §2.3 an approved REFERENCED/DIRTY/EVIDENCE worktree is archived first | Archiving a clean worktree whose HEAD a ref keeps duplicates gigabytes of committed content. | An approved worktree that is clean, has no untracked evidence and whose HEAD is kept by canonical, a remote or a local ref is removed without an archive (no `--force`; restore command recreates it). Everything else is still archived and verified first. Test `test_i2_approved_clean_referenced_tree_removed_without_archive`. |
 | C-11 (I-3) | §2.3 one CACHE item per cache directory | Live plan: 14,769 cache items (1.7 GiB). Per-item rechecks re-read every record; inventory took 3,279 s. | One `caches` item per top-level directory, rechecked as a group (any member changed or protected: the group is skipped). Directory classes are memoised per context. Tests `test_i3_caches_grouped_and_rechecked_as_a_group` plus the driver's R1-02/R2-01/R3-01 regressions adapted to the group. |
 
+### 5.1 Fallback review FB-1 (`2bc93d8d`, REJECT) and repairs (`de101e31`)
+
+Driver run r2 stopped BLOCKED NO_INDEPENDENT_REVIEWER on `2bc93d8d` (Codex QUOTA, claude_cli AUTH). The V3.1
+fallback reviewer (a fresh, isolated Claude subagent using the driver's `review_prompt`) recorded REJECT. The raw
+output is `D:/uri-dev/lc-storage-evidence/fallback-review/review_R1_2bc93d8d.txt`, and ledger review `V1` holds the
+recomputed verdict. It confirmed R1-01..R3-04 FIXED.
+
+| Finding | Repair |
+|---|---|
+| N-01 HIGH: ignored files (`.env`, `uri_workspace/evidence/`, `work/c1/`) were removed automatically or by I-2 without an archive | Worktree classification lists ignored entries. Any entry that is not a pure cache (`__pycache__`, `.pytest_cache`, `*.pyc`) makes the tree DIRTY, which means approval plus a verified archive. I-2 also requires `ignored_count == 0`. Plan action texts say what apply does. This corrects C-10's "byte for byte" claim, which was false for ignored content. |
+| N-02 HIGH: a missing detached worktree that alone kept a commit reachable was PRUNABLE | A missing registration whose HEAD is on no ref is PROTECTED. Missing registrations get a restore command. |
+| N-03 HIGH: secret flags were stored verbatim | A flag is redacted when any part of its name is a secret word. `-u user:pass` and Authorization/Bearer values are redacted too. |
+| N-04 MEDIUM: a merged branch checked out after inventory was deleted | The branch recheck protects checked-out, ledger-task and preserved-prefix branches. |
+| N-05 LOW: `rebuild` could delete a non-index file | It refuses unless the file is a derived index with no ledger tables. |
+| N-06 LOW: recover misjudged grouped caches | The INTENT records member paths, and recover checks them. |
+| N-07 LOW: the cache walk entered nested repositories | It stops at any directory containing `.git`. |
+| N-08 LOW: `--reuse` key ignores gitignored inputs and installed packages | Documented limitation, not repaired. `--reuse` is opt-in, never upgrades a result, and no driver gate uses it. Do not use it across `.env` or dependency changes. |
+| N-09 LOW: a read-only ledger open leaves `-wal`/`-shm` files | Accepted: SQLite creates them for WAL databases. Content is unchanged. |
+| M-01 (coordinator, live gate): the R3-03 source identity hashes directory mtimes, so the full `tests/dev_workflow` gate run on `2bc93d8d` was reported "source changed" and could not be recorded on its commit | The root cause is being measured on a clean checkout. The repair follows the measurement. |
+
+`17fae297` normalises line endings to LF. It contains no content change: `git diff --ignore-cr-at-eol` is empty.
+Earlier coordinator edits on Windows had written CRLF into the three new modules.
+
 ## 6. Lifecycle
 
 INTERNAL work. The driver runs with `codex_cli` (gpt-6-sol, probe OK 2026-10-22) as primary reviewer and `claude_cli` as fallback; `claude auth status` shows it is not logged in today, so it is configured but unavailable. The gate is `tests/dev_workflow`. Integration mode is `fast-forward` with `authorized: false`.
