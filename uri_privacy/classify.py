@@ -126,8 +126,9 @@ _PASSPORT = re.compile(r"(?i)\bpassport" + _LBL + r"([A-Z][0-9]{7}|[A-Z0-9]{6,9}
 _IBAN = re.compile(r"(?i)\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,4})?\b")
 _ACCOUNT = re.compile(r"(?i)\b(?:a/c|acct|account|bank account)" + _LBL + r"(\d(?:[ -]?\d){7,20})\b")
 # Cards written with other separators between groups (the Assist rule covers spaces, dots and dashes; reviews S1-05,
-# FB1 R1-03). The first group must have four digits, so thousands groupings ("1,234,567,890") stay readable.
-_CARD_ALT = re.compile(r"\b\d{4}(?:[/_,:;|+~·–—•]\d{3,6}){2,4}\b")
+# FB1 R1-03). Folding reduces whitespace after a separator to one space. The first group must have four digits, so
+# thousands groupings ("1,234,567,890") stay readable.
+_CARD_ALT = re.compile(r"\b\d{4}(?:[/_,:;|+~·–—•] ?\d{3,6}){2,4}\b")
 _EMAIL = re.compile(r"(?<![\w.+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b")
 _PHONE = re.compile(r"(?<![\w+])\+\d{1,3}[ -]?\(?\d{1,5}\)?(?:[ -]?\d){5,11}(?![\w])|"
                     r"(?<![\w+-])0?[6-9]\d{4}[ .-]\d{5}(?![\w-])|"                        # mobile, 5-5 grouped
