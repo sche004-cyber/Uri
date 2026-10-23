@@ -365,6 +365,28 @@ def test_dm2_brief_budget_and_content(mem):
     assert "omitted" in small["text"]
 
 
+def test_dm4_open_question_citing_integrated_commit_is_flagged(mem):
+    ix, repo = mem["ix"], mem["repo"]
+    head = _git(repo, "rev-parse", "HEAD")
+    with mem["dec"].open("a", encoding="utf-8") as f:
+        f.write(f"| OPEN-21 | Integrate follow-up `{head[:8]}` | x | y |\n")
+    dm.refresh(ix, mem["cfg"])
+    t = dm.brief(ix, 2000)["text"]
+    line21 = next(x for x in t.splitlines() if x.startswith("- OPEN-21"))
+    line14 = next(x for x in t.splitlines() if x.startswith("- OPEN-14"))
+    assert "possibly resolved" in line21 and "possibly resolved" not in line14
+    assert t.index("- OPEN-14") < t.index("- OPEN-21")                  # flagged items are listed last
+
+
+def test_dm_cli_output_is_utf8(mem):
+    mem["dec"].write_text(mem["dec"].read_text(encoding="utf-8").replace("P0 closure", "P0 closure §N"),
+                          encoding="utf-8")
+    dm.refresh(mem["ix"], mem["cfg"])
+    r = subprocess.run([PY, "-m", "scripts.dev_workflow.devmemory", "--index", str(mem["ix"].path), "brief",
+                        "--no-refresh"], capture_output=True, cwd=ROOT)
+    assert r.returncode == 0 and "§N".encode("utf-8") in r.stdout
+
+
 def test_dm3_recall_precision(mem):
     ix = mem["ix"]
     lg = tl.Ledger(mem["lp"])

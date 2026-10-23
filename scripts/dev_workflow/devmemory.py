@@ -52,7 +52,7 @@ GIT = ["git", "--no-optional-locks", "--no-replace-objects", "-c", "core.hooksPa
 REPORTED_CLASSES = ("MEMORY-ONLY", "ANTIGRAVITY")
 CLOSED_OPEN_MARKERS = re.compile(r"\*\*(DONE|DECIDED|CLASSIFIED)\b")
 MAX_TEXT = 4000
-FLAG_KEYS = ("_active", "_status", "_blocker", "_next", "_blocking", "_open")
+FLAG_KEYS = ("_active", "_status", "_blocker", "_next", "_blocking", "_open", "_maybe_resolved")
 
 DDL = """
 CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT NOT NULL);
@@ -316,7 +316,7 @@ def _invalidate(items: list[dict], g: Git) -> None:
                 i["integrated"] = g.integrated(i["commit"])
 
 
-def collect_decisions(path: Path) -> tuple[str, list[dict], int]:
+def collect_decisions(path: Path, g: "Git | None" = None) -> tuple[str, list[dict], int]:
     from scripts.dev_workflow.milestones.importers import parse_decisions
     fp = file_sha(path)
     decisions, opens = parse_decisions(path)
@@ -342,7 +342,27 @@ def collect_decisions(path: Path) -> tuple[str, list[dict], int]:
         items.append({"ref": f"{o['alias']}@{ref_base}:{line_no}", "kind": "open_decision",
                       "tier": "cold" if closed else "hot", "title": f"{o['alias']} owner decision",
                       "text": text, "confidence": "RECORDED", "_open": not closed})
+    if g is not None:
+        _flag_cited_commits(items, g)
     return fp, items, red
+
+
+SHA_RE = re.compile(r"`([0-9a-f]{7,40})`")
+
+
+def _flag_cited_commits(items: list[dict], g: "Git") -> None:
+    """An open owner question citing a commit that canonical now contains may already be resolved even though its
+    register row was not updated: flag it (derived evidence for the reader; the register row is unchanged)."""
+    for i in items:
+        if i["kind"] != "open_decision" or not i.get("_open"):
+            continue
+        for short in SHA_RE.findall(i["text"]):
+            if not g.repo:
+                break
+            rc, full = git(g.repo, "rev-parse", "--verify", "-q", f"{short}^{{commit}}")
+            if rc == 0 and full and g.integrated(full):
+                i["_maybe_resolved"] = f"cited commit {short} is in canonical"
+                break
 
 
 def collect_mm(home: Path) -> tuple[str, list[dict], int]:
@@ -429,7 +449,7 @@ def _sources(cfg: dict) -> list[tuple[str, callable]]:
     g = Git(cfg.get("repo"), cfg.get("canonical_ref") or CANONICAL_REF)
     out = [("ledger", lambda: collect_ledger(cfg.get("ledger"), g))]
     for d in cfg.get("decisions", []):
-        out.append((f"decisions:{Path(d).as_posix()}", lambda d=d: collect_decisions(Path(d))))
+        out.append((f"decisions:{Path(d).as_posix()}", lambda d=d: collect_decisions(Path(d), g)))
     if cfg.get("mm_home"):
         out.append((f"mm:{Path(cfg['mm_home']).as_posix()}", lambda: collect_mm(Path(cfg["mm_home"]))))
     for r in cfg.get("receipts_roots", []):
@@ -490,8 +510,12 @@ def brief(ix: Index, budget_tokens: int = 1200) -> dict:
                    + (f" | BLOCKED: {h['_blocker']}" if h.get("_blocker") else "")),
         ("Open blocking findings", [h for h in hot if h["kind"] == "finding" and h.get("_blocking")],
          lambda h: f"- {h['ref']}: {h['text']}"),
-        ("Open owner decisions and blockers", [h for h in hot if h["kind"] in ("open_decision", "blocker")],
-         lambda h: f"- {h['title'].split(' ', 1)[0]}: {h['text']}"),
+        ("Open owner decisions and blockers",
+         sorted([h for h in hot if h["kind"] in ("open_decision", "blocker")],
+                key=lambda h: bool(h.get("_maybe_resolved"))),
+         lambda h: f"- {h['title'].split(' ', 1)[0]}: "
+                   + (f"(possibly resolved: {h['_maybe_resolved']}; register not updated) " if h.get("_maybe_resolved")
+                      else "") + h["text"]),
         ("Lessons, failed approaches, environment limits",
          [h for h in hot if h["kind"] in KNOWLEDGE_KINDS],
          lambda h: f"- [{h['kind']}] {h['text']} ({h['ref']})"),
@@ -590,6 +614,9 @@ def _out(obj) -> None:
 
 
 def main(argv=None) -> int:
+    for stream in (sys.stdout, sys.stderr):   # a Windows pipe defaults to the ANSI code page
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(prog="devmemory", description=__doc__.split("\n\n")[0])
     ap.add_argument("--index", help="index file (default $URI_DEVMEMORY or ~/.uri-dev/devmemory.sqlite3)")
     sub = ap.add_subparsers(dest="cmd", required=True)

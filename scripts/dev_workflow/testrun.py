@@ -448,6 +448,9 @@ def _out(obj) -> None:
 
 
 def main(argv=None) -> int:
+    for stream in (sys.stdout, sys.stderr):   # a Windows pipe defaults to the ANSI code page
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     argv = list(sys.argv[1:] if argv is None else argv)
     cmd_argv: list[str] = []
     if "--" in argv:
