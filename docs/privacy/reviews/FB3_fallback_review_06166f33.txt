@@ -1,0 +1,147 @@
+## M95-PRIVACY-r4 fallback review of 06166f33: REJECT
+
+I checked both SHAs myself. HEAD of D:\uri-dev\m95-review-06166f33 is 06166f33a109dbc2604d58c32222cfe9c8e206b4, and the baseline c036a901 exists in that repo. I wrote nothing in the checkout (git status stayed clean). All probes ran from C:\Users\cheta\AppData\Local\Temp\claude\C--Users-cheta-Development-Uri--V1\be9a2245-2fc6-410c-ae65-0c311dd5abb2\scratchpad\fallback3-review-work\ on synthetic data, through the real `PrivacyGateway` and the real `TavilyProvider` with `httpx.MockTransport`.
+
+**Verdict: REJECT.** There are three HIGH findings. Neither structural change holds.
+
+### HIGH findings
+- **R1-01: canonical egress puts a full card on the wire.** This is a regression of R2-01. `canonical()` deletes invisible characters before `classify()` runs, so a card next to a digit becomes one longer, unflagged run.
+  - Wire, WEB_SEARCH: `card 4111111111111111\u200b9 declined` is sent as `card 41111111111111119 declined` with status NO_RESULTS.
+  - Same leak at EXTERNAL_AGENT, EXTERNAL_MODEL and LOG. Prefix digits, U+00AD and Aadhaar `234567890124\u200b5` behave the same way.
+  - Classifying the raw text gives FINANCIAL plus LONG_NUMBER; classifying the canonical text gives nothing.
+- **R1-02: the "arbitrary separators" claim is false.** The cause is `_NUM_RUN` (separator `[^\w\n]{1,3}`), its exclusions, and `_CARD_SEP`. Wire leaks:
+  - `card 4111****1111****1111****1111`
+  - `card 4,111,111,111,111,111` (thousands exclusion)
+  - `aadhaar_2345_6789_0124.pdf` (underscore counts as `\w`; a realistic filename)
+  - `aadhaar 2345__6789__0124`
+  - `aadhaar 234.567.890.124` (IPv4 exclusion)
+  - Gateway-only leaks: `2345 - - 6789 - - 0124`, `234,567,890,124`, letter separators. Literal `%` separators also leak (`4111%1111...`) because every reading decodes `%11` and swallows digits. No reading checks the literal text that is actually sent.
+- **R1-03: punctuation look-alikes are not folded.** The confusables table maps letters and digits only (U+2010, U+2011, U+2212, U+2236, U+3002 all map to None). Hard-refuse credentials therefore reach WEB_SEARCH, EXTERNAL and LOG raw:
+  - On the wire: `password\u2236 Mango#2026! reset` and `key sk\u2010<key> invalid`.
+  - Gateway only: `password\ua789 ...`, `password\u2011 ...`, `xoxb\u2010...`.
+  - Also raw: SSN `ssn 123\u201045\u20106789` (wire) and `123\u221245\u22126789`, phones `415\u2010555\u20100199` and `98765\u201043210`, e-mail `john@example\u3002com`.
+
+### MEDIUM findings (blocking)
+- **R1-04: standard-form recall gaps.**
+  - Formats the plan claims but misses: Indian mobile with separators `987 654 3210`.
+  - Other standard forms missed:
+    - domestic phones `415 555 0199` and `020 7946 0958`
+    - every internationalised e-mail address (`josé@example.com`, `ravi@exämple.in`, Devanagari local parts)
+    - `pw: X`
+    - non-English credential labels (`Passwort:`, `contraseña:`, `पासवर्ड:`)
+    - spaced OTP and CVV codes
+    - `my passport is A1234567`
+    - `ABCPE 1234 F`
+    - Aadhaar with the context word after it
+- **R1-05: LONG_NUMBER damages ordinary searches.**
+  - On 133 realistic benign queries I wrote, WEB_SEARCH changed 17. About 13 of those are clear false positives:
+    - Amazon order ids such as `171-5550123-9876543`
+    - lists of numbers, lists of timestamps, time ranges and date pairs
+    - invoice ids, part of a UUID, pi
+    - `e 2.718281828459045` and `range 1000-2000-3000-4000`, flagged as FINANCIAL by Luhn
+  - My set leans on numbers by design, so treat the rate as indicative.
+  - The 0 % false-positive figure in measurements.json comes from a benign corpus with no LONG_NUMBER-shaped text, so it says nothing about this rule. AC-1 names order ids and timestamps in its benign set.
+  - The harness approval gate also refuses `order 171-5550123-9876543 summary` with `PRIVACY_INSTRUCTION_CHANGED`.
+- **R1-07 (documentation): the PC-9 / section 6.2 scope statement overclaims.**
+  - It says invisible characters, look-alikes and arbitrary separators are handled. R1-01..R1-03 show they are not.
+  - The control it names for the out-of-scope case ("limiting what such a party can see") is neither implemented nor tracked.
+  - It does not say that a prompt-injected Brain composing web queries counts as such a party.
+
+### LOW finding
+- **R1-06: canonical form changes ordinary non-ASCII text.** It strips emoji VS16 and ZWJ, Persian ZWNJ and Malayalam chillu ZWJ, and folds NBSP, ligatures and Roman numerals. `harness_approval_private` then refuses any such instruction (e.g. a card request containing ❤️, or Persian text). This is non-blocking: per PC-10 no UI uses that path, and scheduler greetings are Latin-only.
+
+### Specific asks
+1. **Structural attack on canonical egress and LONG_NUMBER.** Both fail, as above (R1-01..R1-03).
+2. **Ordinary-use damage.** Covered in R1-05 and R1-06. Local destinations are unchanged: 0 of 139 inputs were altered at LOCAL_BRAIN or LOCAL_TOOL.
+3. **Harness approval gate and fail-closed paths.**
+   - The gate checks only `inputs.instruction`; the vendor CLI gets that plus a regex-bounded `expected_file`. It refuses when the gateway would change the instruction and cancels the turn.
+   - It passes look-alike and separator forms (`card 4111****...`, `password∶ ...`), because the gateway itself misses them.
+   - Fail-closed paths behave: non-str input, unknown destination, an internal exception, a failed audit write (grant left intact), encoding deeper than four levels, cross-scope or non-local restore, forged principals, CREDENTIAL grants, and concurrent use (3 raw disclosures out of 40 threads with uses=3).
+4. **PC-9 and PC-10.**
+   - PC-9's principle is reasonable: deterministic patterns cannot stop deliberate encoding. As written, though, it is inaccurate; it draws the line well beyond what the code delivers.
+   - PC-10 is accurate. `paired_runtime` spawns `run_uri_client_worker.py`, `supervised_runtime` spawns `run_uri_supervised_worker.py`, and `integrated_runtime` sends only `oi_*` commands.
+
+### Prior findings
+- **NOT_FIXED:** R1-01 (its titled defect reproduces via R1-01 and R1-03) and R2-01 (regressed).
+- **FIXED:** all other listed ids. Many I re-ran myself; the rest I judged from code plus the passing suites, and the JSON notes which.
+
+### Tests and what I could not verify
+- `tests/privacy` + `tests/web`: 4166 passed.
+- `tests/scheduler` + `tests/oi`: 385 passed, 9 skipped, and 1 failure, the known baseline `test_duplicate_startup_and_api`.
+- Not run or not verified: `tests/assist`, `ws`, `a2ui` and `office`; live Windows DPAPI and D10 restart; AC-14b latency numbers; Brave and SearXNG on the wire; a live integrated-worker or scheduler run.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "06166f33a109dbc2604d58c32222cfe9c8e206b4", "baseline": "c036a901b4544f1df17aa8c118877ef364c48d71", "verdict": "REJECT",
+ "findings": [
+  {"id": "R1-01", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "Canonical egress joins a card with an adjacent digit across an invisible character; the full Luhn-valid card reaches WEB_SEARCH / EXTERNAL_* / LOG (regression of R2-01)",
+   "files": ["uri_privacy/gateway.py:104", "uri_privacy/gateway.py:105", "uri_privacy/classify.py:336", "uri_privacy/classify.py:168"],
+   "evidence": "TavilyProvider + httpx.MockTransport + in-memory PrivacyGateway: query 'card 4111111111111111\\u200b9 declined' was sent as 'card 41111111111111119 declined' (NO_RESULTS). 'card 9\\u200b4111111111111111', 'card 4111111111111111\\u00ad7' and 'aadhaar 234567890124\\u200b5' were also sent with the invisible character removed and the value intact. prepare() to EXTERNAL_AGENT, EXTERNAL_MODEL and LOG returned 'card 41111111111111119' with categories {}. classify(raw) = {LONG_NUMBER, FINANCIAL}; classify(canonical(raw)) = {}. _decide replaces text with canonical(text) before classify(), so the separated reading that caught R2-01 never runs; the 17-digit contiguous run fails Luhn and has no separator for LONG_NUMBER.",
+   "suggested_fix": "Classify the original text (all readings) and map findings onto the canonical output, or have canonical() replace removed invisible characters between digits/letters with a visible separator instead of deleting them; re-check must include a separated reading."},
+  {"id": "R1-02", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "LONG_NUMBER and card rules miss common separator forms: underscores, separators longer than 3 characters, letters, and inputs shaped like thousands groupings, IPv4 or literal '%'; cards and Aadhaar reach the wire",
+   "files": ["uri_privacy/classify.py:161", "uri_privacy/classify.py:163", "uri_privacy/classify.py:164", "uri_privacy/classify.py:133", "uri_privacy/classify.py:461"],
+   "evidence": "Wire (TavilyProvider/MockTransport), sent unchanged with NO_RESULTS: 'card 4111****1111****1111****1111 declined why', 'card 4,111,111,111,111,111 declined', 'aadhaar_2345_6789_0124.pdf upload failed', 'aadhaar 2345__6789__0124 status', 'aadhaar 234.567.890.124 update'. prepare() at WEB_SEARCH, EXTERNAL_AGENT, EXTERNAL_MODEL and LOG also returned unchanged: Aadhaar 2345 - - 6789 - - 0124, 2345----6789----0124, 2345////6789////0124, 234,567,890,124, 2345x6789x0124; IBAN digits 89_3704_0044_0532_0130; 'my number 4111%1111%1111%1111' (every reading decodes %11, which swallows two digits; no reading checks the literal text that is sent). fz1.py: 176 leaks over 4 values x 61 separators x 4 destinations. _NUM_RUN allows only [^\\w\\n]{1,3} (underscore and letters are \\w; 4+ characters break it), and the _THOUSANDS/_IPV4/_DECIMALS fullmatch exclusions accept card and Aadhaar digits written in those shapes. Contradicts threat model 6.2 'arbitrary separators (canonical egress plus LONG_NUMBER)'.",
+   "suggested_fix": "Define the digit run over any non-digit separator of bounded length including '_' (and decide letters explicitly), apply the exclusions only when the digit groups are valid for that shape (IPv4 octets <=255, thousands groups not totalling 12+ digits in a card/Aadhaar-valid sequence), add a literal (undecoded) reading, and test with a generated separator x length sweep."},
+  {"id": "R1-03", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "Unicode punctuation look-alikes are not folded: labelled passwords, API keys, SSNs, phones and e-mails pass raw to WEB_SEARCH / EXTERNAL_* / LOG",
+   "files": ["uri_privacy/classify.py:367", "uri_privacy/classify.py:98", "uri_privacy/classify.py:135", "uri_privacy/classify.py:136"],
+   "evidence": "Wire: 'password\\u2236 Mango#2026! reset' (U+2236 RATIO) and 'key sk\\u2010abcdefghijklmnop0123456789 invalid' (U+2010 HYPHEN) were sent unchanged, NO_RESULTS; 'ssn 123\\u201045\\u20106789' was sent unchanged. prepare() returned unchanged, categories {}, at WEB_SEARCH, EXTERNAL_MODEL and LOG: 'password\\ua789 Mango#2026!', 'password\\u02d0 ...', 'password\\u2011 Mango#2026', 'xoxb\\u20101234567890\\u2010abcdefghij', '123\\u221245\\u22126789', '415\\u2010555\\u20100199', '98765\\u201043210', 'john@example\\u3002com'. uri_web.confusables_ascii.CONFUSABLE_ASCII returns None for U+2010, U+2011, U+2012, U+2013, U+2212, U+FE63, U+02D7, U+3002, U+FF61 (it covers letters and digits only), and NFKC leaves them. CREDENTIAL is a hard REFUSE at these destinations, and 6.2 lists 'Unicode look-alikes' as in scope.",
+   "suggested_fix": "Fold punctuation confusables (dash, hyphen, minus, colon, full-stop, at, slash, underscore classes from UTS #39) to ASCII in fold(); add a code-point sweep over the punctuation classes for the label, SSN, phone, e-mail and API-key detectors."},
+  {"id": "R1-04", "severity": "MEDIUM", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "Recall gaps in standard, unobfuscated forms: separated Indian mobiles (claimed in plan 2.1), domestic phones, every internationalised e-mail address, common credential idioms",
+   "files": ["uri_privacy/classify.py:135", "uri_privacy/classify.py:136", "uri_privacy/classify.py:98"],
+   "evidence": "prepare(WEB_SEARCH) returned unchanged, categories {}: 'call 987 654 3210' (also on the wire), 'phone 415 555 0199', '020 7946 0958', 'tel 4155550199', '9876543210 call'; 'write to josé@example.com' (wire), 'jürgen.müller@example.de', 'mail ravi@exämple.in', 'contact अनिल@example.in', 'mail 用户@例子.中国'. _EMAIL is ASCII-only and its lookbehind (?<![\\w.+-]) also blocks a partial match after a non-ASCII letter. Also unchanged: 'pw: Mango#2026!' (to LOG as well), 'user asha pass Mango#2026', 'Passwort: Geheim2026!', 'contraseña: Mango#2026', 'पासवर्ड: Mango#2026', 'OTP is 4 8 2 9 1 3', 'cvv: 1 2 3', 'pin number 1234', 'my passport is A1234567', 'ABCPE 1234 F', '234567890124 is my aadhaar', and a PEM private-key header (only long body lines become SECRET_LIKE, which is grantable, not CREDENTIAL). PC-7 disclaims real-world recall in general, but plan 2.1 claims 'Indian 10-digit mobile ... with separators'.",
+   "suggested_fix": "Add 3-3-4 / 4-3-3 and spaced domestic phone forms, Unicode-aware e-mail (EAI local parts and IDN domains), 'pw' and spaced-digit codes; record the remaining language-label gap as a documented limitation."},
+  {"id": "R1-05", "severity": "MEDIUM", "blocking": true, "category": "code", "owner_decision": false,
+   "title": "LONG_NUMBER and card_run redact ordinary queries (order ids, timestamps, time ranges, dates, number lists); the 0% false-positive evidence does not exercise the new rule",
+   "files": ["uri_privacy/classify.py:161", "uri_privacy/classify.py:168", "docs/privacy/evidence/measurements.json", "tests/privacy/synth.py:106"],
+   "evidence": "fp.py, 133 realistic benign queries: WEB_SEARCH changed 17 and EXTERNAL_MODEL changed 18. Clear false positives: 'amazon order 171-5550123-9876543' -> 'amazon order [redacted]' (also on the wire), 'order #402-1234567-1234567', 'invoice INV-2026-000123-4567', 'uuid 123e4567-e89b-12d3-a456-426614174000' -> '...-a[redacted]', 'timestamps 1698000000 1698003600', 'time 10:30-11:45, 12:00-13:15', 'dates 01.02.2026 03.04.2026', 'lottery numbers 04 11 23 35 42 48 07 19', 'sequence 1, 2, ... 12', 'pi 3.14159265358979323846', 'e 2.718281828459045' (FINANCIAL), 'range 1000-2000-3000-4000 meters' (FINANCIAL). harness_approval_private refuses 'order 171-5550123-9876543 summary' with PRIVACY_INSTRUCTION_CHANGED. The set is number-heavy by construction, so the rate is indicative only. No BENIGN, HARD_BENIGN or HELD_OUT_BENIGN text in tests/privacy/synth.py is a separator-joined run of 12+ digits, so measurements.json 'benign_texts_interrupted: 0' does not test LONG_NUMBER. AC-1's benign set names order ids and timestamps.",
+   "suggested_fix": "Exclude known id shapes (marketplace order ids, UUIDs, lists of short numbers, time ranges, multiple dates), require the digit groups to fit an identifier length profile, and measure on a benign corpus written to exercise LONG_NUMBER before claiming the false-positive rate."},
+  {"id": "R1-06", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "canonical() alters ordinary non-ASCII text on every non-local destination, and the harness approval gate then refuses it",
+   "files": ["uri_privacy/classify.py:336", "scripts/run_uri_integrated_worker.py:152"],
+   "evidence": "prepare(EXTERNAL_AGENT/WEB_SEARCH): '❤️' -> '❤', the ZWJ family emoji split into three emoji, Persian 'می\\u200cخواهم' -> 'میخواهم', Malayalam chillu with ZWJ altered, NBSP -> space, 'ﬁ' -> 'fi', 'Ⅻ' -> 'XII'. harness_approval_private refused 'Make a festive card with ❤️ for the family' and 'Draw a card saying می\\u200cخواهم' with PRIVACY_INSTRUCTION_CHANGED and sent turn_cancel. Low impact: per PC-10 no UI uses that worker path, search engines tolerate it, and scheduler greetings are Latin-only.",
+   "suggested_fix": "Keep ZWJ/ZWNJ/VS inside non-digit, non-ASCII-letter contexts (emoji and Indic/Arabic shaping) and normalise only where an invisible character sits between ASCII letters or digits."},
+  {"id": "R1-07", "severity": "MEDIUM", "blocking": true, "category": "documentation", "owner_decision": false,
+   "title": "PC-9 / threat model 6.2 scope statement overclaims what is protected and names an unimplemented control",
+   "files": ["docs/privacy/00_PLAN_AND_ACCEPTANCE_CRITERIA.md:147", "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md:106"],
+   "evidence": "6.2 lists 'obfuscation by invisible or control characters, encodings (four levels), Unicode look-alikes and arbitrary separators' as in scope. R1-01 (invisible character), R1-03 (look-alikes) and R1-02 (separators) reproduce leaks in each class. The out-of-scope column relies on 'limiting what such a party can see'; no such control is implemented or recorded as an owner decision. The statement also leaves unsaid that the local Brain, if steered by injected web content, is 'a party that controls the outgoing text' for search queries. The principle (deterministic patterns cannot stop deliberate encoding) is reasonable on its merits.",
+   "suggested_fix": "State the protected forms exactly as the tests prove them, list the known residual classes, and record the 'limit what the party can see' control as an owner decision or a follow-up."}
+ ],
+ "prior_findings": [
+  {"id": "R1-01", "status": "NOT_FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}, {"id": "R1-05", "status": "FIXED"}, {"id": "R1-06", "status": "FIXED"},
+  {"id": "R2-01", "status": "NOT_FIXED"}, {"id": "R2-02", "status": "FIXED"}, {"id": "R2-03", "status": "FIXED"}, {"id": "R2-04", "status": "FIXED"},
+  {"id": "S1-01", "status": "FIXED"}, {"id": "S1-02", "status": "FIXED"}, {"id": "S1-03", "status": "FIXED"}, {"id": "S1-04", "status": "FIXED"}, {"id": "S1-05", "status": "FIXED"}, {"id": "S1-06", "status": "FIXED"}, {"id": "S1-07", "status": "FIXED"}, {"id": "S1-08", "status": "FIXED"},
+  {"id": "FB1-R1-01", "status": "FIXED"}, {"id": "FB1-R1-02", "status": "FIXED"}, {"id": "FB1-R1-03", "status": "FIXED"}, {"id": "FB1-R1-04", "status": "FIXED"}, {"id": "FB1-R1-05", "status": "FIXED"}, {"id": "FB1-R1-06", "status": "FIXED"},
+  {"id": "R3-01", "status": "FIXED"}, {"id": "R3-02", "status": "FIXED"}, {"id": "R3-03", "status": "FIXED"}, {"id": "R3-04", "status": "FIXED"},
+  {"id": "R4-01", "status": "FIXED"}, {"id": "R5-01", "status": "FIXED"}, {"id": "R6-01", "status": "FIXED"}, {"id": "R7-01", "status": "FIXED"}, {"id": "R7-02", "status": "FIXED"},
+  {"id": "R8-01", "status": "FIXED"}, {"id": "R8-02", "status": "FIXED"}, {"id": "R8-03", "status": "FIXED"}, {"id": "R8-04", "status": "FIXED"},
+  {"id": "FB2-R1-01", "status": "FIXED"}, {"id": "FB2-R1-02", "status": "FIXED"}, {"id": "FB2-R1-03", "status": "FIXED"}, {"id": "FB2-R1-04", "status": "FIXED"}, {"id": "FB2-R1-05", "status": "FIXED"}
+ ],
+ "prior_findings_notes": "R1-01: the exact reproductions (fullwidth colon, ZWSP card) now refuse or redact, but the titled defect (Unicode separators let credentials and cards reach web search) reproduces via U+2236 / U+2010 (new R1-03) and invisible-character joining (new R1-01). R2-01: the exact reproduction now sends 'card 41111111111111119' (new R1-01). I re-ran these myself: R1-02, R1-03, R1-05, R2-02, R2-03, the S1-05 example list, S1-04, FB1-R1-01..05, R3-01..R8-04, FB2-R1-01 (sweep of 65 control code points plus U+2800, none leak) and FB2-R1-05. Judged from code plus passing tests: R1-04 (meta sanitized), R1-06 (cross-process test passed in the suite), R2-04, S1-02, S1-03, S1-06..08, FB1-R1-06, FB2-R1-02 (gate present; my reproduction used the extracted function, not a live Stack) and FB2-R1-03/04 (PC-10 text checked against the Dart sources).",
+ "inspected": ["uri_privacy/classify.py", "uri_privacy/gateway.py", "uri_privacy/policy.py", "uri_privacy/grants.py (grant, transaction, record checks)", "uri_privacy/vault.py (token generation)", "uri_assist/redact.py (_TEXT_RULES, _CARD)", "uri_web/search.py diff", "uri_web/bridge.py diff", "uri_scheduler/engine.py diff", "uri_scheduler/gif_task.py (params)", "scripts/run_uri_integrated_worker.py diff (harness_private, harness_approval_private)", "scripts/run_uri_integrated_server.py diff (persistent_secret)", "uri_operational_intelligence/brain_client.py diff", "uri_office/service.py diff", "scripts/oi_materialize_test_runtime.py diff", "uri_supervisor_bridge/authority.py:110-145", "uri_supervisor_bridge/execution.py:50-70", "uri_supervisor_bridge/worker_service.py:130-150", "uri_core/client_runtime/turn_service.py:46", "uri_core/client_runtime/manifest.py:51,116", "uri_ui/lib/services/supervised_runtime.dart", "uri_ui/lib/services/integrated_runtime.dart", "uri_ui/lib/services/paired_runtime.dart:99-101,169,184", "tests/privacy/synth.py:100-223", "docs/privacy/00_PLAN_AND_ACCEPTANCE_CRITERIA.md (full)", "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md section 6, 6.1, 6.2", "docs/privacy/evidence/measurements.json"],
+ "evidence_reviewed_only": ["D:/uri-dev/lifecycle/M95-PRIVACY-r1/state/rounds/R1,R2 round.json", "D:/uri-dev/lifecycle/M95-PRIVACY-r3/state/rounds/R3..R8 round.json", "docs/privacy/reviews/S1_subagent_review_32ed8594.json", "docs/privacy/reviews/FB1_fallback_review_76f875d1.txt", "D:/uri-dev/m95-evidence/FB2_fallback_review_c4550417.txt"],
+ "live_observed": [],
+ "tests_run": [
+  {"command": "python -B -m pytest tests/privacy -q -p no:cacheprovider -x (TMP and basetemp in the work dir)", "result": "all passed (100%, no failures)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python -B -m pytest tests/privacy tests/web -q -p no:cacheprovider", "result": "4166 passed in 68.5s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python -B -m pytest tests/scheduler tests/oi -q -p no:cacheprovider", "result": "385 passed, 9 skipped, 1 failed (tests/scheduler/test_service_process.py::test_duplicate_startup_and_api, the known baseline failure)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "fz1.py separator sweep (4 values x 61 separators x WEB_SEARCH/EXTERNAL_AGENT/EXTERNAL_MODEL/LOG)", "result": "176 raw leaks", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "fz2.py / fz9.py / r201.py TavilyProvider + httpx.MockTransport wire probes", "result": "card, Aadhaar, SSN, credential, API key, phone and e-mail forms captured raw on the wire (see R1-01..R1-04)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "fz3/fz4/fz5/fz8.py gateway probes (identifiers, credentials, look-alikes, exclusion abuse)", "result": "leaks recorded in R1-02..R1-04; the standard forms of the remaining identifier and credential cases were caught", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "fp.py 133 benign queries + local-destination identity check", "result": "WEB_SEARCH 17 changed, EXTERNAL_MODEL 18 changed; LOCAL_* 0 of 139 changed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "fz6/fz7.py canonical form and harness_approval_private (extracted by AST, as the repo test does)", "result": "emoji, ZWNJ and NBSP altered; approval refused PRIVACY_INSTRUCTION_CHANGED; look-alike and separator secrets passed the gate", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "prior.py regression check of earlier finding reproductions and fail-closed paths", "result": "all OK except R2-01 (regressed)", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": [
+  "D10 persistent_secret and DPAPI on a real restart (code read only; the Windows DPAPI tests are in tests/privacy, which passed, but no live server start)",
+  "AC-14b and PC-9 latency figures (not re-measured)",
+  "tests/assist, tests/ws, tests/a2ui, tests/office, tests/office_u2 not run by me",
+  "Brave and SearXNG providers not probed on the wire (same _call path as Tavily per code)",
+  "Live integrated worker and real phase2d Stack not run; harness_approval_private exercised as an extracted function",
+  "Scheduler refusal-path state consistency verified from code and the tests/scheduler run only, not with an injected refusal",
+  "Cross-process grant lock checked only via the passing tests/privacy test, not an independent multi-process probe",
+  "False-positive rate on my number-heavy benign set is indicative, not a representative population measurement"
+ ]}
+AUDIT_RESULT_END

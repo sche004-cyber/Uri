@@ -221,3 +221,19 @@ HELD_OUT_BENIGN = [
     "Visit https://example.com/docs?page=2 for details.",
     "Token ring networks were replaced by Ethernet.",
 ]
+
+
+# Number-shaped ordinary text, added after fallback review FB3 R1-05 found that no earlier benign set exercised the
+# long-number rule. The same list is checked in tests/privacy/test_ldec005.py.
+NUMBER_BENIGN = [
+    "amazon order 171-5550123-9876543", "order #402-1234567-1234567", "invoice INV-2026-000123-4567",
+    "uuid 123e4567-e89b-12d3-a456-426614174000", "timestamps 1698000000 1698003600", "time 10:30-11:45, 12:00-13:15",
+    "dates 01.02.2026 03.04.2026", "lottery numbers 04 11 23 35 42 48 07 19", "sequence 1, 2, 3, 4, 5, 6, 7, 8, 9, 10",
+    "pi 3.14159265358979323846", "e 2.718281828459045", "total 1,234,567,890 units", "1,23,45,678 rupees",
+    "near 12.9716, 77.5946", "ISBN 978-0-306-40615-7", "meeting 2026-10-22 14:30:00", "server 192.168.100.200",
+    "pages 12345 to 67890", "between 2020 and 2026 we sold 15000 units", "train 12627 at 19:20 on 2026-10-22",
+    "resolution 1920x1080 at 60fps", "version 10.0.26200.6584 build", "flight UK 812 on 23/10/2026 at 06:05",
+    "temperature 23.5 C at 10:15:44", "phone 1-800 support hours 9-17", "item code 4006381333931",
+    "IMEI 490154203237518 on the box", "batch 4500012345 failed QC", "due 2026-10-18T09:00:00+05:30 local",
+    "base dddd13d302b06505e4afadeaa91678c62a71792766fdf3f886804ebc30def938",
+]

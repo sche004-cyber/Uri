@@ -55,8 +55,13 @@ def invisible_sample():
 def test_fb2_r1_01_no_invisible_character_hides_a_card_or_a_credential(cp):
     ch = chr(cp)
     g = TGateway()
-    out = g.prepare(f"card 4111{ch}1111{ch}1111{ch}1111 limit", requester="t", destination="WEB_SEARCH", purpose="p").text
-    assert CARD not in digits(out) and ch not in out
+    try:
+        out = g.prepare(f"card 4111{ch}1111{ch}1111{ch}1111 limit", requester="t", destination="WEB_SEARCH",
+                        purpose="p").text
+    except PrivacyRefused as exc:                 # LDEC-005: refused on doubt
+        assert exc.code == "PRIVACY_DISGUISE_REFUSED"
+    else:
+        assert CARD not in digits(out) and ch not in out
     with pytest.raises(PrivacyRefused):
         g.prepare(f"wifi pass{ch}word: Mango#2026!", requester="t", destination="WEB_SEARCH", purpose="p")
 
@@ -74,9 +79,9 @@ def test_fb2_r1_01_other_values_with_invisibles(q, core):
 
 
 def test_canonical_is_what_is_sent():
-    q = "caf\u00e9 \uff21\uff22 4111\u200b9 \u2800x"
+    q = "caf\u00e9 \uff21\uff22 \u2764\ufe0f x\u2010y 10\u201320"
     out = TGateway().prepare(q, requester="t", destination="EXTERNAL_MODEL", purpose="p").text
-    assert out == C.canonical(q) == "caf\u00e9 AB 41119 x"
+    assert out == C.canonical(q) == "caf\u00e9 AB \u2764\ufe0f x-y 10-20"
     assert TGateway().prepare(q, requester="t", destination="LOCAL_BRAIN", purpose="p").text == q
 
 

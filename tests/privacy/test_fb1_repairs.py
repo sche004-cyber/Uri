@@ -55,7 +55,7 @@ def test_fb1_r1_01_card_with_marks_never_reaches_the_wire(mark):
 def test_fb1_r1_01_disguised_values_are_refused_or_removed(q):
     r, sent = search(q)
     if "Mango" in q:
-        assert r.status == S.REFUSED and r.error_code == "PRIVACY_REFUSED" and sent == []
+        assert r.status == S.REFUSED and r.error_code in ("PRIVACY_REFUSED", "PRIVACY_DISGUISE_REFUSED") and sent == []
     else:
         assert all(CARD_DIGITS not in wire_digits(x) for x in sent)
 

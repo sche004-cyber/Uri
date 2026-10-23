@@ -97,14 +97,22 @@ class PrivacyGateway:
             dest = P.Destination(meta["destination"])
         except ValueError:
             raise PrivacyRefused("PRIVACY_DESTINATION_UNKNOWN") from None
-        # What leaves URI is the canonical form (NFKC, nothing invisible): it is classified, rewritten and re-checked
-        # as is, so no invisible character can split a value on the wire. Encodings and look-alikes are handled inside
-        # classify() (folding with an exact span map).
+        # Owner decision LDEC-005 ("refuse on doubt"): what leaves URI is the egress form (NFKC, punctuation look-alikes
+        # as ASCII, nothing invisible except emoji/script shaping); it is classified, rewritten and re-checked as is.
+        # Text that carries a disguise signal - an invisible character or mark among ASCII letters or digits, digits
+        # joined by unusual separators, or a sensitive value visible only once decoded - is refused, not read through.
+        # A log line in doubt is written fully redacted.
         if dest not in P.LOCAL:
-            text = C.canonical(text)
-        cls = C.classify(text, protected_terms)
-        if cls.residual_encoding and dest not in P.LOCAL:
-            raise PrivacyRefused("PRIVACY_ENCODING_UNRESOLVED")     # deeper than the folding decodes (FB1 R1-04)
+            text, signals = C.egress_form(text)
+            cls = C.classify(text, protected_terms)
+            if cls.decoded_only:
+                signals.add(C.DOUBT_ENCODED)
+            if cls.residual_encoding:
+                signals.add("ENCODING_UNRESOLVED")                  # deeper than the folding decodes (FB1 R1-04)
+            if signals:
+                return self._doubt(meta, dest, cls, signals)
+        else:
+            cls = C.classify(text, protected_terms)
         counts = cls.categories()
 
         # One action per category present; a grant can lower a grantable action to ALLOW.
@@ -161,6 +169,16 @@ class PrivacyGateway:
         if grant_ids and not self.grants.consume(grant_ids):
             raise PrivacyRefused("PRIVACY_GRANT_RACE")
         return Egress(out, dest.value, cats, actions, scope_id, grant_ids)
+
+    def _doubt(self, meta, dest, cls, signals):
+        cats = dict(sorted(cls.categories().items()))
+        code = ("PRIVACY_ENCODING_UNRESOLVED" if signals == {"ENCODING_UNRESOLVED"} else "PRIVACY_DISGUISE_REFUSED")
+        if dest == P.Destination.LOG:
+            self.audit.write(**meta, decision=P.REDACT, categories=cats, grant_ids=[], outcome="SANITIZED", code=code)
+            return Egress(REDACTED, dest.value, cats, {c: P.REDACT for c in cats}, None, [])
+        e = PrivacyRefused(code)
+        e.categories = cats
+        raise e
 
     @staticmethod
     def _span_action(f, actions):

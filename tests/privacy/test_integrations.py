@@ -58,8 +58,10 @@ def test_disguised_card_is_redacted_before_the_transport(query):
     sent, transport = capture()
     result = S.TavilyProvider(api_key="k", transport=transport, privacy=TGateway()).search(query)
     from uri_privacy.classify import fold
-    wire = fold(body(sent[0]))[0].replace(" ", "")
-    assert result.status == S.OK and "4111111111111111" not in wire and "limit" in body(sent[0])
+    wire = fold(body(sent[0]))[0].replace(" ", "") if sent else ""
+    # LDEC-005: a disguised card is refused (nothing sent); a standard one is redacted.
+    assert (result.status == S.REFUSED and sent == []) or (result.status == S.OK and "4111111111111111" not in wire
+                                                            and "limit" in body(sent[0]))
 
 
 def test_identifiers_are_removed_from_the_sent_query():

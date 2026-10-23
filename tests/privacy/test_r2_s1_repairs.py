@@ -40,7 +40,11 @@ def prep(g, text, dest="WEB_SEARCH", **kw):
 # --- R2-01: a disguised value next to a detected one ------------------------------------------------------------------
 def test_r2_01_second_card_hidden_by_zero_width_characters_is_removed():
     q = f"card {CARD}​9 and card 4111​1111​1111​1111 limit"
-    out = prep(TGateway(), q).text
+    try:
+        out = prep(TGateway(), q).text
+    except PrivacyRefused as exc:                 # LDEC-005: invisible characters among digits are refused
+        assert exc.code == "PRIVACY_DISGUISE_REFUSED"
+        return
     assert "4111" not in out.replace("​", "")
 
 
@@ -50,7 +54,7 @@ def test_r2_01_second_card_hidden_by_zero_width_characters_is_removed():
 def test_r2_02_encoded_credentials_never_reach_web_search(q):
     sent, t = capture()
     r = S.TavilyProvider(api_key="k", transport=t, privacy=TGateway()).search(q)
-    assert r.status == S.REFUSED and r.error_code == "PRIVACY_REFUSED" and sent == []
+    assert r.status == S.REFUSED and r.error_code in ("PRIVACY_REFUSED", "PRIVACY_DISGUISE_REFUSED") and sent == []
 
 
 # --- R2-03 / R1-03: audit fields ---------------------------------------------------------------------------------------

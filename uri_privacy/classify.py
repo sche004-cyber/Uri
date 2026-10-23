@@ -55,6 +55,7 @@ class Classification:
     findings: list            # non-overlapping, sorted by start
     credential_kinds: Counter  # Assist kinds that are credentials (no spans: these are refused, never rewritten)
     residual_encoding: bool = False  # still percent/entity-encoded after _FOLD_PASSES decodes: refused externally
+    decoded_only: bool = False      # a sensitive category appears only once encoded sequences are decoded (LDEC-005)
 
     def categories(self) -> Counter:
         c = Counter(cat for f in self.findings for cat in f.all_categories)
@@ -102,7 +103,7 @@ _LABELLED = re.compile(
     r"\s*(?:is|was|=|:)\s*[\"']?([^\s\"',;]{4,})|"
     # "pass: x" / "pass=x" (never "pass is"), and a code word a few words before its digits ("the PIN for the locker
     # is 4821"). A bare "code" needs exactly 6 digits (OTP length) and no zip/postal/error/status/area word before it.
-    r"\bpass\s*[:=]\s*[\"']?([^\s\"',;]{4,})|"
+    r"\b(?:pass|pw)\s*[:=]\s*[\"']?([^\s\"',;]{4,})|"
     # Word secrets written without "is"/":" ("password - X", "password -> X", "password X" after a line break) or a few
     # words before it ("the password for wifi is X", review FB1 R1-04). The value must then hold a digit or a symbol,
     # so ordinary prose ("the password policy is strict", "password field is required.") stays readable.
@@ -119,12 +120,13 @@ _AADHAAR_CTX = re.compile(r"(?i)\b(?:aadhaa?r|uid|uidai|e-?kyc)\b[^\n]{0,25}$")
 # Label idiom used below: "<label>[ no|number|#][ :|-] value" with single optional spaces. Folding collapses whitespace
 # runs to one space, and no two optional space runs are adjacent, so these patterns cannot backtrack (review S1-04).
 _LBL = r"(?: ?(?:no\.?|number|num|card|#))?(?: ?[:\-])? ?"
-_PAN = re.compile(r"(?i)\b[a-z]{3}[pchfatbljg][a-z]\d{4}[a-z]\b")
+_PAN = re.compile(r"(?i)\b[a-z]{3}[pchfatbljg][a-z] ?\d{4} ?[a-z]\b")            # also "ABCPE 1234 F"
+_SSN_SEP = r" ?[-./,:()] ?|[^\w\n]|_"          # one standard (optionally spaced) or any single punctuation separator
 _SSN = re.compile(r"(?<![\d-])(?!000|666|9\d\d)\d{3}-(?!00)\d{2}-(?!0000)\d{4}(?![\d-])|"
                   # labelled: "ssn 123456789", "ssn 123 45 6789", "ssn 123.45.6789" (review S1-05)
                   r"(?i:\b(?:ssn|social security(?: number| no\.?)?)\b" + _LBL + r"(?:is )?)"
-                  r"((?!000|666|9\d\d)\d{3}[ ./\u2013\u2014-]?(?!00)\d{2}[ ./\u2013\u2014-]?(?!0000)\d{4})(?!\d)")
-_PASSPORT = re.compile(r"(?i)\bpassport" + _LBL + r"([A-Z][0-9]{7}|[A-Z0-9]{6,9}\d)\b")
+                  r"((?!000|666|9\d\d)\d{3}(?:" + _SSN_SEP + r")?(?!00)\d{2}(?:" + _SSN_SEP + r")?(?!0000)\d{4})(?!\d)")
+_PASSPORT = re.compile(r"(?i)\bpassport" + _LBL + r"(?:(?:no|number) )?(?:is )?([A-Z][0-9]{7}|[A-Z0-9]{6,9}\d)\b")
 _IBAN = re.compile(r"(?i)\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,4})?\b")
 _ACCOUNT = re.compile(r"(?i)\b(?:a/c|acct|account|bank account)" + _LBL + r"(\d(?:[ -]?\d){7,20})\b")
 # Cards written with separators between groups (Assist covers unspaced dots and dashes; reviews S1-05,
@@ -132,7 +134,9 @@ _ACCOUNT = re.compile(r"(?i)\b(?:a/c|acct|account|bank account)" + _LBL + r"(\d(
 # thousands groupings ("1,234,567,890") stay readable.
 _CARD_SEP = r"[/_,:;|+~·–—•.-]"
 _CARD_ALT = re.compile(r"\b\d{4}(?: ?" + _CARD_SEP + r"(?: ?" + _CARD_SEP + r")* ?\d{3,6}){2,4}\b")
-_EMAIL = re.compile(r"(?<![\w.+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b")
+_EMAIL = re.compile(r"(?<![\w.+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b|"
+                    # internationalised addresses: Unicode local part and domain (review FB3 R1-04)
+                    r"(?<![\w.+-])[^\W_](?:[\w.%+-]*[^\W_])?@[^\W_][\w-]*(?:\.[\w-]+)*\.[^\W\d_]{2,}")
 _PHONE = re.compile(r"(?<![\w+])\+\d{1,3}[ -]?\(?\d{1,5}\)?(?:[ -]?\d){5,11}(?![\w])|"
                     r"(?<![\w+-])0?[6-9]\d{4}[ .-]\d{5}(?![\w-])|"                        # mobile, 5-5 grouped
                     r"(?<![\w-])\(0\d{2,4}\)\s?\d{3,4}[ -]?\d{4}(?![\w-])|"              # landline (080) 2345 6789
@@ -141,6 +145,12 @@ _PHONE = re.compile(r"(?<![\w+])\+\d{1,3}[ -]?\(?\d{1,5}\)?(?:[ -]?\d){5,11}(?![
                     r"(?<![\w-])\(\d{3}\)\s?\d{3}[ .-]\d{4}(?![\w-])|(?<![\w.-])\d{3}[.-]\d{3}[.-]\d{4}(?![\w.-])")
 # Ten run-together digits starting 6-9 are an Indian mobile only next to a phone word (else tracking numbers, amounts).
 _MOBILE_BARE = re.compile(r"(?<![\w+-])0?[6-9]\d{9}(?![\w-])")
+# Spaced domestic phone layouts (review FB3 R1-04): 3-3-4 (US, Indian mobile), UK/Indian landline 0xx(x) xxx(x) xxxx.
+_PHONE_SPACED = re.compile(r"(?<![\w+.\-/])(?:\(?\d{3}\)?[ .-]\d{3}[ .-]\d{4}|0\d{2,4} \d{3,4} \d{4})(?![\w.\-/])")
+_PHONE_CTX_AFTER = re.compile(r"(?i)^[^\n]{0,20}\b(?:call|phone|mobile|cell|whatsapp|contact|tel|number|sms)\b")
+_AADHAAR_CTX_AFTER = re.compile(r"(?i)^[^\n]{0,25}\b(?:aadhaa?r|uid|uidai)\b")
+# Spaced one-time and card codes: "OTP is 4 8 2 9 1 3", "cvv: 1 2 3".
+_SPACED_CODE = re.compile(r"(?i)\b(?:otp|cvv|cvc|pin|passcode)\b[^.\n\d]{0,20}?((?:\d ){2,7}\d)(?!\d)")
 _PHONE_CTX = re.compile(r"(?i)\b(?:call|phone|ph|mob|mobile|cell|whatsapp|contact|tel|telephone|sms|text|reach|"
                         r"number|no)\b[^\n]{0,20}$")
 # Luhn-valid IMEI/IMSI and hashes named as such are identifiers of devices and content, not cards or secrets.
@@ -154,19 +164,17 @@ _STREET = re.compile(r"(?i)\b(?:flat|house|h\.? ?no\.?|plot|door|apt|apartment) 
 _CONFIDENTIAL = re.compile(r"(?i)\b(?:strictly\s+)?(?:private\s+(?:and|&)\s+)?confidential\b|"
                            r"\bdo not (?:share|forward|distribute|disclose)\b")
 _LONG_SECRET = dict(_assist._TEXT_RULES)["long_secret"]
-# LONG_NUMBER (driver rounds R3..R8 each found one more card separator spelling; FB2 R1-05 mixed separators): a run of
-# digit groups joined only by short non-word separators ("4111;1111 - 1111--1111", "...1111exp") that holds 12 or more
-# digits is sensitive whatever the separators and whatever follows it. Separators cannot contain digits or letters, so
-# the pattern is linear. Dates/times and dotted IPv4 addresses are ordinary and excluded.
-_NUM_RUN = re.compile(r"(?<!\d)\d+(?:[^\w\n]{1,3}\d+)+")   # at least one separator: one contiguous run is not one
-_DATETIME = re.compile(r"\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}(?:[ T,]{1,2}\d{1,2}[:.]\d{2}(?:[:.]\d{2})?)?")
-_IPV4 = re.compile(r"\d{1,3}(?:\.\d{1,3}){3}")
-_THOUSANDS = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d{1,3}(?:,\d{2})*,\d{3}(?:\.\d+)?")     # 1,234,567 / 1,23,45,678
-_DECIMALS = re.compile(r"-?\d+\.\d+(?:, ?-?\d+\.\d+)+")                                       # 12.9716, 77.5946
-_NOT_NUMBER_CTX = re.compile(r"(?i)\b(?:isbn(?:-1[03])?|issn|doi)\b[^\n]{0,12}$")
+# LONG_NUMBER, narrowed by owner decision LDEC-005: only identifier-shaped runs with one standard separator are
+# redacted - 4-4-4[-1..7] (card or account layout, also with a digit appended), 4-6-4 / 4-6-5 (Amex, Diners). Order ids,
+# timestamps, ranges, lists and UUIDs are not identifier shapes (review FB3 R1-05). Runs with unusual separators are
+# not read through: they are refused as a disguise signal (egress_form).
+_ID_SHAPE = re.compile(r"(?<![\d.])(?<![A-Za-z]-)(?:\d{4}([ .\-/])\d{4}\1\d{4}(?:\1\d{1,7})?|\d{4}([ .\-/])\d{6}\2\d{4,5})(?![\d])")
 # A card written as one run of digits with letters right after it ("4111111111111111exp", review R8-01).
-_CARD_RUN = re.compile(r"(?<!\d)\d{13,19}(?!\d)")
-LONG_NUMBER_DIGITS = 12
+_CARD_RUN = re.compile(r"(?<![\d.,])\d{13,19}(?!\d)")         # not a decimal fraction ("2.718281828459045")
+# Digit groups joined by single standard separators, as a whole run ("234.567.890.124", "4,111,111,111,111,111").
+_STD_SEP_PAT = r"(?: ?[-./,:()] ?| ?\) ?\(? ?| )"
+_TIME_LIST = re.compile(r"\d{1,2}:\d{2}(?::\d{2})?(?:(?: ?[-,/] ?| )\d{1,2}:\d{2}(?::\d{2})?)*")
+_STD_RUN = re.compile(r"(?<![\d.,])\d{1,6}(?:" + _STD_SEP_PAT + r"\d{1,6}){2,}(?![\d])")
 
 
 def _before(text: str, i: int) -> str:
@@ -178,8 +186,10 @@ def _before(text: str, i: int) -> str:
 def _spans(text: str, protected_terms) -> list:
     out = []
 
-    def add(cat, m, rule, group=0):
-        g = group or next((i for i in range(1, (m.re.groups or 0) + 1) if m.group(i)), 0)
+    def add(cat, m, rule, group=None):
+        # group None: the first non-empty capture group (labelled patterns); 0: the whole match. Treating 0 as "auto"
+        # redacted a separator group instead of the digits (coordinator finding C4-01).
+        g = group if group is not None else next((i for i in range(1, (m.re.groups or 0) + 1) if m.group(i)), 0)
         out.append(Finding(cat, m.start(g), m.end(g), rule))
 
     for m in _LABELLED.finditer(text):
@@ -187,7 +197,8 @@ def _spans(text: str, protected_terms) -> list:
     for m in _AADHAAR.finditer(text):
         a, s1, b, s2, c = m.groups()
         grouped = bool(s1) and s1 == s2
-        if verhoeff(a + b + c) and (grouped or _AADHAAR_CTX.search(_before(text, m.start()))):
+        if verhoeff(a + b + c) and (grouped or _AADHAAR_CTX.search(_before(text, m.start()))
+                                    or _AADHAAR_CTX_AFTER.search(text[m.end():m.end() + 30])):
             out.append(Finding(GOV_ID, m.start(), m.end(), "aadhaar"))
     for m in _PAN.finditer(text):
         add(GOV_ID, m, "pan", 0)
@@ -196,8 +207,8 @@ def _spans(text: str, protected_terms) -> list:
     for m in _PASSPORT.finditer(text):
         add(GOV_ID, m, "passport", 1)
     for m in _assist._CARD.finditer(text):
-        if _NOT_CARD_CTX.search(_before(text, m.start())):
-            continue
+        if _NOT_CARD_CTX.search(_before(text, m.start())) or re.fullmatch(r"\d+\.\d+", m.group(0)):
+            continue                                    # IMEI context, or one decimal number ("2.718281828459045")
         d = re.sub(r"\D", "", m.group(0))
         if 13 <= len(d) <= 19 and _assist._luhn(d):
             add(FINANCIAL, m, "card", 0)
@@ -238,8 +249,12 @@ def _spans(text: str, protected_terms) -> list:
     for m in _PHONE.finditer(text):
         add(CONTACT, m, "phone", 0)
     for m in _MOBILE_BARE.finditer(text):
-        if _PHONE_CTX.search(_before(text, m.start())):
+        if _PHONE_CTX.search(_before(text, m.start())) or _PHONE_CTX_AFTER.search(text[m.end():m.end() + 30]):
             add(CONTACT, m, "mobile", 0)
+    for m in _PHONE_SPACED.finditer(text):
+        add(CONTACT, m, "phone_spaced", 0)
+    for m in _SPACED_CODE.finditer(text):
+        add(CREDENTIAL, m, "spaced_code", 1)
     for m in _PINCODE.finditer(text):
         add(ADDRESS, m, "pincode")
     for m in _STREET.finditer(text):
@@ -254,6 +269,15 @@ def _spans(text: str, protected_terms) -> list:
     for m in _CARD_RUN.finditer(text):
         if _assist._luhn(m.group(0)) and not _NOT_CARD_CTX.search(_before(text, m.start())):
             add(FINANCIAL, m, "card_run", 0)
+    for m in _STD_RUN.finditer(text):
+        if _TIME_LIST.fullmatch(m.group(0)):
+            continue
+        d = re.sub(r"\D", "", m.group(0))
+        if len(d) == 12 and d[0] in "23456789" and verhoeff(d) and (
+                _AADHAAR_CTX.search(_before(text, m.start())) or _AADHAAR_CTX_AFTER.search(text[m.end():m.end() + 30])):
+            add(GOV_ID, m, "aadhaar_regrouped", 0)
+        elif 13 <= len(d) <= 19 and _assist._luhn(d) and not _NOT_CARD_CTX.search(_before(text, m.start())):
+            add(FINANCIAL, m, "card_regrouped", 0)
     # LONG_NUMBER is the catch-all after every specific rule: it is added only where no specific finding already covers
     # the whole run, so a grant for the specific category (an Aadhaar under GOV_ID) still applies to it.
     import bisect
@@ -266,16 +290,9 @@ def _spans(text: str, protected_terms) -> list:
     def covered(a, b):
         i = bisect.bisect_right(starts, a) - 1
         return i >= 0 and reach[i] >= b
-    for m in _NUM_RUN.finditer(text):
-        run = m.group(0)
-        if sum(ch.isdigit() for ch in run) < LONG_NUMBER_DIGITS:
-            continue
-        if (_DATETIME.fullmatch(run) or _IPV4.fullmatch(run) or _THOUSANDS.fullmatch(run) or _DECIMALS.fullmatch(run)
-                or _NOT_NUMBER_CTX.search(_before(text, m.start()))):
-            continue
-        if covered(m.start(), m.end()):
-            continue
-        add(LONG_NUMBER, m, "long_number", 0)
+    for m in _ID_SHAPE.finditer(text):
+        if not covered(m.start(), m.end()) and not _NOT_CARD_CTX.search(_before(text, m.start())):
+            add(LONG_NUMBER, m, "id_shape", 0)
     return out
 
 
@@ -333,27 +350,106 @@ def _invisible(ch: str) -> bool:
     return o in _BLANKS or any(a <= o <= b for a, b in _DI_RANGES)
 
 
-def canonical(text: str) -> str:
-    """The form in which text leaves URI for a non-local destination: NFKC, invisible characters removed, marks on
-    ASCII letters or digits removed, line/paragraph separators as newlines. The gateway classifies and rewrites exactly
-    this string, so what is checked is what is sent: no invisible character can split a value on the wire."""
+# --- egress form and disguise signals (owner decision LDEC-005, 2026-10-23: "refuse on doubt") ------------------------
+# Reading through disguises did not converge (14 rejecting review rounds). For a non-local destination the gateway now
+# sends a canonical form and REFUSES text that carries a disguise signal, instead of trying to see through it.
+DOUBT_INVISIBLE = "INVISIBLE_IN_ASCII_OR_DIGITS"
+DOUBT_SEPARATOR = "UNUSUAL_DIGIT_SEPARATOR"
+DOUBT_ENCODED = "SENSITIVE_ONLY_WHEN_DECODED"
+# Invisible characters that shape emoji and scripts (ZWJ, ZWNJ, VS15, VS16) are kept when neither neighbour is an
+# ASCII letter or any digit: emoji sequences, Persian/Indic shaping (review FB3 R1-06).
+_SHAPING = frozenset({0x200C, 0x200D, 0xFE0E, 0xFE0F})
+
+
+def _punct_ascii(ch: str):
+    """ASCII stand-in for a punctuation look-alike (review FB3 R1-03), by Unicode name, so the whole class is covered:
+    hyphens, dashes and minus signs, colon and ratio signs, full stops, commercial at, slashes, low lines, quotes."""
     import unicodedata
+    if ch.isascii():
+        return None
+    cat = unicodedata.category(ch)
+    if not (cat.startswith("P") or cat.startswith("S") or cat == "Lm"):
+        return None
+    name = unicodedata.name(ch, "")
+    for words, rep in ((("HYPHEN", "DASH", "MINUS"), "-"), (("COLON", "RATIO"), ":"), (("FULL STOP",), "."),
+                       (("COMMERCIAL AT",), "@"), (("SOLIDUS", "SLASH"), "/"), (("LOW LINE",), "_"),
+                       (("QUOTATION MARK",), '"'), (("APOSTROPHE", "SINGLE QUOTATION", "PRIME"), "'"),
+                       (("SEMICOLON",), ";"), (("COMMA",), ",")):
+        if any(w in name for w in words) and "MULTIPLICATION" not in name:
+            return rep
+    return None
+
+
+# Digit groups joined by anything other than one standard separator (space, -, ., /, ',', ':', optionally padded by one
+# space each side), or by single letters, that hold 10 or more digits: "4111****1111", "2345__6789__0124",
+# "4111;1111", "4111%1111", "2345 - - 6789", "2345x6789x0124" (reviews R3..R8, FB3 R1-02).
+_SEP_RUN = re.compile(r"\d+(?:(?:[^\w\n]|_){1,6}\d+)+")            # separators: punctuation, spaces, underscores
+_LETTER_RUN = re.compile(r"(?<![^\W\d_])\d{2,}(?:[^\W\d_]{1,4}\d{2,}){2,}")      # 2345x6789x0124, any script
+_STD_SEP = re.compile(_STD_SEP_PAT)
+
+
+# ISO-8601 date-times are a standard format, not a disguise ("2026-10-09T10:00:00+05:30": scheduler metadata).
+# 32+ hex characters: MD5/SHA digests. A value disguised by the letter rule (gaps of at most 4 letters) is at most
+# 16 + 3x4 = 28 characters for a card and 20 for an Aadhaar, so this exemption cannot hide either.
+_HEX_TOKEN = re.compile(r"(?<![0-9A-Za-z])[0-9a-fA-F]{32,}(?![0-9A-Za-z])")
+_ISO_DATETIME = re.compile(r"\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,9})?)?(?:Z|[+-]\d{2}:?\d{2})?")
+
+
+def _unusual_digit_separators(text: str) -> bool:
+    text = _ISO_DATETIME.sub(" ", text)
+    for m in _SEP_RUN.finditer(text):
+        run = m.group(0)
+        if sum(c.isdigit() for c in run) < 9:          # 9: an SSN is the shortest identifier this covers
+            continue
+        if any(not _STD_SEP.fullmatch(s) for s in re.split(r"\d+", run)[1:-1]):
+            return True
+    # Digest-like hex tokens are not letter-separated digits (see _HEX_TOKEN for why 32 is safe).
+    text = _HEX_TOKEN.sub(" ", text)
+    return any(sum(c.isdigit() for c in m.group(0)) >= 9 for m in _LETTER_RUN.finditer(text))
+
+
+def egress_form(text: str):
+    """(text to send, disguise signals). The text to send is NFKC with punctuation look-alikes as ASCII and line or
+    paragraph separators as newlines; invisible characters are removed except emoji/script shaping between non-ASCII
+    characters. The gateway classifies, rewrites and re-checks exactly this string. A signal means refuse."""
+    import unicodedata
+    signals = set()
     if text.isascii() and not _ASCII_CONTROL.search(text):
-        return text                                # NFKC of ASCII is ASCII; nothing invisible to remove
-    out, on_ascii = [], False
-    for ch in unicodedata.normalize("NFKC", text):
+        if _unusual_digit_separators(text):
+            signals.add(DOUBT_SEPARATOR)
+        return text, signals
+    src = unicodedata.normalize("NFKC", text)
+    out = []
+    for i, ch in enumerate(src):
         cat = unicodedata.category(ch)
+        prev = src[i - 1] if i else ""
+        nxt = src[i + 1] if i + 1 < len(src) else ""
+
+        def ascii_or_digit(c):
+            return bool(c) and ((c.isascii() and c.isalnum()) or unicodedata.category(c) == "Nd")
         if cat in ("Zl", "Zp"):
             out.append("\n")
-            on_ascii = False
             continue
-        if _invisible(ch):
-            continue                               # dropped; the ASCII base before it stays the base
-        if cat in ("Mn", "Me") and on_ascii:
+        mark_off_letter = cat in ("Mn", "Me") and not (prev and unicodedata.category(prev)[0] in "LM")
+        if _invisible(ch) or (cat in ("Mn", "Me") and ascii_or_digit(prev)) or mark_off_letter:
+            if ord(ch) in _SHAPING and not ascii_or_digit(prev) and not ascii_or_digit(nxt):
+                out.append(ch)                     # emoji / script shaping, kept as written
+            elif cat in ("Mn", "Me") and not ascii_or_digit(prev) and not mark_off_letter:
+                out.append(ch)
+            else:
+                signals.add(DOUBT_INVISIBLE)       # removed from what is sent, and the egress is refused
             continue
-        out.append(ch)
-        on_ascii = ch.isascii() and ch.isalnum()
-    return "".join(out)
+        rep = _punct_ascii(ch)
+        out.append(rep if rep is not None else ch)
+    sent = "".join(out)
+    if _unusual_digit_separators(sent):
+        signals.add(DOUBT_SEPARATOR)
+    return sent, signals
+
+
+def canonical(text: str) -> str:
+    """The text a non-local destination receives (see egress_form)."""
+    return egress_form(text)[0]
 
 
 def _confusables():
@@ -412,7 +508,9 @@ def _fold_once(text: str, starts: list, ends: list, cf: str = "", encoded: str =
         if tok.isspace():
             emit(" ", s, e)
         elif tok[0] in "%&":
-            if encoded == "space":
+            if encoded == "literal":
+                emit(tok, starts[m.start():m.end()], ends[m.start():m.end()])
+            elif encoded == "space":
                 emit(" ", s, e)
             else:
                 dec = (bytes.fromhex(tok.replace("%", "")).decode("utf-8", "replace") if tok[0] == "%"
@@ -460,7 +558,8 @@ def classify(text: str, protected_terms=()) -> Classification:
     # are combined (reviews R2-01, FB1 R1-01/R1-02). Deciding this on the raw text missed encoded controls.
     readings = [("", "decode")]
     if _NEEDS_READINGS.search(text):
-        readings += [(" ", "decode"), (" ", "space")]
+        readings += [(" ", "decode"), (" ", "space"), ("", "literal")]
+    literal_cats, decoded_cats = set(), set()
     found, cred, residual = [], Counter(), False
     for cf, enc in readings:
         folded, S, E = fold(text, cf, enc)
@@ -472,7 +571,11 @@ def classify(text: str, protected_terms=()) -> Classification:
             if k not in _ASSIST_NON_CREDENTIAL and v:
                 cred[k] = max(cred[k], v)
         spans = _resolve(_spans(folded, terms))
+        cats_here = {c for f in spans for c in f.all_categories} | ({CREDENTIAL} if any(
+            k not in _ASSIST_NON_CREDENTIAL and v for k, v in counts.items()) else set())
+        (literal_cats if enc in ("literal", "space") else decoded_cats).update(cats_here)
         if folded is not text:
             spans = [Finding(f.category, S[f.start], E[f.end - 1], f.rule, f.members) for f in spans]
         found.extend(spans)
-    return Classification(_resolve(found), cred, residual)
+    decoded_only = bool(decoded_cats - literal_cats) and len(readings) > 1 and _ENCODED.search(text) is not None
+    return Classification(_resolve(found), cred, residual, decoded_only)

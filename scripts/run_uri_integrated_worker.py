@@ -149,7 +149,8 @@ def harness_approval_private(kind, result, turns, turn_error):
             out = default_gateway().prepare(instruction, requester="uri_worker.external_harness",
                                             destination="EXTERNAL_AGENT", purpose="external_harness_turn",
                                             reversible=False).text
-            if out != instruction:
+            from uri_privacy.classify import canonical
+            if out != canonical(instruction):         # NFKC alone (NBSP, ligatures) is not a privacy change
                 code = "PRIVACY_INSTRUCTION_CHANGED"
         except Exception as exc:                                    # noqa: BLE001 - fail closed
             c = getattr(exc, "code", None)

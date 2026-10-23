@@ -108,3 +108,24 @@ integrated-worker gate is defence in depth only. See plan PC-10.
 | In scope | Out of scope (stated limit) |
 |---|---|
 | Accidental disclosure of standard formats and their common variants; obfuscation by invisible or control characters, encodings (four levels), Unicode look-alikes and arbitrary separators (canonical egress plus LONG_NUMBER) | A party that controls the outgoing text and encodes a value on purpose (digits as words, a private cipher, steganography). The control for that is limiting what such a party can see, not more patterns |
+
+### 6.3 Protection as implemented after owner decision LDEC-005 (2026-10-23; supersedes the scope table in 6.2)
+
+Section 6.2 overstated what was protected (fallback review FB3 R1-07). The owner then decided "refuse on doubt"
+(LDEC-005). For every non-local destination the gateway now:
+
+| Input | Outcome | Proof (tests/privacy) |
+|---|---|---|
+| Standard forms of cards, Aadhaar, PAN, SSN, IBAN, accounts, phones (incl. spaced 3-3-4, landlines), e-mail (incl. internationalised), labelled credentials (incl. `pw:`, spaced codes) | redacted / pseudonymized; credentials refused | `test_classify.py`, `test_ldec005.py::test_fb3_r1_04*` |
+| Identifier-shaped digit runs (4-4-4-x, 4-6-4/5) and Luhn/Verhoeff-valid runs with standard separators | redacted | `test_ldec005.py::test_fb3_reported_forms`, separator sweep |
+| Invisible/control/private-use/unassigned characters or combining marks among ASCII letters or digits | refused (LOG: fully redacted) | `test_c3_repairs.py` category sweep, `test_ldec005.py` |
+| Punctuation look-alikes | sent as ASCII, then checked as such | `test_ldec005.py` look-alike sweep (every code point by Unicode name) |
+| Digits joined by non-standard separators or letters (9+ digits) | refused | `test_ldec005.py` separator sweep (all ASCII punctuation, doubled, tripled, spaced, letters, Unicode dashes) |
+| A sensitive value visible only after percent/HTML decoding; encoding deeper than four levels | refused | `test_ldec005.py`, `test_fb1_repairs.py` |
+
+**Stated residuals (not protected):** a value written in words or a private cipher; a value deliberately split by
+five or more letters, or hidden inside a 32+ character hex token; credential labels in languages other than English;
+non-standard national formats not listed above. **A party that controls the outgoing text includes the local Brain
+when injected web or document content steers the queries it composes.** The control for that class - limiting what
+sensitive context such a party can see before it composes egress - is **not implemented**; it is recorded as owner
+decision OD-6 (follow-up), not claimed.

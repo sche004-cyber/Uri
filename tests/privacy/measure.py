@@ -52,12 +52,24 @@ def accuracy():
     out = {}
     for name, pos, neg in (("core", [(c, t) for c, t, _ in synth.positives()], synth.BENIGN),
                            ("hard_after_fixes", synth.HARD_POSITIVES, synth.HARD_BENIGN),
-                           ("held_out_measured_once", synth.HELD_OUT_POSITIVES, synth.HELD_OUT_BENIGN)):
+                           ("held_out_measured_once", synth.HELD_OUT_POSITIVES, synth.HELD_OUT_BENIGN),
+                           ("number_shaped_benign", [], synth.NUMBER_BENIGN)):
         n, hit = Counter(), Counter()
         for c, t in pos:
             n[c] += 1
             hit[c] += c in classify(t).categories()
         fp = sum(bool(classify(t).categories()) for t in neg)
+        if name == "number_shaped_benign":            # measured where it matters: what WEB_SEARCH would change
+            g = TGateway()
+            changed = []
+            for t in neg:
+                try:
+                    if g.prepare(t, requester="m", destination="WEB_SEARCH", purpose="m").text != " ".join(t.split()):
+                        changed.append(t)
+                except PrivacyRefused:
+                    changed.append(t)
+            out[name] = {"benign": len(neg), "changed_or_refused_at_web_search": len(changed), "examples": changed}
+            continue
         out[name] = {"recall": {c: round(hit[c] / n[c], 4) for c in sorted(n)}, "positives": len(pos),
                      "false_negatives": sum(n.values()) - sum(hit.values()), "benign": len(neg),
                      "false_positives": fp, "false_positive_rate": round(fp / len(neg), 4)}
@@ -124,7 +136,7 @@ def friction():
                 c["sanitized" if e.changed else "unchanged"] += 1
             except PrivacyRefused as x:
                 c[x.code] += 1
-        benign = synth.BENIGN + synth.HELD_OUT_BENIGN
+        benign = synth.BENIGN + synth.HELD_OUT_BENIGN + synth.NUMBER_BENIGN
         stopped = 0
         for t in benign:
             try:
