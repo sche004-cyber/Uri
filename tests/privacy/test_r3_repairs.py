@@ -1,0 +1,79 @@
+"""Regressions for the M95-PRIVACY-r3 independent review; synthetic values only."""
+import json
+import os
+import secrets
+from contextlib import contextmanager
+from pathlib import Path
+
+import httpx
+import pytest
+
+from uri_privacy.classify import classify
+from uri_privacy.grants import GrantError, GrantStore
+from uri_web.search import TavilyProvider
+
+from .helpers import TGateway
+
+
+@contextmanager
+def grant_path():
+    # Use files in an existing directory: the implementer sandbox cannot create pytest temp directories.
+    path = Path(__file__).with_name(f".r3-grants-{os.getpid()}-{secrets.token_hex(6)}.json")
+    try:
+        yield path
+    finally:
+        path.unlink(missing_ok=True)
+        path.with_name(path.name + ".lock").unlink(missing_ok=True)
+
+
+def test_r3_01_semicolon_card_is_removed_before_search_transport():
+    card = "4111;1111;1111;1111"
+    sent = []
+
+    def capture(request):
+        sent.append(json.loads(request.content)["query"])
+        return httpx.Response(200, json={"results": []})
+
+    result = TavilyProvider(api_key="test", transport=httpx.MockTransport(capture),
+                            privacy=TGateway()).search(f"card {card} limit")
+    assert "FINANCIAL" in classify(f"card {card}").categories()
+    assert result.status == "NO_RESULTS"
+    assert len(sent) == 1 and card not in sent[0] and "4111" not in sent[0]
+    assert card not in result.query
+
+
+def test_r3_02_verified_email_principal_is_opaque_in_grant_record():
+    principal = object()
+    email = "asha@example.in"
+    with grant_path() as path:
+        store = GrantStore(path, principal_verifier=lambda proof: email if proof is principal else None)
+        grant = store.grant(requester="uri_web.search.tavily", categories=["CONTACT"], purpose="web_research",
+                            destination="WEB_SEARCH", authorized_by=f"user:{email}", principal=principal)
+        assert grant.authorized_by.startswith("user:") and email not in grant.authorized_by
+        assert email not in path.read_text(encoding="utf-8")
+        assert email not in str(GrantStore(path).list())
+        assert GrantStore(path).match(requester="uri_web.search.tavily", category="CONTACT",
+                                      purpose="web_research", destination="WEB_SEARCH") == grant.grant_id
+
+
+@pytest.mark.parametrize("field,value", [("requester", "asha@example.in"),
+                                          ("purpose", "card 4111;1111;1111;1111")])
+def test_r3_02_sensitive_grant_scope_metadata_is_rejected(field, value):
+    principal = object()
+    with grant_path() as path:
+        store = GrantStore(path, principal_verifier=lambda proof: "owner" if proof is principal else None)
+        kwargs = dict(requester="uri_web.search.tavily", categories=["CONTACT"], purpose="web_research",
+                      destination="WEB_SEARCH", authorized_by="user:owner", principal=principal)
+        kwargs[field] = value
+        with pytest.raises(GrantError):
+            store.grant(**kwargs)
+        assert not path.exists()
+
+
+def test_r3_03_one_character_protected_term_is_redacted():
+    text = "Ask Q tomorrow"
+    assert classify(text, protected_terms=["Q"]).categories()["PERSON"] == 1
+    egress = TGateway().prepare(text, requester="t", destination="WEB_SEARCH", purpose="p",
+                                protected_terms=["Q"])
+    assert egress.categories["PERSON"] == 1
+    assert egress.text == "Ask [redacted] tomorrow"

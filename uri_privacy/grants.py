@@ -19,9 +19,33 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from . import policy as P
+from .classify import classify
 
 MAX_TTL_S = 24 * 3600
 _USER = re.compile(r"^user:[A-Za-z0-9_.@-]{1,64}$")
+_OPAQUE_USER = re.compile(r"user:[0-9a-f]{32}")
+_SCOPE_LABEL = re.compile(r"[A-Za-z][A-Za-z0-9_.-]{0,63}")
+_GRANT_ID = re.compile(r"GR-[0-9a-f]{12}")
+
+
+def _scope_label_safe(value) -> bool:
+    # Scope labels are code identifiers, never user text. Restrict their shape and reject
+    # values that the classifier recognizes as sensitive before storing them in cleartext.
+    return (isinstance(value, str) and _SCOPE_LABEL.fullmatch(value) is not None
+            and not classify(value).categories())
+
+
+def _record_safe(g) -> bool:
+    return (isinstance(g, Grant) and isinstance(g.grant_id, str) and _GRANT_ID.fullmatch(g.grant_id)
+            and _scope_label_safe(g.requester) and _scope_label_safe(g.purpose)
+            and isinstance(g.authorized_by, str) and _OPAQUE_USER.fullmatch(g.authorized_by)
+            and isinstance(g.destination, str) and g.destination in {d.value for d in P.Destination}
+            and isinstance(g.categories, list) and bool(g.categories)
+            and all(isinstance(c, str) and P.grantable(c, g.destination) for c in g.categories)
+            and all(type(n) in (int, float) for n in (g.expires_at, g.created_at))
+            and (g.revoked_at is None or type(g.revoked_at) in (int, float))
+            and type(g.uses_left) is int and g.uses_left >= 0
+            and type(g.used) is int and g.used >= 0)
 
 
 class GrantError(ValueError):
@@ -62,7 +86,10 @@ class GrantStore:
     def _reload(self):
         if self.path and self.path.exists():
             data = json.loads(self.path.read_text(encoding="utf-8"))   # malformed state fails closed
-            self._grants = {g["grant_id"]: Grant(**g) for g in data["grants"]}
+            grants = [Grant(**g) for g in data["grants"]]
+            if any(not _record_safe(g) for g in grants):
+                raise ValueError("GRANT_METADATA_INVALID")
+            self._grants = {g.grant_id: g for g in grants}
         elif self.path:
             self._grants = {}
 
@@ -105,6 +132,8 @@ class GrantStore:
     def _save(self):
         if not self.path:
             return
+        if any(not _record_safe(g) for g in self._grants.values()):
+            raise GrantError("GRANT_METADATA_INVALID")
         self.path.parent.mkdir(parents=True, exist_ok=True)
         tmp = self.path.with_name(self.path.name + f".{os.getpid()}.{threading.get_ident()}.tmp")
         with open(tmp, "w", encoding="utf-8") as f:
@@ -132,6 +161,8 @@ class GrantStore:
             raise GrantError("USER_AUTHORIZATION_REQUIRED")          # a component cannot grant itself
         if not requester or not purpose or not categories:
             raise GrantError("GRANT_SCOPE_INCOMPLETE")
+        if not _scope_label_safe(requester) or not _scope_label_safe(purpose):
+            raise GrantError("GRANT_METADATA_INVALID")
         dest = P.Destination(destination).value
         for c in categories:
             if not P.grantable(c, dest):
@@ -140,7 +171,7 @@ class GrantStore:
             raise GrantError("GRANT_LIMITS_INVALID")
         now = self.clock()
         g = Grant("GR-" + secrets.token_hex(6), requester, sorted(set(categories)), purpose, dest, now + ttl_s, uses,
-                  authorized_by, now)
+                  "user:" + secrets.token_hex(16), now)
         with self._transaction():
             self._grants[g.grant_id] = g
             self._save()
