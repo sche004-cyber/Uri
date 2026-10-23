@@ -43,12 +43,18 @@ String _spellingStatus(String? code) => switch (code) {
 /// Checks run after a pause in typing; the Brain runs only when a button is pressed.
 class WritingStrip extends StatefulWidget {
   const WritingStrip({super.key, required this.controller, required this.service, this.enabled = true,
-      this.debounce = const Duration(milliseconds: 700), this.keyPrefix = 'writing'});
+      this.debounce = const Duration(milliseconds: 700), this.keyPrefix = 'writing', this.brainButtons = true,
+      this.hideWhenEmpty = false});
   final TextEditingController controller;
   final WritingService service;
   final bool enabled;
   final Duration debounce;
   final String keyPrefix;
+  /// Proofread / Formal / Concise / Finish sentence. Off in the chat composer, where only the quick spelling and
+  /// grammar items are shown.
+  final bool brainButtons;
+  /// Shows nothing at all until there is a suggestion (the composer stays as it was).
+  final bool hideWhenEmpty;
 
   @override
   State<WritingStrip> createState() => _WritingStripState();
@@ -189,8 +195,10 @@ class _WritingStripState extends State<WritingStrip> {
     final on = widget.enabled && _busy == null;
     final corrections = [for (final s in _items) if (s['class'] == 'correction') s];
     final small = TextStyle(fontSize: UriType.label, color: colors.inkSoft);
+    if (widget.hideWhenEmpty && _items.isEmpty && _undo.isEmpty) return const SizedBox.shrink();
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
-      Wrap(spacing: UriSpace.xs, runSpacing: 0, crossAxisAlignment: WrapCrossAlignment.center, children: [
+      if (widget.brainButtons || _undo.isNotEmpty) Wrap(spacing: UriSpace.xs, runSpacing: 0, crossAxisAlignment: WrapCrossAlignment.center, children: [
+        if (widget.brainButtons) ...[
         TextButton(key: ValueKey(k('proofread')), onPressed: on ? () => _brain('Proofreading…',
             widget.service.writingProofread) : null, child: const Text('Proofread')),
         TextButton(key: ValueKey(k('formal')), onPressed: on ? () => _brain('Making it formal…',
@@ -199,6 +207,7 @@ class _WritingStripState extends State<WritingStrip> {
             (t) => widget.service.writingRewrite(t, 'concise')) : null, child: const Text('Concise')),
         TextButton(key: ValueKey(k('complete')), onPressed: on ? () => _brain('Finishing the sentence…',
             widget.service.writingComplete) : null, child: const Text('Finish sentence')),
+        ],
         if (_undo.isNotEmpty)
           TextButton(key: ValueKey(k('undo')), onPressed: _undoLast, child: const Text('Undo')),
       ]),

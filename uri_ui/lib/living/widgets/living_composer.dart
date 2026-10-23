@@ -6,9 +6,11 @@ import '../../services/file_picker_service.dart';
 import '../../theme/glass_theme.dart';
 import '../../theme/uri_theme.dart';
 import '../integration/brain_quick_controls.dart';
+import '../assist/worker_writing_service.dart';
 import '../integration/oi_conversation.dart';
 import '../living_scope.dart';
 import '../office/office_bridge.dart' show OfficeRequestHint;
+import '../office/writing_assist.dart';
 import '../presentation/presentation_controller.dart';
 import '../testing_tools.dart';
 import '../voice/voice_controls.dart';
@@ -52,6 +54,9 @@ bool qcRoom(BuildContext context) =>
 
 class _LivingComposerState extends State<LivingComposer> {
   late final TextEditingController _controller;
+  // Writing Intelligence (plan 16): spelling and grammar items under the full composer, over the worker.
+  WorkerWritingService? _writing;
+  OiConversation? _writingFor;
   ValueNotifier<String?>? _insert;
 
   @override
@@ -139,6 +144,14 @@ class _LivingComposerState extends State<LivingComposer> {
       return;
     }
     await appState.ask(text);
+  }
+
+  WorkerWritingService _writingService(OiConversation oi) {
+    if (_writing == null || !identical(_writingFor, oi)) {
+      _writingFor = oi;
+      _writing = WorkerWritingService(() => oi.workerExited ? null : oi.runtime);
+    }
+    return _writing!;
   }
 
   @override
@@ -397,6 +410,16 @@ class _LivingComposerState extends State<LivingComposer> {
               ],
             );
             }),
+            if (oi != null && office == null && qcFull)
+              WritingStrip(
+                key: const ValueKey('composer-writing'),
+                controller: _controller,
+                service: _writingService(oi),
+                enabled: !sending,
+                brainButtons: false,
+                hideWhenEmpty: true,
+                keyPrefix: 'composer-writing',
+              ),
             // Quick controls (URI-CONTROLS-3): Thinking / Vision / URI Assist under the chat box (full composer only). They step
             // aside in a small window (UIV2-F3: nothing may overflow while it shrinks into Companion).
             if (oi != null && office == null && qcFull && qcRoom(context))
