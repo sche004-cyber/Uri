@@ -392,6 +392,26 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
     );
   }
 
+  /// OD-2: facts from the owner's instruction that the drafted document does not contain, in words, above the
+  /// Word editor until the edit closes.
+  Widget _withDraftWarnings(BuildContext context, OfficeWorkspaceController c, Widget editor) {
+    if (c.draftWarnings.isEmpty) return editor;
+    final colors = UriColors.of(context);
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      Container(
+        key: const ValueKey('office-draft-warnings'),
+        padding: const EdgeInsets.all(UriSpace.sm),
+        color: colors.warningSoft,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Check before saving', style: TextStyle(fontWeight: FontWeight.w600, color: colors.ink)),
+          for (final w in c.draftWarnings)
+            Text('${w['message']}', style: TextStyle(color: colors.inkSoft)),
+        ]),
+      ),
+      Expanded(child: editor),
+    ]);
+  }
+
   /// Save as PDF and Print in the document controls (A1 §A3, owner instruction): shown only when the capability is
   /// available; Print stays hidden until O2P qualifies.
   List<Widget> _docControls(BuildContext context, OfficeWorkspaceController c) {
@@ -424,6 +444,28 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
             label: const Text('Save as PDF'),
           ),
         ),
+      // OD-3 (plan 16): a PDF's text out, to the clipboard or into a new Word document; scanned pages are read
+      // with OCR only when the owner asks.
+      if (c.centre == OfficeCentre.document && d != null && d.kind == 'pdf') ...[
+        Tooltip(
+          message: 'Copy the text of every page to the clipboard. Your file is not changed.',
+          child: TextButton.icon(
+            key: const ValueKey('office-pdf-copy-text'),
+            onPressed: c.busy || d.previewState != 'ready' ? null : () => c.copyPdfText(),
+            icon: const Icon(Icons.content_copy_rounded, size: 18),
+            label: const Text('Copy text'),
+          ),
+        ),
+        Tooltip(
+          message: 'Make a new Word document from the text. It is saved only when you approve Save as.',
+          child: TextButton.icon(
+            key: const ValueKey('office-pdf-to-word'),
+            onPressed: c.busy || c.editor != null || d.previewState != 'ready' ? null : () => c.pdfToWord(),
+            icon: const Icon(Icons.description_outlined, size: 18),
+            label: const Text('To Word'),
+          ),
+        ),
+      ],
       if (c.available('print_document'))
         TextButton.icon(
           key: const ValueKey('office-print'),
@@ -493,7 +535,8 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
             OfficeCentre.edit => c.editor == null
                 ? const SizedBox.shrink()
                 : c.editor!.isWord
-                    ? WordEditor(key: ValueKey('office-editor-${c.editor!.id}'), workspace: c, editor: c.editor!)
+                    ? _withDraftWarnings(context, c,
+                        WordEditor(key: ValueKey('office-editor-${c.editor!.id}'), workspace: c, editor: c.editor!))
                     : PresentationEditor(key: ValueKey('office-editor-${c.editor!.id}'), workspace: c,
                         editor: c.editor!),
             OfficeCentre.sheet => const SizedBox.shrink(),

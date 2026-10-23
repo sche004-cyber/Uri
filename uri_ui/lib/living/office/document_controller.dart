@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../a2ui/a2ui_hub.dart';
@@ -57,6 +58,16 @@ const officeErrorText = <String, String>{
   'PRINT_FAILED': 'Printing failed. Nothing more will be sent.',
   'PAPER_NOT_SUPPORTED': 'The printer does not have that paper size.',
   'PRINTER_NOT_FOUND': 'Windows could not find that printer.',
+  // OD-2 / OD-3 (plan 16)
+  'BRAIN_UNAVAILABLE': 'The local Brain is not running, so URI cannot draft or decide this now.',
+  'BRAIN_OUTPUT_INVALID': "The Brain's answer was not usable. Nothing was changed.",
+  'EMPTY_INSTRUCTION': 'Say what the document should say.',
+  'INSTRUCTION_TOO_LONG': 'The instruction is too long. Shorten it.',
+  'UNKNOWN_LAYOUT': 'That kind of document is not one URI knows.',
+  'NOT_A_PDF': 'Text is taken from PDF files only.',
+  'OCR_UNAVAILABLE': 'Scanned pages cannot be read: Tesseract OCR is not installed on this PC.',
+  'OCR_TIMEOUT': 'Reading a scanned page took too long and was stopped.',
+  'OCR_FAILED': 'A scanned page could not be read.',
 };
 
 String officeErrorMessage(Object e) {
@@ -554,6 +565,101 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     });
   }
 
+  /// OD-2 (plan 16): URI drafts a Word document from the owner's [instruction] (in [layout], or the kind the
+  /// instruction names). A draft opens in the Word editor as a new copy; facts from the instruction that the draft
+  /// does not contain are listed in words. Nothing is saved until the owner approves Save as.
+  Future<void> draftWordDocument(String instruction, {String? layout, bool sayOwner = true}) async {
+    final t = instruction.trim();
+    if (editor != null || t.isEmpty) return;
+    await _guard(() async {
+      if (editor != null) return;
+      if (sayOwner) conversation.say(OfficeSpeaker.owner, t, targetLabel);
+      final r = await client.authoringDraft(t, layout: layout);
+      final status = '${r['status']}';
+      final message = '${r['message'] ?? ''}'.trim();
+      final missing = [for (final m in (r['missing'] as List? ?? const [])) '$m'];
+      if (status != 'propose') {
+        conversation.say(
+            OfficeSpeaker.uri,
+            [
+              if (message.isNotEmpty)
+                message
+              else if (status == 'clarify')
+                'Please say more about what the document should say.'
+              else
+                'URI cannot draft that.',
+              if (missing.isNotEmpty) 'Missing: ${missing.join(', ')}.',
+              'Nothing was drafted.',
+            ].join(' '),
+            targetLabel,
+            chips: [
+              if (status == 'clarify' && r['layout'] == null)
+                for (final l in (r['layouts'] as List? ?? const []).cast<Map>().take(4))
+                  ('${l['title']}', 'draft:${l['id']}:$t'),
+            ]);
+        return;
+      }
+      _startEditor(r);
+      draftWarnings = [for (final w in (r['warnings'] as List? ?? const [])) (w as Map).cast<String, dynamic>()];
+      conversation.say(
+          OfficeSpeaker.uri,
+          [
+            'URI drafted a ${'${r['layout_title'] ?? 'document'}'.toLowerCase()}. Read it and change what you need; '
+                'it is saved only when you approve Save as.',
+            if (message.isNotEmpty) message,
+            if (missing.isNotEmpty) 'Still to fill in: ${missing.join(', ')}.',
+          ].join(' '),
+          targetLabel);
+      for (final w in draftWarnings) {
+        conversation.say(OfficeSpeaker.notice, '${w['message']}', targetLabel);
+      }
+    });
+  }
+
+  /// FACT_MISSING warnings of the last draft (shown above the editor until the edit closes).
+  List<Map<String, dynamic>> draftWarnings = const [];
+
+  /// OD-3: the open PDF's text to the clipboard. With [ocr], pages without a text layer are read with OCR first.
+  Future<void> copyPdfText({bool ocr = false}) => _guard(() async {
+        final d = documents[activeDocument];
+        if (d == null || d.kind != 'pdf') return;
+        final r = await client.documentText(d.id, ocr: ocr);
+        await Clipboard.setData(ClipboardData(text: '${r['text'] ?? ''}'));
+        final empty = (r['pages_without_text'] as List? ?? const []).length;
+        final pages = (r['pages'] as List? ?? const []).length;
+        conversation.say(
+            OfficeSpeaker.uri,
+            [
+              'Copied the text of $pages page${pages == 1 ? '' : 's'} to the clipboard.',
+              if (r['truncated'] == true) 'The PDF has more text than URI copies at once; the rest was left out.',
+              if (empty > 0)
+                '$empty page${empty == 1 ? ' has' : 's have'} no text (they may be scans)'
+                    '${ocr ? ' and could not be read.' : '.'}',
+            ].join(' '),
+            targetLabel,
+            chips: [if (empty > 0 && !ocr) ('Read scanned pages', 'pdf:ocr_copy')]);
+      });
+
+  /// OD-3: a new Word document made from the open PDF's text; it opens in the Word editor (Save as card as usual).
+  Future<void> pdfToWord({bool ocr = false}) async {
+    if (editor != null) return;
+    await _guard(() async {
+      final d = documents[activeDocument];
+      if (editor != null || d == null || d.kind != 'pdf') return;
+      final v = await client.documentToWord(d.id, ocr: ocr);
+      _startEditor(v);
+      final empty = (v['pages_without_text'] as List? ?? const []).length;
+      conversation.say(
+          OfficeSpeaker.uri,
+          [
+            'A new Word document with the text of ${d.name}. Use Save as to choose where it goes.',
+            if (v['truncated'] == true) 'The PDF has more text than URI copies at once; the rest was left out.',
+            if (empty > 0) '$empty page${empty == 1 ? ' has' : 's have'} no text (they may be scans).',
+          ].join(' '),
+          targetLabel);
+    });
+  }
+
   /// Save (replace the opened file, with a backup) or Save as (a new file). Shows the save card.
   Future<void> saveEdit({bool saveAs = false}) async {
     final e = editor;
@@ -594,6 +700,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     final path = e.savedPath;
     final saved = _editSaved;
     editor = null;
+    draftWarnings = const [];
     _clearCards(e.id);
     await e.close();
     e.dispose();
@@ -852,6 +959,16 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
       if (v != null) showView(v);
       return;
     }
+    if (intent == 'pdf:ocr_copy') {                // OD-3: read the scanned pages too
+      await copyPdfText(ocr: true);
+      return;
+    }
+    if (intent.startsWith('draft:')) {             // OD-2: the kind of document the owner picked, then the draft
+      final rest = intent.substring(6);
+      final i = rest.indexOf(':');
+      if (i > 0) await draftWordDocument(rest.substring(i + 1), layout: rest.substring(0, i), sayOwner: false);
+      return;
+    }
     await _route({'text': '', 'chip': intent, 'target': {'kind': ?targetKind}});
   }
 
@@ -890,12 +1007,22 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
             conversation.say(OfficeSpeaker.uri,
                 'Available now: ${avail.join(', ')}. Planned, not available yet: ${planned.join(', ')}.', targetLabel);
           case 'matched':
-            await _runIntent('${r['intent']}', ((r['inputs_needed'] as List?) ?? const []).cast<String>());
+            await _runIntent('${r['intent']}', ((r['inputs_needed'] as List?) ?? const []).cast<String>(),
+                text: '${body['text'] ?? ''}');
         }
       });
 
-  Future<void> _runIntent(String intent, List<String> needed) async {
+  Future<void> _runIntent(String intent, List<String> needed, {String text = ''}) async {
     switch (intent) {
+      case 'write_document':                                // OD-2: the request itself is the instruction
+        if (text.trim().isEmpty) {
+          conversation.say(OfficeSpeaker.uri,
+              'Say what to write, for example: write an office order transferring the section officer to accounts.',
+              targetLabel);
+          return;
+        }
+        busy = false;                                       // draftWordDocument takes its own guard
+        await draftWordDocument(text, sayOwner: false);     // the owner's words are already in the conversation
       case 'save_as_pdf':
         if (needed.contains('input_file')) {
           conversation.say(OfficeSpeaker.uri, 'Which file? Open a Word, PowerPoint or Excel file first.', targetLabel,

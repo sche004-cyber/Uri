@@ -55,6 +55,20 @@ class OfficeHome extends StatelessWidget {
                   : c.newWordDocument(layout: v),
               child: const Chip(avatar: Icon(Icons.note_add_outlined, size: 18), label: Text('New document')),
             ),
+          // OD-2 (plan 16): URI drafts a Word document from the owner's instruction.
+          if (c.available('write_document'))
+            Tooltip(
+              // the service says BRAIN_UNAVAILABLE when no Brain is connected
+              message: c.ready('write_document')
+                  ? ''
+                  : (officeErrorText['${c.capabilityList.where((x) => x['id'] == 'write_document').firstOrNull?['unready_reason']}'] ??
+                      'Not ready yet.'),
+              child: ActionChip(key: const ValueKey('office-home-draft'),
+                  avatar: const Icon(Icons.edit_note_rounded, size: 18), label: const Text('Draft with URI…'),
+                  onPressed: c.busy || c.editor != null || !c.ready('write_document')
+                      ? null
+                      : () => showDraftDialog(context, c)),
+            ),
           // Authoring (A/B, AB-10): a new presentation, blank or from the owner's presentation or template.
           if (environment?.pickPresentationSavePath != null) ...[
             ActionChip(key: const ValueKey('office-home-new-presentation'),
@@ -68,7 +82,7 @@ class OfficeHome extends StatelessWidget {
           ],
           for (final (g, caps) in c.availableGroups())
             for (final cap in caps)
-              if (cap['id'] != 'open_workbook')
+              if (cap['id'] != 'open_workbook' && cap['id'] != 'write_document')   // drafting: the chip above
                 Tooltip(
                   // Real-app run 2026-10-15: a greyed-out goal gave no reason.
                   message: cap['ready'] == true
@@ -106,6 +120,76 @@ class OfficeHome extends StatelessWidget {
 
   static String _capTitle(OfficeWorkspaceController c, String id) =>
       '${c.capabilityList.where((x) => x['id'] == id).firstOrNull?['title'] ?? id}';
+}
+
+/// OD-2: what to write and, optionally, which kind of document. The kind is otherwise taken from the words
+/// ("office order", "note sheet", ...); with neither, URI asks.
+Future<void> showDraftDialog(BuildContext context, OfficeWorkspaceController c) async {
+  final layouts = [for (final l in c.wordLayouts) if (l['id'] != 'blank') l];
+  final got = await showDialog<(String, String?)>(context: context, builder: (_) => _DraftDialog(layouts: layouts));
+  if (got != null && got.$1.trim().isNotEmpty) await c.draftWordDocument(got.$1, layout: got.$2);
+}
+
+class _DraftDialog extends StatefulWidget {
+  const _DraftDialog({required this.layouts});
+  final List<Map<String, dynamic>> layouts;
+
+  @override
+  State<_DraftDialog> createState() => _DraftDialogState();
+}
+
+class _DraftDialogState extends State<_DraftDialog> {
+  final _text = TextEditingController();
+  String? _layout;
+
+  @override
+  void dispose() {
+    _text.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      key: const ValueKey('office-draft-dialog'),
+      title: const Text('Draft with URI'),
+      content: SizedBox(
+        width: 520,
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          TextField(
+            key: const ValueKey('office-draft-instruction'),
+            controller: _text,
+            autofocus: true,
+            minLines: 3,
+            maxLines: 8,
+            maxLength: 2000,
+            decoration: const InputDecoration(
+                hintText: 'For example: write an office order transferring Shri A. Kumar, Section Officer, to the '
+                    'Accounts Section from 1 November'),
+          ),
+          const SizedBox(height: UriSpace.sm),
+          DropdownButton<String?>(
+            key: const ValueKey('office-draft-layout'),
+            value: _layout,
+            isExpanded: true,
+            items: [
+              const DropdownMenuItem<String?>(value: null, child: Text('Kind of document: from my words')),
+              for (final l in widget.layouts)
+                DropdownMenuItem<String?>(value: '${l['id']}', child: Text('${l['title']}')),
+            ],
+            onChanged: (v) => setState(() => _layout = v),
+          ),
+          Text('URI writes a draft for you to read and change. Nothing is saved until you approve Save as.',
+              style: TextStyle(color: UriColors.of(context).inkSoft, fontSize: UriType.caption)),
+        ]),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        FilledButton(key: const ValueKey('office-draft-go'),
+            onPressed: () => Navigator.pop(context, (_text.text, _layout)), child: const Text('Draft')),
+      ],
+    );
+  }
 }
 
 /// A list view of the Office region (Recent, Documents, Spreadsheets, Presentations, PDFs, Tasks, Templates).
