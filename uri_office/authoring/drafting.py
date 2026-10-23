@@ -379,8 +379,7 @@ def _fact_rx(t: str):
 
 
 def _name_hits(name: str, text: str, longer: list) -> int:
-    """FB5 R6-02: occurrences of a name that are not part of a longer name of the same instruction ("Shri Anil
-    Kumar" inside "Shri Anil Kumar Singh" does not count)."""
+    """Count occurrences outside a longer name found in the instruction or draft."""
     hay = _norm(text)
     covers = [(m.start(), m.end()) for big in longer for m in _fact_rx(_norm(big)).finditer(hay)]
     return sum(1 for m in _fact_rx(_norm(name)).finditer(hay)
@@ -427,12 +426,12 @@ def missing_facts(instruction: str, draft_text: str) -> list:
     out = []
     facts = extract_facts(instruction)
     names = [f["text"] for f in facts if f["kind"] == "name"]
+    draft_names = [f["text"] for f in extract_facts(draft_text) if f["kind"] == "name"] if names else []
     for f in facts:
         if f["kind"] == "name":
-            # FB5 R6-02: an occurrence inside a longer name of the instruction ("Shri Anil Kumar" inside "Shri Anil
-            # Kumar Singh") does not count, so each distinct person must appear on their own. The same person named
-            # twice in the instruction needs to appear once (repeats are not counted, to avoid false warnings).
-            longer = [n for n in names if n != f["text"] and _norm(f["text"]).lower() in _norm(n).lower()]
+            # A shorter name inside a longer one is not the same person, whether the longer name was in the
+            # instruction or appeared only in the draft. Exact repeats still need just one occurrence.
+            longer = [n for n in names + draft_names if n != f["text"] and _norm(f["text"]).lower() in _norm(n).lower()]
             present = _name_hits(f["text"], draft_text, longer) >= 1
         else:
             present = fact_present(f["text"], draft_text, instruction)

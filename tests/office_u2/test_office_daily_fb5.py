@@ -68,6 +68,18 @@ def test_r6_02_each_person_is_checked(instruction, old, new):
     assert DR.missing_facts(instruction, instruction) == []
 
 
+@pytest.mark.parametrize("instruction,draft,name", [
+    ("Prepare an office order for Shri Anil Kumar.", "Office Order for Shri Anil Kumar Singh.", "Shri Anil Kumar"),
+    ("Draft a notice for staff member ramesh kumar.",
+     "Draft a notice for staff member ramesh kumar singh.", "ramesh kumar"),
+])
+def test_r5_01_added_surname_does_not_satisfy_shorter_name(instruction, draft, name):
+    assert DR.missing_facts(instruction, instruction) == []
+    assert [(w["code"], w["kind"], w["text"]) for w in DR.missing_facts(instruction, draft)] == [
+        ("FACT_MISSING", "name", name)]
+    assert DR.missing_facts(instruction, draft + f" {name} will report separately.") == []
+
+
 # ---- R6-03: one..ten with a unit ----------------------------------------------------------------------------------------
 @pytest.mark.parametrize("instruction,old,new", [
     ("Notesheet: The file was received from Shri Harish Chandra on 3 May and the reply is due within seven days.",
