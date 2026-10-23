@@ -51,7 +51,7 @@ def test_single_cue_names_and_number_words_are_checked():
     assert DR.extract_facts("send one copy") == []                    # a lone small number word is not a fact
     w = DR.missing_facts("Write a memo to Ramesh about leave of twenty days.", "Memo to Suresh about leave of "
                                                                              "thirty days.")
-    assert {x["text"] for x in w} == {"Ramesh", "twenty"}
+    assert {x["text"] for x in w} == {"Ramesh", "twenty days"}             # FB2 R3-02: the unit is part of the fact
 
 
 # ---- R2-04: over-long message or missing item is refused, never cut ---------------------------------------------------

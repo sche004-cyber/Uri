@@ -268,10 +268,14 @@ class Office:
         t = self.documents.text(did, ocr=body.get("ocr") is True, max_chars=self.TO_WORD_MAX_CHARS)
         stem = Path(t["name"]).stem
         paras = [("Title", stem)]
+        # FB2 R3-05: a page OCR left out says which limit left it out, not that it has no text.
+        why = {n: k for k, pages in (t.get("ocr_skipped_reasons") or {}).items() for n in pages}
+        words = {"page_limit": "page limit", "size_limit": "size limit", "time_limit": "time limit"}
         for p in t["pages"]:
             paras.append(("Heading 1", f"Page {p['page']}"))
             lines = [ln.strip() for ln in p["text"].splitlines() if ln.strip()]
-            paras += [("Normal", ln) for ln in lines] or [("Normal", "[No text on this page]")]
+            empty = f"[Not read: {words[why[p['page']]]}]" if p["page"] in why else "[No text on this page]"
+            paras += [("Normal", ln) for ln in lines] or [("Normal", empty)]
         if t["truncated"]:
             paras.append(("Normal", "[The PDF has more text than URI copies at once; the rest is not included.]"))
         view = self.authoring.new_document_from_bytes(f"{stem} (text).docx", T.from_paragraphs(paras))

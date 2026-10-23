@@ -505,6 +505,12 @@ def check_draft(data) -> dict:
         raise _draft_invalid()
     status = data["status"]
     msg = data.get("message")
+    # FB2 R3-03: characters a Word document cannot hold are refused, so the fact check reads exactly the text that
+    # is written (nothing is dropped between the check and the document).
+    from .authoring.docx_templates import NOT_XML
+    texts = [b.get("text") for b in blocks if isinstance(b, dict)] + [msg] + list(missing)
+    if any(isinstance(x, str) and NOT_XML.search(x) for x in texts):
+        raise _draft_invalid()
     # FB1 R2-04: an over-long message or missing item is refused like an over-long block, never cut.
     if not isinstance(msg, str) or len(msg) > DRAFT_MAX_MESSAGE \
             or any(not isinstance(m, str) or len(m) > DRAFT_MAX_MISSING_CHARS for m in missing):

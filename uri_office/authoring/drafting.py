@@ -40,8 +40,9 @@ def choose_layout(instruction: str) -> str | None:
 
 _MONTHS = ("january|february|march|april|may|june|july|august|september|october|november|december|"
            "jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec")
-_DATE_WORDS = re.compile(r"\b\d{1,2}(?:st|nd|rd|th)?\s+(?:" + _MONTHS + r")\.?,?\s+\d{4}\b"
-                         r"|\b(?:" + _MONTHS + r")\.?\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}\b", re.I)
+# FB2 R3-01: "3rd November", "November 3", "3 Nov", "15th August" are dates with or without a year.
+_DATE_WORDS = re.compile(r"\b\d{1,2}(?:st|nd|rd|th)?\s+(?:" + _MONTHS + r")\b\.?(?:,?\s+\d{4}\b)?"
+                         r"|\b(?:" + _MONTHS + r")\b\.?\s+\d{1,2}(?:st|nd|rd|th)?\b(?:,?\s+\d{4}\b)?", re.I)
 _DATE_NUM = re.compile(r"^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$|^\d{4}-\d{2}-\d{2}$")
 _REF = re.compile(r"\b(?:F\.\s?)?No\.\s*([A-Za-z0-9][\w./()-]*\d[\w./()-]*)", re.I)
 _AMOUNT_PREFIX = re.compile(r"(?:rs\.?|inr|₹)\s*$", re.I)
@@ -63,6 +64,11 @@ _NUM_WORD = (r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve
              r"seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|"
              r"lakhs?|crores?)")
 _NUM_WORDS = re.compile(r"\b" + _NUM_WORD + r"(?:[\s-]+(?:and\s+)?" + _NUM_WORD + r")*\b", re.I)
+# FB2 R3-02: the unit after a number is part of the fact ("7 days" is not "7 weeks", "10:30 AM" not "10:30 PM").
+_UNIT = re.compile(r"^\s+(lakhs?|crores?|thousand|hundred|days?|weeks?|months?|years?|hours?|minutes?|"
+                   r"per\s?cent|a\.m\.|p\.m\.|am|pm)(?!\w)", re.I)
+_UNIT_DOTTED = re.compile(r"^\s+(a\.m\.|p\.m\.)", re.I)
+_NUM_WORD_RX = re.compile(_NUM_WORD, re.I)
 _SMALL_NUMS = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"}
 _TRAIL = ".,;:)]}'\""
 _LEAD = "([{'\""
@@ -82,7 +88,7 @@ def extract_facts(instruction: str) -> list:
         if value and value.lower() not in seen:
             seen.add(value.lower())
             out.append({"kind": kind, "text": value, "_at": start if start is not None else len(text)})
-        if start is not None:
+        if start is not None and end is not None:
             spans.append((start, end))
 
     def taken(a, b):
@@ -108,8 +114,15 @@ def extract_facts(instruction: str) -> list:
             kind = "amount"
         else:
             kind = "number"
-        add(kind, tok, m.start(), m.end())
+        end = m.end()
+        if kind in ("number", "amount") and m.group(0).rstrip(_TRAIL) == m.group(0).lstrip(_LEAD):
+            u = _UNIT_DOTTED.match(text[end:]) or _UNIT.match(text[end:])
+            if u:
+                tok, end = f"{tok} {u.group(1)}", end + u.end()
+        add(kind, tok, m.start(), end)
     for m in _NAMES.finditer(text):
+        if taken(m.start(), m.end()):           # FB2 R3-04: "F.No. A-12/2026" is a reference, not a name
+            continue
         words = m.group(0).split()
         hon = [i for i, w in enumerate(words) if i > 0 and re.fullmatch(_HONORIFIC, w)]
         if hon:                                   # "Relieve Shri Ram Kumar": the name starts at the honorific
@@ -134,8 +147,14 @@ def extract_facts(instruction: str) -> list:
     # FB1 R2-03: numbers written in words ("twenty five thousand"); a lone "one".."ten" is too common to check.
     for m in _NUM_WORDS.finditer(text):
         words = m.group(0).lower().split()
+        if taken(m.start(), m.end()):
+            continue
         if len(words) >= 2 or words[0] not in _SMALL_NUMS:
-            add("number", m.group(0), m.start(), m.end())
+            value, end = m.group(0), m.end()
+            u = _UNIT.match(text[end:])
+            if u and not _NUM_WORD_RX.fullmatch(u.group(1)):
+                value, end = f"{value} {u.group(1)}", end + u.end()
+            add("number", value, m.start(), end)
     out.sort(key=lambda f: f["_at"])
     return [{"kind": f["kind"], "text": f["text"]} for f in out]
 
@@ -152,9 +171,21 @@ def fact_present(fact: str, draft_text: str) -> bool:
     t = _norm(fact)
     if not t:
         return True
-    rx = re.compile(r"(?<![^\W_])(?<![/])(?<!\d[,.])" + re.escape(t) + r"(?![^\W_])(?![/])(?![,.]\d)",
-                    re.I)
-    return rx.search(_norm(draft_text)) is not None
+    body = re.escape(t)
+    body = re.sub(r"(?i)\b(lakh|crore)s?\b", r"\1s?", body)        # FB2 R3-04: "5 lakh" is also "5 lakhs"
+    # FB2 R3-04: an amount may end in the usual "/-"; any other "/" continues the token.
+    rx = re.compile(r"(?<![^\W_])(?<![/])(?<!\d[,.])" + body + r"(?![^\W_])(?!/(?!-))(?![,.]\d)", re.I)
+    hay = _norm(draft_text)
+    for m in rx.finditer(hay):
+        # FB2 R3-02: a number word right before or after extends the number ("twenty five thousand five hundred")
+        if _NUM_WORD_RX.match(t.split()[-1]) or _NUM_WORD_RX.fullmatch(t.split()[0]) or t.split()[0][:1].isdigit():
+            if re.match(r"[\s-]+(?:and\s+)?" + _NUM_WORD + r"\b", hay[m.end():], re.I):
+                continue
+            if re.search(r"\b" + _NUM_WORD + r"[\s-]+(?:and\s+)?$", hay[:m.start()], re.I) and \
+                    not t.split()[0][:1].isdigit():
+                continue
+        return True
+    return False
 
 
 def missing_facts(instruction: str, draft_text: str) -> list:

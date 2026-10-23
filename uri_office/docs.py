@@ -28,6 +28,11 @@ MAX_PDF_PAGES = 2000
 MAX_TEXT_CHARS = 2_000_000          # OD-3: the PDF text one request returns (the worker enforces the same cap)
 MAX_OCR_PAGES = 20                  # OD-3: scanned pages read per request; the rest are listed as skipped
 _clock = time.monotonic             # FB1 R2-05: the OCR deadline's clock (tests replace it)
+# FB2 R3-06: one deadline for a whole text / to_word request, from the moment it arrives, below the app's 240 s
+# request timeout. The text worker gets at most TEXT_OP_TIMEOUT_S of it; OCR gets what is left (and at most its own
+# OCR_DEADLINE_S).
+REQUEST_DEADLINE_S = 200.0
+TEXT_OP_TIMEOUT_S = 150.0
 SUFFIX_KIND = {".docx": "docx", ".pptx": "pptx", ".pdf": "pdf"}
 
 
@@ -228,13 +233,15 @@ class Documents:
         """OD-3: a PDF's text for the owner ("Copy text", "To Word"), page by page, capped in total. Pages with no
         text layer are listed; with `ocr` (an explicit owner request only) up to MAX_OCR_PAGES of them are read with
         Tesseract from the page images the raster path makes. Nothing is written except the page-image cache."""
+        entered = _clock()
+        request_end = entered + REQUEST_DEADLINE_S
         s = self.get(did)
         if s.kind != "pdf":
             raise OfficeError("NOT_A_PDF", "text is taken from PDF files", 409)
         if s.state != "ready":
             raise OfficeError("PAGE_NOT_READY", "", 202)
         r = self.hub.text_request("text", pdf=str(s.preview_pdf), max_chars=min(int(max_chars), MAX_TEXT_CHARS),
-                                  timeout=300)
+                                  timeout=max(1.0, min(TEXT_OP_TIMEOUT_S, request_end - _clock())))
         if not r.get("ok"):
             raise OfficeError("PREVIEW_UNAVAILABLE", r.get("error", ""), 422)
         pages = [{"page": p["page"], "text": p["text"], "source": "text" if p["text"].strip() else "none",
@@ -251,18 +258,18 @@ class Documents:
             todo, reasons["page_limit"] = empty[:MAX_OCR_PAGES], empty[MAX_OCR_PAGES:]
             by_page = {p["page"]: p for p in pages}
             total = sum(len(p["text"]) for p in pages)
-            started = _clock()
+            ocr_end = min(_clock() + OCR.OCR_DEADLINE_S, request_end)
             for i, n in enumerate(todo):
                 if total >= max_chars:
                     reasons["size_limit"].append(n)
                     truncated = True
                     continue
-                left = OCR.OCR_DEADLINE_S - (_clock() - started)
+                left = ocr_end - _clock()
                 if left < OCR.OCR_MIN_PAGE_S:
                     reasons["time_limit"] += todo[i:]
                     break
                 png = self.hub.page_png(s.preview_pdf, s.cache, n, OCR.OCR_WIDTH)
-                budget = min(OCR.OCR_TIMEOUT_S, OCR.OCR_DEADLINE_S - (_clock() - started))
+                budget = min(OCR.OCR_TIMEOUT_S, ocr_end - _clock())
                 try:
                     full = OCR.ocr_png(png, exe, timeout=budget)
                 except OfficeError as e:

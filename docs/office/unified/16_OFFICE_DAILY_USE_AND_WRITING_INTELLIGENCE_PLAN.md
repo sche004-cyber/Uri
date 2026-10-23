@@ -144,7 +144,9 @@ Implemented (unit, service and widget tests only; no live run, no real Brain):
 Not implemented / not verified: live Brain corpus of 10 tasks (OD-2 evidence) and live G-3 journeys D01/P01; OCR on a
 page rendered by the WinRT raster worker end to end (only the Tesseract step and the routing were tested); Tesseract
 is not hash-pinned like LibreOffice (no pin recorded); only the `eng` language pack is installed (Hindi text is not
-read); a "Read scanned pages" option for To Word exists in the API (`ocr: true`) but has no button.
+read). Correction (FB2 R3-07): the earlier sentence here said To Word's OCR option had no button. Since c57a5e24 the
+PDF toolbar has a "Read scans" switch: while it is on, Copy text and To Word both send `ocr: true`. The "Read scanned
+pages" chip after Copy text still exists as well.
 
 Repairs after fallback review FB1 of 03c2fba9 (REJECT; record
 `D:/uri-dev/lifecycle/OFFICE-DAILY-USE-r1/fallback/FB1_subagent_03c2fba9.audit.txt`). The earlier claim that the
@@ -161,10 +163,32 @@ inside "17" and "Kumar" inside "Kumari". Corrected as follows:
 - R2-05: one OCR request has a 180 s deadline, below the app's 240 s request timeout. Pages left when it runs out are
   listed under `time_limit`.
 
-Fact-check limitations that remain: lowercase names ("ramesh kumar"), a single name without a cue word, ordinal and
-fraction words ("first", "half"), dates written differently in the draft (reported, not matched), words in Indian
-languages, and the fact that a fact can be present but used in the wrong place. A FACT_MISSING list is an aid to the
-owner's own reading, not a guarantee.
+Repairs after fallback review FB2 of d94961c7 (REJECT; record
+`D:/uri-dev/lifecycle/OFFICE-DAILY-USE-r2/fallback/FB2_subagent_d94961c7.audit.txt`; R2-01..R2-05 confirmed fixed):
+- R3-01: dates without a year ("3rd November", "November 3", "3 Nov", "15th August", with or without a year) are date
+  facts.
+- R3-02: a number's unit is part of the fact ("7 days", "10:30 PM", "5 lakh"). A number word right after a number,
+  or right before a number-word fact, means the number changed ("twenty five thousand five hundred", "two lakh fifty
+  thousand").
+- R3-03: a draft block, message or missing item containing a character a Word document cannot hold is refused
+  (BRAIN_OUTPUT_INVALID), so the fact check reads exactly the text that is written.
+- R3-04: no name fact is taken from inside a reference number ("F.No. A-12/2026"). An amount may end in "/-", and
+  lakh/crore match their plurals.
+- R3-05: To Word writes "[Not read: page limit|size limit|time limit]" for pages OCR left out, and the app names the
+  limit for To Word as it does for Copy text.
+- R3-06: a text or To Word request has one 200 s deadline from the moment it arrives. The text worker gets at most
+  150 s of it, and OCR gets what is left (at most 180 s).
+- R3-07: the status note above is corrected.
+
+Fact-check limitations that remain:
+- lowercase names ("ramesh kumar") and a single name without a cue word;
+- ordinal and fraction words ("first", "half");
+- a fact written differently in the draft: "11 AM" against "11 a.m." or "23rd" against "23" is reported, not matched;
+- a digit followed by a number word in the draft ("12 thousand" against "12") is reported;
+- swapped numbers and a fact present but used in the wrong place;
+- words in Indian languages.
+
+A FACT_MISSING list is an aid to the owner's own reading, not a guarantee.
 
 ## 5. Coordination
 

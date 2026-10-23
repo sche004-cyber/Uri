@@ -634,22 +634,11 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
         await Clipboard.setData(ClipboardData(text: '${r['text'] ?? ''}'));
         final empty = (r['pages_without_text'] as List? ?? const []).length;
         final pages = (r['pages'] as List? ?? const []).length;
-        // FB1 R2-02/R2-05: pages OCR left out are named with the limit that left them out, not as unreadable.
-        final reasons = (r['ocr_skipped_reasons'] as Map? ?? const {});
-        int n(String k) => (reasons[k] as List? ?? const []).length;
-        final skipped = n('page_limit') + n('size_limit') + n('time_limit');
-        final unreadable = empty - skipped;
-        String pg(int k) => '$k page${k == 1 ? '' : 's'}';
         conversation.say(
             OfficeSpeaker.uri,
             [
-              'Copied the text of ${pg(pages)} to the clipboard.',
-              if (r['truncated'] == true) 'The PDF has more text than URI copies at once; the rest was left out.',
-              if (!ocr && empty > 0) '${pg(empty)} ${empty == 1 ? 'has' : 'have'} no text (they may be scans).',
-              if (ocr && unreadable > 0) '${pg(unreadable)} could not be read.',
-              if (ocr && n('page_limit') > 0) '${pg(n('page_limit'))} not read: URI reads 20 scanned pages at a time.',
-              if (ocr && n('size_limit') > 0) '${pg(n('size_limit'))} not read: the text size limit was reached.',
-              if (ocr && n('time_limit') > 0) '${pg(n('time_limit'))} not read: the time limit was reached.',
+              'Copied the text of ${pages == 1 ? '1 page' : '$pages pages'} to the clipboard.',
+              ..._pdfTextNotes(r, ocr),
             ].join(' '),
             targetLabel,
             chips: [if (empty > 0 && !ocr) ('Read scanned pages', 'pdf:ocr_copy')]);
@@ -663,16 +652,32 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
       if (editor != null || d == null || d.kind != 'pdf') return;
       final v = await client.documentToWord(d.id, ocr: ocr);
       _startEditor(v);
-      final empty = (v['pages_without_text'] as List? ?? const []).length;
       conversation.say(
           OfficeSpeaker.uri,
           [
             'A new Word document with the text of ${d.name}. Use Save as to choose where it goes.',
-            if (v['truncated'] == true) 'The PDF has more text than URI copies at once; the rest was left out.',
-            if (empty > 0) '$empty page${empty == 1 ? ' has' : 's have'} no text (they may be scans).',
+            ..._pdfTextNotes(v, ocr),
           ].join(' '),
           targetLabel);
     });
+  }
+
+  /// What Copy text and To Word say about a PDF's text (FB1 R2-02/R2-05, FB2 R3-05): the size cap, pages without
+  /// text, and pages OCR left out, each named with the limit that left it out, not as unreadable.
+  static List<String> _pdfTextNotes(Map<String, dynamic> r, bool ocr) {
+    final empty = (r['pages_without_text'] as List? ?? const []).length;
+    final reasons = (r['ocr_skipped_reasons'] as Map? ?? const {});
+    int n(String k) => (reasons[k] as List? ?? const []).length;
+    final unreadable = empty - n('page_limit') - n('size_limit') - n('time_limit');
+    String pg(int k) => '$k page${k == 1 ? '' : 's'}';
+    return [
+      if (r['truncated'] == true) 'The PDF has more text than URI copies at once; the rest was left out.',
+      if (!ocr && empty > 0) '${pg(empty)} ${empty == 1 ? 'has' : 'have'} no text (they may be scans).',
+      if (ocr && unreadable > 0) '${pg(unreadable)} could not be read.',
+      if (ocr && n('page_limit') > 0) '${pg(n('page_limit'))} not read: URI reads 20 scanned pages at a time.',
+      if (ocr && n('size_limit') > 0) '${pg(n('size_limit'))} not read: the text size limit was reached.',
+      if (ocr && n('time_limit') > 0) '${pg(n('time_limit'))} not read: the time limit was reached.',
+    ];
   }
 
   /// Save (replace the opened file, with a backup) or Save as (a new file). Shows the save card.

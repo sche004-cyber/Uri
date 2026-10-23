@@ -97,7 +97,7 @@ def from_paragraphs(paras: list) -> bytes:
     return _build(paras)
 
 
-_NOT_XML = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\ud800-\udfff￾￿]")
+NOT_XML = _NOT_XML = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\ud800-\udfff￾￿]")
 
 
 def _xml_safe(text: str) -> str:

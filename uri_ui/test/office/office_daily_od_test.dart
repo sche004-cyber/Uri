@@ -89,7 +89,8 @@ class FakeDailyOffice {
           'GET /document/0123456789abcdef' => doc,
           'POST /document/0123456789abcdef/text' => body['ocr'] == true ? ocrReply : textReply,
           'POST /document/0123456789abcdef/to_word' => {..._view('notice (text).docx'), 'pages_without_text': [2],
-                                                        'truncated': false},
+              'truncated': false,
+              if (body['ocr'] == true) 'ocr_skipped_reasons': {'page_limit': [], 'size_limit': [], 'time_limit': [2]}},
           'POST /authoring/$_aid/close' => {'closed': true, 'unsaved_changes': 0},
           _ => path.startsWith('/document/p')
               ? {'document_id': 'p0', 'kind': 'docx', 'name': 'x', 'pages': 1, 'preview': {'state': 'ready'},
@@ -280,6 +281,21 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('office-pdf-to-word')));
     await _settle(tester);
     expect(fake.bodies['/document/0123456789abcdef/to_word']!.last, {'ocr': true});
+    await _unmount(tester);
+  });
+
+  testWidgets('FB2 R3-05: To Word with Read scans names the limit that left a page out', (tester) async {
+    await _pump(tester);
+    await tester.tap(find.byKey(const ValueKey('office-open-document')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('office-pdf-ocr')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('office-pdf-to-word')));
+    await _settle(tester);
+    await tester.tap(find.byKey(const ValueKey('office-toggle-uri')));        // the URI pane beside the editor
+    await _settle(tester);
+    expect(find.textContaining('1 page not read: the time limit was reached.'), findsOneWidget);
+    expect(find.textContaining('no text (they may be scans)'), findsNothing);
     await _unmount(tester);
   });
 
