@@ -134,8 +134,8 @@ _PAN = re.compile(r"(?i)\b[a-z]{3}[pchfatbljg][a-z] ?\d{4} ?[a-z]\b|"           
                   # upper case with a single space anywhere: "ABCP E123 4F" (review FB4 R1-05)
                   r"\b[A-Z] ?[A-Z] ?[A-Z] ?[PCHFATBLJG] ?[A-Z] ?\d ?\d ?\d ?\d ?[A-Z]\b")
 # Known API key prefixes followed by groups split by single spaces or dashes: "AKIA TWII 6XUU IX2C IXU3" (review FB4
-# R1-05). The groups together hold at least 16 characters, two digits and one group mixing letters and digits, so
-# "sk-learn tutorial for beginners" stays readable.
+# R1-05). The groups together hold at least 16 characters and two digits. A mixed letter/digit group or an
+# uppercase-and-digit-only body is key-like; lower-case prose such as "sk-learn tutorial for 2026" stays readable.
 _KEY_SPLIT = re.compile(r"(?<![A-Za-z0-9])(?:AKIA|ASIA|AIza|ghp_|gho_|ghs_|ghu_|github_pat_|glpat-|xox[abpr]-|"
                         r"sk-(?:proj-|ant-)?|sk_live_|sk_test_|rk_live_|tvly-)"
                         r"([A-Za-z0-9_]{0,40}(?:[ -][A-Za-z0-9_]{1,12}){1,15})(?![A-Za-z0-9_])")
@@ -333,7 +333,8 @@ def _spans(text: str, protected_terms) -> list:
         g = re.sub(r"(?: [a-z]{4,})+$", "", m.group(1))
         alnum = re.sub(r"[ -]", "", g)
         if (len(alnum) >= 16 and sum(c.isdigit() for c in alnum) >= 2
-                and any(re.search(r"[A-Za-z]", p) and re.search(r"\d", p) for p in re.split(r"[ -]", g))):
+                and (any(re.search(r"[A-Za-z]", p) and re.search(r"\d", p) for p in re.split(r"[ -]", g))
+                     or (re.search(r"[A-Z]", g) and re.fullmatch(r"[A-Z0-9 -]+", g)))):
             out.append(Finding(CREDENTIAL, m.start(), m.start(1) + len(g), "split_key"))
     for m in _PINCODE.finditer(text):
         add(ADDRESS, m, "pincode")
