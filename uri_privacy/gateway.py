@@ -116,13 +116,9 @@ class PrivacyGateway:
                 signals.add("ENCODING_UNRESOLVED")                  # deeper than the folding decodes (FB1 R1-04)
             if signals:
                 return self._doubt(meta, dest, cls, signals)
-            # Text with nothing to rewrite leaves as written (review r6 R5-02: NFKC changed half-width katakana, Arabic
-            # presentation forms and URL paths). Only when the original is already composed (NFC: a decomposed accent
-            # goes out composed) and, classified itself, is clean too; anything else is rewritten and re-checked in the
-            # egress form.
-            import unicodedata
-            if (text != original and not cls.categories() and not cls.credential_kinds
-                    and unicodedata.is_normalized("NFC", original)):
+            # A clean original leaves as written, including decomposed accents. The egress form above and the
+            # original below must both be clean; disguised or sensitive text still uses the checked egress form.
+            if text != original and not cls.categories() and not cls.credential_kinds:
                 raw = C.classify(original, protected_terms)
                 if not (raw.categories() or raw.credential_kinds or raw.residual_encoding or raw.decoded_only):
                     text, cls = original, raw
@@ -159,7 +155,9 @@ class PrivacyGateway:
         if dest == P.Destination.LOG and cls.credential_kinds:
             from uri_assist.redact import redact_text
             out = redact_text(out, Counter())
-        if dest == P.Destination.WEB_SEARCH:
+        # Search providers already normalize their queries before prepare(). Preserve clean direct callers' spacing;
+        # keep collapse and its re-check for classified or rewritten output.
+        if dest == P.Destination.WEB_SEARCH and (counts or cls.credential_kinds or out != text):
             out = " ".join(out.split())
         # Re-check what will actually be sent (review S1-01): rewriting or whitespace collapse must never assemble a
         # value the policy does not allow at this destination. Anything left over is a refusal, not a second rewrite.

@@ -73,13 +73,13 @@ CLEAN_NON_ASCII = ["ｶﾀｶﾅ 検索", "ﻻ مرحبا",
 def test_r5_02_clean_text_is_byte_identical_at_every_external_destination(q):
     for dest in ("EXTERNAL_AGENT", "EXTERNAL_MODEL"):
         assert send(q, dest) == (False, q), dest
-    assert send(q, "WEB_SEARCH") == (False, " ".join(q.split()))
+    assert send(q, "WEB_SEARCH") == (False, q)
     result, sent = wire(q)
     assert sent == [" ".join(q.split())]
 
 
-def test_r5_02_decomposed_accents_still_leave_composed():
-    assert send("crème", "EXTERNAL_MODEL") == (False, "crème")
+def test_r5_02_decomposed_accents_leave_unchanged():
+    assert send("crème", "EXTERNAL_MODEL") == (False, "crème")
 
 
 @pytest.mark.parametrize("q", ["card ４１１１ １１１１ １１１１ １１１１",
