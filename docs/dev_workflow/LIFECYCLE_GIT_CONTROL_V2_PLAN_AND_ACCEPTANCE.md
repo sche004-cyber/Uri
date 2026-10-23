@@ -56,3 +56,24 @@ acceptance, gate, integration or owner-authorisation rule. No PROTECTED path (`w
 
 Lifecycle V3 driver, Codex primary, `claude_cli` fallback (DEC-095). Started after the Milestone Manager d2 run
 releases Codex capacity. Integration needs separate owner approval.
+
+## Follow-up after fallback review FB1 (2026-10-22, owner directive: G1-02 investigation and regression test)
+
+FB1 (ACCEPT WITH FINDINGS on `3def4023`, record `D:/uri-dev/lifecycle/LIFECYCLE-GITCTL-V2/fallback/FB1_subagent_3def4023.txt`)
+raised three LOW findings. This follow-up, on branch `repair/lifecycle-gitctl-g1-02-single-read-20261022` cut from the
+integration candidate `38a6d124` (V3.1 `4ef707ba` + `3def4023`), handles them:
+
+- **G1-02 (code) - repaired.** Investigation: a v1-bound run read the control files three times on resume
+  (`control_state` for v2, `control_drift` for the legacy digest, then the upgrade for the value it binds), so a
+  change between reads could be bound without being compared. New `git_control_digests(repo)` returns both digests
+  from one read; `control_state`/`control_drift` accept those digests; the upgrade in `run()` compares and binds from
+  the same read. `git_control_digest` keeps its signature and values. Tests:
+  `test_both_digests_come_from_one_read_and_match_the_single_digests`,
+  `test_g1_02_upgrade_binds_the_state_it_compared_not_a_later_read` (simulates a change landing after the first read:
+  the bound v2 value is the compared state and the later change is still caught as drift).
+- **G1-01 (documentation) - corrected.** `git update-server-info` writes `.git/info/refs` and
+  `.git/objects/info/packs`; the latter was never bound by v1. `packs` stays in `GENERATED_INFO` defensively; the code
+  comment now says so.
+- **G1-03 (documentation) - recorded.** A state directory planned or owner-unblocked by a v2 driver has no
+  `git_control` key; a pre-v2 driver copy resuming it stops with a false GIT_CONTROL tamper (fail closed, never a
+  bypass). Rule: once a run has been touched by a v2 driver, resume it only with a v2 (or later) driver copy.
