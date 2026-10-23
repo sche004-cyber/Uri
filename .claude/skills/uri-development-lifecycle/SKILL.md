@@ -151,6 +151,12 @@ claims, leases, recovery, handoffs. Milestones, roadmap and owner decisions belo
 - Canonical integration is unchanged (driver `integration` with owner authorisation); `task_ledger integrated`
   only records it from ancestry and the receipt.
 
+## Development memory, supervised tests, housekeeping (LIFECYCLE-V3.1-STORAGE)
+
+- **Session start:** run `python -m scripts.dev_workflow.devmemory brief`. It is a compact, token-budgeted digest of active tasks, next actions, open blocking findings, open owner decisions, lessons and environment limits. Then run `task_ledger handoff <task>` for the task you continue, and use `devmemory recall "<topic>"` on demand. The index is derived and rebuildable; the ledger, the Milestone Manager and `decisions.md` stay the sources. Record reusable knowledge with `devmemory remember <task> lesson|failed_approach|environment|procedure "<text>" --actor ...`, which writes to the ledger.
+- **Tests you wait on:** start them with `python -m scripts.dev_workflow.testrun start --name <n> --timeout <s> [--stall <s>] [--task <T> --actor <A>] -- <cmd>`, and wait with `testrun wait <run> --timeout <s>`. Never wait with a loop that greps a log for a marker (2026-10-22 watcher incident). Completion comes from the process exit status. `--lock` refuses duplicate concurrent runs. `--reuse` returns an earlier result only for the identical clean tree and command. `testrun select` is advisory and never replaces a mandatory gate.
+- **After integration:** `python -m scripts.dev_workflow.housekeeping inventory ... --out plan.json` is a read-only dry run. Show the plan to the owner. Then run `apply --plan plan.json --journal-dir <dir>`. It removes only clean, merged, unreferenced, idle worktrees, missing-worktree registrations (one at a time, never a global prune) and caches, plus merged branches when asked. Driver work trees of a lifecycle run that is not COMPLETE are protected. Everything else needs the owner's `--approve <id>`, and approved items with uncommitted work or evidence are archived and verified first. Evidence directories are never removed, only archived (`archive`, `verify-archive`, `restore`). Destructive cleanup on the owner's machine needs the owner's approval of the plan.
+
 ## Revision configs
 
 A revision (`<milestone>-c` for a new auditor, `<milestone>-u<n>` after a UX repair, `<milestone>-final`) is a new
