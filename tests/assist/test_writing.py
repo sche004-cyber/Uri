@@ -243,3 +243,81 @@ def test_windows_latency_warm_check_is_fast():
         times.append((time.perf_counter() - t0) * 1000)
     times.sort()
     assert times[18] < 50, times
+
+
+# ------------------------------------------------------------------------------------------- worker bridge commands
+class SlowBrain(FakeBrain):
+    """Waits until cancelled or released, then answers."""
+    def __init__(self, answer):
+        super().__init__(answer)
+        import threading
+        self.release = threading.Event()
+
+    def stream_chat(self, body, cancel=None, deadlines=None):
+        self.bodies.append(body)
+        while not self.release.wait(0.01):
+            if cancel is not None and cancel.cancelled:
+                return BC.CallResult(status=BC.CANCELLED)
+        return BC.CallResult(status=BC.COMPLETE, text=json.dumps(self.answer), total_s=0.1)
+
+
+def _bridge(client, idle=True, events=None):
+    from uri_assist import bridge as B
+    br = B.AssistCommands(brain_client=client, brain_idle=lambda: idle,
+                          write_event=(events.append if events is not None else None))
+    return B, br
+
+
+def test_bridge_check_and_apply_need_no_grant_and_keep_exact_keys(monkeypatch):
+    monkeypatch.setattr(W, "default_spell", lambda: NoSpell())
+    B, br = _bridge(None)
+    r = br.handle("assist_write_check", {"command": "assist_write_check", "text": "i agree"})
+    assert ("i", "I") in fixes(r)
+    s = r["suggestions"][0]
+    out = br.handle("assist_write_apply", {"command": "assist_write_apply", "text": "i agree",
+                                           "accepted": [{**{k: s[k] for k in ("start", "end", "original")},
+                                                         "replacement": "I"}]})
+    assert out["text"] == "I agree"
+    with pytest.raises(B.Refused) as e:
+        br.handle("assist_write_check", {"command": "assist_write_check", "text": "x", "extra": 1})
+    assert e.value.code == "COMMAND_SCHEMA"
+    with pytest.raises(B.Refused) as e:
+        br.handle("assist_write_brain", {"command": "assist_write_brain", "text": "x", "op": "proofread"})
+    assert e.value.code == "BRAIN_UNAVAILABLE"
+
+
+def test_bridge_brain_job_reports_by_status_and_event_and_a_user_turn_cancels_it():
+    events = []
+    brain = SlowBrain({"status": "ok", "message": "", "text": "The files were sent."})
+    B, br = _bridge(brain, events=events)
+    wid = br.handle("assist_write_brain", {"command": "assist_write_brain", "text": "The files was sent.",
+                                           "op": "proofread"})["write_id"]
+    assert br.handle("assist_write_status", {"command": "assist_write_status", "write_id": wid})["state"] == "RUNNING"
+    with pytest.raises(B.Refused) as e:
+        br.handle("assist_write_brain", {"command": "assist_write_brain", "text": "x", "op": "proofread"})
+    assert e.value.code == "WRITING_BUSY"
+    brain.release.set()
+    br._wjob[1].join(5)
+    st = br.handle("assist_write_status", {"command": "assist_write_status", "write_id": wid})
+    assert st["state"] == "FINISHED" and st["status"] == "COMPLETE"
+    assert [(x["original"], x["replacements"][0]) for x in st["suggestions"]] == [("was", "were")]
+    assert events and events[-1]["type"] == "assist.writing" and events[-1]["turn_id"] == wid
+    # a second job, stopped by the start of a user turn
+    brain2 = SlowBrain({"status": "ok", "message": "", "text": "y"})
+    B, br = _bridge(brain2)
+    wid = br.handle("assist_write_brain", {"command": "assist_write_brain", "text": "x y", "op": "rewrite",
+                                           "tone": "formal"})["write_id"]
+    br.cancel_brain_work("user_turn")
+    br._wjob[1].join(5)
+    st = br.handle("assist_write_status", {"command": "assist_write_status", "write_id": wid})
+    assert st["status"] == "CANCELLED"
+
+
+def test_bridge_brain_refuses_while_a_user_turn_holds_the_brain():
+    B, br = _bridge(FakeBrain({"status": "ok", "message": "", "text": "x"}), idle=False)
+    with pytest.raises(B.Refused) as e:
+        br.handle("assist_write_brain", {"command": "assist_write_brain", "text": "x", "op": "complete"})
+    assert e.value.code == "BRAIN_BUSY"
+    with pytest.raises(B.Refused) as e:
+        br.handle("assist_write_brain", {"command": "assist_write_brain", "text": "x", "op": "rewrite", "tone": "loud"})
+    assert e.value.code == "COMMAND_SCHEMA"
