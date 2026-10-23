@@ -10,10 +10,10 @@ never use a claimed span:
   1. references: the designator and the code together ("F.No. A-12/2026-Estt.", "O.M. No. ...", "D.O. No. ...",
      "No. ..."); the fact is the code;
   2. dates: day ranges in one month, "Nth (day) of Month", day and month, or month and day (with or without a
-     year), month-to-month periods and "Month YYYY" (FB5 R6-01), a standalone month after a time preposition,
+     year), month-to-month periods and "Month YYYY" (FB5 R6-01), standalone months including office periods,
      or a relative month such as "next April".
-     "may" counts as the month only with an ordinal day, a following year, a time preposition before it, or
-     "May"/"MAY" after a day or in a month-to-month period;
+     "may" remains excluded as a modal; capitalised "May" is also recognised in period wording while
+     question and subject forms stay excluded from the bare-month fallback;
   3. numbers in digits, with a following unit (days, km, posts, lakh, AM/PM, ... see UNITS) as part of the fact; an
      amount after Rs/INR/the rupee sign; "/-" is dropped;
   4. numbers in words ("twenty five thousand");
@@ -75,7 +75,9 @@ _PERIOD = re.compile(r"\b(" + _MONTHS + r")\b\.?\s+(?:to|till|until|through|-|â€
 _MAY_CUE = re.compile(r"\b(?:on|by|from|till|until|dated|before|after|of)\s+$", re.I)
 _STANDALONE_MONTH = re.compile(r"\b(?:in|during|by|before|after|throughout|for|of|from|until|till|on)\s+"
                                r"(?:the\s+month\s+of\s+)?(" + _MONTHS + r")\b", re.I)
-_MONTH_TOPIC = re.compile(r"\b(" + _MONTHS + r")\b\s+(?:salary|attendance)\b", re.I)
+_BARE_MONTH = re.compile(r"\b(" + _MONTHS + r")\b", re.I)
+_MAY_AS_PERIOD = re.compile(r"\b(?:the|this|next|last)\s+$", re.I)
+_MAY_MODAL_FOLLOW = re.compile(r"\s*(?:\d+\b|I\b|we\b|you\b|he\b|she\b|it\b|they\b)", re.I)
 _RELATIVE_MONTH = re.compile(r"\b(?:next|this|last)\s+(" + _MONTHS + r")\b", re.I)
 _DATE_NUM = re.compile(r"^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$|^\d{4}-\d{2}-\d{2}$")
 # FB4 R5-04: the designator is part of the claimed span, so it never becomes a name word.
@@ -88,10 +90,14 @@ _HONORIFIC = r"(?:" + "|".join(HONORIFICS) + r")\.?"
 _HON_RX = re.compile(_HONORIFIC + r"$")
 _CUE_NAME = re.compile(r"\b(?:to|from|" + "|".join(HONORIFICS) + r")\.?\s+([A-Z][A-Za-z'-]+)")
 # An explicit person label lets a lowercase full name be checked without treating arbitrary lowercase prose as names.
-_PERSON_NAME_WORD = r"(?!(?:is|was|will|shall|has|had|who|to|for|from|and|about|regarding|the|a|an|be|can|may|must|should|would|could)\b)[A-Za-z][A-Za-z'-]+"
+# Stop at a clause or prepositional phrase, rather than treating its words as a third/fourth name part.
+_PERSON_CLAUSE_START = (r"(?:is|was|will|shall|has|had|who|and|the|a|an|be|can|may|must|should|would|could|"
+                        r"about|after|against|at|before|by|concerning|during|for|from|in|into|of|on|over|"
+                        r"regarding|through|to|under|with|without)")
+_PERSON_NAME_WORD = r"(?!(?:" + _PERSON_CLAUSE_START + r")\b)[A-Za-z][A-Za-z'-]+"
 _PERSON_NAME = re.compile(r"\b(?:staff\s+member|employee\s+named|officer\s+named|person\s+named)\s+("
                           + _PERSON_NAME_WORD + r"(?:\s+" + _PERSON_NAME_WORD + r"){1,3})"
-                          + r"(?=\s*(?:[.,;:]|$|\b(?:is|was|will|shall|has|had|who|to|for|from|and|about|regarding)\b))",
+                          + r"(?=\s*(?:[.,;:]|$|\b" + _PERSON_CLAUSE_START + r"\b))",
                           re.I)
 _CONNECTORS = {"of", "and", "for", "the"}
 # Words that start or end a capitalised run without being part of a name (verbs, document words, designators).
@@ -202,11 +208,24 @@ def extract_facts(instruction: str) -> list:
         mon = m.group(1)
         if not taken(m.start(), m.end()) and (mon.lower() != "may" or mon in ("May", "MAY")):
             add("date", m.group(0), m.start(), m.end())
-    for rx in (_STANDALONE_MONTH, _MONTH_TOPIC):
-        for m in rx.finditer(text):
-            mon = m.group(1)
-            if not taken(m.start(1), m.end(1)) and (mon.lower() != "may" or mon in ("May", "MAY")):
-                add("date", mon, m.start(1), m.end(1))
+    for m in _STANDALONE_MONTH.finditer(text):
+        mon = m.group(1)
+        if not taken(m.start(1), m.end(1)) and (mon.lower() != "may" or mon in ("May", "MAY")):
+            add("date", mon, m.start(1), m.end(1))
+    # A month can name an office period without a time preposition ("June roster", "October duty chart").
+    # Bare "may" is also a modal verb: keep lowercase may and question/subject forms out of this fallback.
+    for m in _BARE_MONTH.finditer(text):
+        mon = m.group(1)
+        if taken(m.start(), m.end()):
+            continue
+        if mon.lower() == "may":
+            if mon not in ("May", "MAY"):
+                continue
+            if not _MAY_AS_PERIOD.search(text[:m.start()]):
+                after = text[m.end():]
+                if _MAY_MODAL_FOLLOW.match(after) or "?" in re.split(r"[.!]", after, maxsplit=1)[0]:
+                    continue
+        add("date", mon, m.start(), m.end())
     # 3. numbers in digits (amounts, numbers with units, numeric dates, codes without a designator)
     for m in re.finditer(r"\S+", text):
         if taken(m.start(), m.end()) or not re.search(r"\d", m.group(0)):

@@ -298,8 +298,15 @@ OFFICE-DAILY-USE-r6 R3 repair:
 - A standalone month modifying "salary" or "attendance" is a date fact, including "April salary processing".
   Replacing that month in the draft produces FACT_MISSING.
 
+OFFICE-DAILY-USE-r6 R4 repair:
+- Standalone month names identify office periods regardless of the following topic noun (for example, "June roster",
+  "October duty chart", and "May roster"). A changed month produces FACT_MISSING. Lowercase auxiliary "may"
+  and question forms such as "May staff apply?" remain excluded from this fallback.
+- A lowercase full name after an explicit person label ends before a following clause or prepositional phrase
+  (for example, "ramesh kumar on leave" and "asha devi under review"). Rephrasing that topic while keeping the
+  person does not produce a false name warning.
+
 Fact-check limitations that remain:
-- a standalone month without a time preposition, relative cue, or recognised period topic may not be read as a date;
 - a number followed by a word that is not in the unit list ("3 vehicles") is checked as "3" only, so a changed noun
   is not reported;
 - the same person named twice in the instruction needs to appear only once in the draft;

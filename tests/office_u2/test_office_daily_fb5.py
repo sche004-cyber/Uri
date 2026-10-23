@@ -152,3 +152,39 @@ def test_r3_03_month_modifying_period_topic_warns(instruction, old, new):
     assert {f["text"] for f in DR.extract_facts(instruction) if f["kind"] == "date"} == {old}
     assert DR.missing_facts(instruction, instruction) == []
     assert [(w["kind"], w["text"]) for w in warns(instruction, old, new)] == [("date", old)]
+
+
+# ---- OFFICE-DAILY-USE-r6 R4 root-cause repair -----------------------------------------------------------
+@pytest.mark.parametrize("instruction,month,replacement", [
+    ("Draft a notice about the June roster.", "June", "July"),
+    ("Prepare a circular: October duty chart changes.", "October", "November"),
+    ("Write a memo for the February review cycle.", "February", "March"),
+    ("Draft a notice about May roster changes.", "May", "June"),
+])
+def test_r4_01_bare_month_in_office_period_warns(instruction, month, replacement):
+    assert [f for f in DR.extract_facts(instruction) if f["kind"] == "date"] == [
+        {"kind": "date", "text": month}]
+    assert DR.missing_facts(instruction, instruction) == []
+    assert [(w["code"], w["kind"], w["text"]) for w in warns(instruction, month, replacement)] == [
+        ("FACT_MISSING", "date", month)]
+
+
+def test_r4_01_auxiliary_may_is_not_a_date():
+    for instruction in ("May 3 officers be deputed?", "May staff apply for leave?", "Staff may apply for leave."):
+        assert not [f for f in DR.extract_facts(instruction) if f["kind"] == "date"]
+
+
+@pytest.mark.parametrize("instruction,draft,name", [
+    ("Write a memo to staff member ramesh kumar on leave.",
+     "Memo to staff member ramesh kumar regarding leave.", "ramesh kumar"),
+    ("Draft a letter for employee named asha devi under review.",
+     "Letter concerning asha devi and the review.", "asha devi"),
+    ("Prepare a notice for officer named mohammed irfan ansari with a transfer request.",
+     "Notice: mohammed irfan ansari requests a transfer.", "mohammed irfan ansari"),
+])
+def test_r4_02_labelled_name_stops_at_topic_clause(instruction, draft, name):
+    assert [f for f in DR.extract_facts(instruction) if f["kind"] == "name"] == [
+        {"kind": "name", "text": name}]
+    assert DR.missing_facts(instruction, draft) == []
+    assert [(w["kind"], w["text"]) for w in DR.missing_facts(
+        instruction, draft.replace(name, "another person"))] == [("name", name)]
