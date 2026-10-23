@@ -220,3 +220,15 @@ blocks in an e-mail. Every residual of 6.4 and 6.5 stands, including OD-7.
 
 **Stated limit added:** at 64 KB, prose in scripts with combining marks (Hindi, Arabic) takes 0.7-1.1 s per call,
 above the AC-14c bound of 1 s in some runs (plan PC-15). Every residual of 6.4-6.6 stands, including OD-7.
+
+### 6.8 Changes after fallback review FB7 (2026-10-24; amends 6.4 row 1 and 6.7 row 2)
+
+| Change | Proof (tests/privacy) |
+|---|---|
+| The digit budget (6.4 row 1) is measured on the text as written as well as on every folded reading: gaps are counted in code points, and only characters that are letters as written count as letters. A run over the budget in either reading is redacted | `test_pc16.py` (every NFKC-changing code point and every punctuation/symbol code point in protected-shape gaps; random mixed gaps) |
+| 6.7 row 2 (refuse a run that spans an expanding compatibility character) is replaced by that rule: such runs are redacted; the original text is rewritten when only its as-written reading shows the run, and a text whose two readings find different things is refused | `test_pc16.py`, `test_pc15.py` |
+| Ordinary CJK text with full-width letters, half-width katakana or unit symbols between numbers is not refused; words of letters between numbers break a run | `test_pc16.py::test_fb7_r1_03*` |
+
+**Residual restated:** gaps of three or more letters as written, including a compatibility character that is itself a
+letter after two letters ("ab" + U+013F), break a run - the 6.4 letter-gap residual, now counted on the text as
+written. Every other residual of 6.4-6.7 stands, including OD-7.

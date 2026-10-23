@@ -61,8 +61,9 @@ def test_fb6_r3_01_reviewer_reproductions_never_reach_the_wire(q):
         return httpx.Response(200, json={"results": []})
     TavilyProvider(api_key="test", transport=httpx.MockTransport(capture), privacy=TGateway()).search(q)
     assert all(len(digits(s)) < 9 for s in sent), sent
-    for dest in ("EXTERNAL_AGENT", "EXTERNAL_MODEL"):
-        assert send(q, dest)[0], dest
+    for dest in ("EXTERNAL_AGENT", "EXTERNAL_MODEL", "LOG"):            # redacted or refused, never sent (PC-16)
+        refused, out = send(q, dest)
+        assert refused or len(digits(out)) < 9, (dest, out)
 
 
 @pytest.mark.parametrize("q", ["㏂ at 10:30 meeting", "ﷺ محمد 2026", "㌖ 2 ㌕ 5 ㎡",

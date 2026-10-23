@@ -118,10 +118,21 @@ class PrivacyGateway:
                 return self._doubt(meta, dest, cls, signals)
             # A clean original leaves as written, including decomposed accents. The egress form above and the
             # original below must both be clean; disguised or sensitive text still uses the checked egress form.
-            if text != original and not cls.categories() and not cls.credential_kinds:
+            # When the original shows a digit run that only its as-written reading finds (review FB7: a gap such as
+            # "a\u2026" or one "\u33c2" is short as written but long in the egress form), the original itself is
+            # rewritten - the egress form would send those digits; if the egress form also found something, the two
+            # readings cannot be reconciled and the text is refused as doubt.
+            if text != original and not cls.credential_kinds:
                 raw = C.classify(original, protected_terms)
-                if not (raw.categories() or raw.credential_kinds or raw.residual_encoding or raw.decoded_only):
-                    text, cls = original, raw
+                if not (raw.credential_kinds or raw.residual_encoding or raw.decoded_only):
+                    if not raw.categories() and not cls.categories():
+                        text, cls = original, raw
+                    elif raw.as_written and not cls.categories():
+                        text, cls = original, raw
+                    elif raw.as_written:
+                        return self._doubt(meta, dest, cls, {C.DOUBT_SEPARATOR})
+                elif raw.as_written:
+                    return self._doubt(meta, dest, cls, {C.DOUBT_SEPARATOR})
         else:
             cls = C.classify(text, protected_terms)
         counts = cls.categories()

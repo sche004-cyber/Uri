@@ -57,6 +57,7 @@ class Classification:
     credential_kinds: Counter  # Assist kinds that are credentials (no spans: these are refused, never rewritten)
     residual_encoding: bool = False  # still percent/entity-encoded after _FOLD_PASSES decodes: refused externally
     decoded_only: bool = False      # a sensitive category appears only once encoded sequences are decoded (LDEC-005)
+    as_written: bool = False        # a digit run only the as-written reading shows (review FB7, plan PC-16)
 
     def categories(self) -> Counter:
         c = Counter(cat for f in self.findings for cat in f.all_categories)
@@ -638,43 +639,6 @@ def _unusual_digit_separators(text: str) -> bool:
     return any(sum(c.isdigit() for c in m.group(0)) >= 9 for m in _LETTER_RUN.finditer(text))
 
 
-@functools.lru_cache(maxsize=8192)
-def _bridge(c: str) -> bool:
-    """A character that NFKC expands into letters, digits or more than three characters ("\\u33c2" -> "a.m.",
-    "\\ufdfa" -> an 18-letter phrase): one code point as written, but a long gap once normalized."""
-    import unicodedata
-    if c.isascii() or unicodedata.digit(c, None) is not None:
-        return False
-    n = unicodedata.normalize("NFKC", c)
-    return n != c and (len(n) > 3 or any(x.isalnum() for x in n))
-
-
-def _compat_bridges_digits(text: str) -> bool:
-    """True when a run over the digit budget, read on the text AS WRITTEN with every such character counted as one gap
-    character, spans one of them (review FB6 R3-01: "4111\\u33c21111\\u33c21111\\u33c21111" was clean in the NFKC form,
-    where each gap is "a.m.", and so the original went out with the card). Refused as doubt (LDEC-005)."""
-    import bisect
-    import unicodedata
-    if not any(_bridge(c) for c in set(text)):
-        return False
-    view, at = [], []
-    for i, c in enumerate(text):
-        if c.isascii():
-            view.append(c)
-        elif unicodedata.digit(c, None) is not None:
-            view.append(str(unicodedata.digit(c)))
-        elif _bridge(c):
-            view.append("~")
-            at.append(i)
-        else:
-            view.append(c)
-    for s, e in _long_number_spans("".join(view)):
-        k = bisect.bisect_left(at, s)
-        if k < len(at) and at[k] < e:
-            return True
-    return False
-
-
 def egress_form(text: str):
     """(text to send, disguise signals). The text to send is NFKC with punctuation look-alikes as ASCII and line or
     paragraph separators as newlines; invisible characters are removed except emoji/script shaping between non-ASCII
@@ -685,8 +649,6 @@ def egress_form(text: str):
         if _unusual_digit_separators(text):
             signals.add(DOUBT_SEPARATOR)
         return text, signals
-    if _compat_bridges_digits(text):
-        signals.add(DOUBT_SEPARATOR)
     src = unicodedata.normalize("NFKC", text)
 
     def ascii_or_digit(c):
@@ -943,4 +905,32 @@ def classify(text: str, protected_terms=()) -> Classification:
             spans = [Finding(f.category, S[f.start], E[f.end - 1], f.rule, f.members) for f in spans]
         found.extend(spans)
     decoded_only = bool(decoded_cats - literal_cats) and len(readings) > 1 and _ENCODED.search(text) is not None
-    return Classification(_resolve(found), cred, residual, decoded_only)
+    # The digit budget is also counted on the text AS WRITTEN: one character per code point, digit values folded,
+    # and only characters that are letters as written counting as letters (review FB7). Every folded reading counts
+    # gaps after NFKC and look-alike folding, which can disagree with what is sent: "a\u2026" is a 2-character gap
+    # that folds to "a...", "ab\u00d7" is a protected gap whose "\u00d7" folds to the letter "x", and a single
+    # "\u33c2" folds to "a.m." (FB6 R3-01). Runs found only here are LONG_NUMBER like any other.
+    as_written = False
+    if not text.isascii():
+        cover = _resolve(found)
+        starts, reach, best = [f.start for f in cover], [], -1
+        for f in cover:
+            best = max(best, f.end)
+            reach.append(best)
+        import bisect
+        for s, e in _long_number_spans(_as_written_view(text)):
+            i = bisect.bisect_right(starts, s) - 1
+            if not (i >= 0 and reach[i] >= e):
+                found.append(Finding(LONG_NUMBER, s, e, "digit_budget_as_written"))
+                as_written = True
+    return Classification(_resolve(found), cred, residual, decoded_only, as_written)
+
+
+def _as_written_view(text: str) -> str:
+    """`text` with every character that has a digit value written as that ASCII digit; nothing else changes, so the
+    view has one character per code point and letters are exactly the characters that are letters as written."""
+    import unicodedata
+    if not any(not c.isascii() and unicodedata.digit(c, None) is not None for c in set(text)):
+        return text
+    return "".join(str(unicodedata.digit(c)) if not c.isascii() and unicodedata.digit(c, None) is not None else c
+                   for c in text)
