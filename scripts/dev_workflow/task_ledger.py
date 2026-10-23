@@ -294,14 +294,29 @@ def default_path() -> Path:
 
 
 class Ledger:
-    def __init__(self, path: str | Path | None = None, *, cache_ttl: float = 3600.0):
+    def __init__(self, path: str | Path | None = None, *, cache_ttl: float = 3600.0,
+                 read_only: bool = False):
         self.path = Path(path) if path else default_path()
-        self.path.parent.mkdir(parents=True, exist_ok=True)
+        if read_only and not self.path.is_file():
+            raise LedgerError(f"ledger source unavailable: {self.path}")
+        if not read_only:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
         self.dir = self.path.parent
         self.cache_ttl = cache_ttl
-        conn = sqlite3.connect(str(self.path), timeout=30, isolation_level=None)
+        conn = sqlite3.connect(self.path.resolve().as_uri() + "?mode=ro", uri=True,
+                               timeout=30, isolation_level=None) if read_only else \
+            sqlite3.connect(str(self.path), timeout=30, isolation_level=None)
         conn.row_factory = sqlite3.Row
         self.db = _RedactingDB(conn)
+        if read_only:
+            try:
+                row = self.db.execute("SELECT v FROM meta WHERE k='schema'").fetchone()
+                if row is None or not str(row["v"]).isdigit() or int(row["v"]) > SCHEMA_VERSION:
+                    raise LedgerError(f"ledger source has an unsupported schema: {self.path}")
+            except BaseException:
+                self.close()
+                raise
+            return
         self.db.execute("PRAGMA busy_timeout=30000")
         self.db.execute("PRAGMA journal_mode=WAL")
         self.db.execute("PRAGMA synchronous=FULL")      # a committed transaction survives power loss

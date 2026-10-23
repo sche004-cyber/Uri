@@ -34,6 +34,7 @@ import time
 from pathlib import Path
 
 from scripts.dev_workflow import containment
+from scripts.dev_workflow.task_ledger import redact
 from scripts.dev_workflow.milestones.store import StoreError, atomic_write_bytes, file_sha256, os_lock
 
 FINAL = ("COMPLETED", "FAILED", "TIMED_OUT", "STALLED_KILLED", "INTERRUPTED")
@@ -78,6 +79,15 @@ def runs_dir(explicit: str | None = None) -> Path:
 
 def _sha(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _safe_argv(argv: list[str]) -> list[str]:
+    """Keep command identity raw while making persisted and returned argv display-safe."""
+    safe = [redact(arg)[0] for arg in argv]
+    for i, arg in enumerate(argv[:-1]):
+        if re.fullmatch(r"(?i)(?:--?(?:password|passwd|pass|pwd|token|secret|api-key)|-p)", arg):
+            safe[i + 1] = "[REDACTED:cli_password]"
+    return safe
 
 
 def _git(cwd, *args) -> tuple[int, str]:
@@ -173,7 +183,10 @@ def _write(run_dir: Path, rec: dict) -> None:
 
 def _load(run_dir: Path) -> dict | None:
     try:
-        return json.loads((run_dir / "run.json").read_text(encoding="utf-8"))
+        rec = json.loads((run_dir / "run.json").read_text(encoding="utf-8"))
+        if isinstance(rec.get("argv"), list) and all(isinstance(arg, str) for arg in rec["argv"]):
+            rec["argv"] = _safe_argv(rec["argv"])
+        return rec
     except (OSError, ValueError):
         return None
 
@@ -334,7 +347,8 @@ def _run(argv, name, timeout_s, wd, ts, key, stall_s, kill_on_stall, lname, task
     d.mkdir(parents=True)
     log = d / "output.log"
     me = os.getpid()
-    rec = {"schema": "uri-testrun/1", "id": run_id, "name": name, "argv": argv, "cwd": str(wd),
+    rec = {"schema": "uri-testrun/1", "id": run_id, "name": name,
+           "argv": _safe_argv(argv), "cwd": str(wd),
            "repo": ts["repo"], "head": ts["head"], "tree": ts["tree"], "dirty": ts["dirty"], "reuse_key": key,
            "env": env_fingerprint(), "lock": lname, "timeout_s": timeout_s, "stall_s": stall_s,
            "kill_on_stall": kill_on_stall, "started_at": utcnow(), "supervisor_pid": me,
@@ -348,9 +362,10 @@ def _run(argv, name, timeout_s, wd, ts, key, stall_s, kill_on_stall, lname, task
             proc = containment.spawn(argv, cwd=str(wd), stdout=logf, stderr=subprocess.STDOUT,
                                      stdin=subprocess.DEVNULL)
         except OSError as e:
-            logf.write(f"[testrun] launch failed: {e}\n".encode("utf-8", "replace"))
+            safe_error = redact(str(e))[0]
+            logf.write(f"[testrun] launch failed: {safe_error}\n".encode("utf-8", "replace"))
             state, rc = "FAILED", None
-            rec["launch_error"] = str(e)
+            rec["launch_error"] = safe_error
             proc = None
         if proc is not None:
             rec.update(child_pid=proc.pid, child_ctime=_proc_ctime(proc.pid))

@@ -305,6 +305,7 @@ class Ctx:
     def __init__(self, repo: Path, canonical_ref: str, records: list[str], ledger: str | None,
                  min_age_hours: float, sizes: bool):
         self.repo = Path(repo)
+        self.records, self.ledger = list(records), ledger
         rc, sha, _ = git(repo, "rev-parse", "--verify", "-q", f"{canonical_ref}^{{commit}}")
         if rc or not sha:
             raise HKError("NO_CANONICAL", f"{canonical_ref} does not resolve in {repo}; refusing to classify")
@@ -316,6 +317,14 @@ class Ctx:
         self.cwd = norm(os.getcwd())
         self.wt_paths: set[str] = set()
         self._reach: dict[str, str] = {}
+
+    def fresh(self) -> tuple["Ctx", dict[str, dict]]:
+        """Rebuild authority and git registration at each source recheck."""
+        ctx = Ctx(self.repo, self.canonical_ref, self.records, self.ledger,
+                  self.min_age_s / 3600, False)
+        wts = {norm(w["path"]): w for w in _worktrees(ctx.repo)}
+        ctx.wt_paths = set(wts)
+        return ctx, wts
 
     def cited_under(self, path: str) -> list[str]:
         p = norm(path)
@@ -531,11 +540,14 @@ def inventory(repo, *, canonical_ref=CANONICAL_REF, roots=(), records=(), ledger
                 continue
             it = classify_dir(ctx, child)
             items.append(it)
+            if it["cls"] == "PROTECTED":
+                continue
             for c in _caches(child):
                 snapshot, links = content_snapshot(c)
                 items.append({"id": "cache:" + sha_text(norm(c))[:12], "kind": "cache", "path": str(c),
                               "cls": "CACHE", "action": "delete (regenerable)", "reasons": ["regenerable cache"],
-                              "parent": it["id"], "fingerprint": snapshot, "links": links})
+                              "parent": it["id"], "parent_path": str(child),
+                              "fingerprint": snapshot, "links": links})
     items += classify_branches(ctx, {w["branch"] for w in wts if w["branch"]})
     if sizes:
         for it in items:
@@ -700,17 +712,27 @@ def _journal_done(journal: Chain, plan_id: str) -> dict[str, dict]:
     return done
 
 
-def _current(ctx: Ctx, it: dict, wts: dict[str, dict]) -> dict | None:
+def _current(ctx: Ctx, it: dict) -> dict | None:
     """Re-inventory one plan item now (None = it no longer exists)."""
+    ctx, wts = ctx.fresh()
     if it["kind"] == "worktree":
         w = wts.get(norm(it["path"]))
         return classify_worktree(ctx, w) if w else None
     if it["kind"] == "dir":
         return classify_dir(ctx, Path(it["path"])) if Path(it["path"]).is_dir() else None
     if it["kind"] == "cache":
-        if not Path(it["path"]).is_dir():
+        path = Path(it["path"])
+        if not path.is_dir():
             return None
-        snapshot, links = content_snapshot(Path(it["path"]))
+        parent = Path(it["parent_path"]) if it.get("parent_path") else None
+        location = norm(path)
+        if (parent is None or not parent.is_dir() or (parent / ".git").exists() or
+                not location.startswith(norm(parent) + "/") or
+                classify_dir(ctx, parent)["cls"] == "PROTECTED" or
+                any(location == w or location.startswith(w + "/") for w in ctx.wt_paths) or
+                any(location == t or location.startswith(t + "/") for t in ctx.task_paths)):
+            return {**it, "cls": "PROTECTED", "reasons": ["cache location is now protected"]}
+        snapshot, links = content_snapshot(path)
         return {**it, "fingerprint": snapshot, "links": links}
     if it["kind"] == "branch":
         rc, sha, _ = git(ctx.repo, "rev-parse", "--verify", "-q", it["path"])
@@ -748,8 +770,6 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
         if ctx.canonical != plan["canonical"]["sha"]:
             results.append({"note": f"canonical moved {plan['canonical']['sha'][:12]} -> {ctx.canonical[:12]}; "
                                     "items are re-classified against the new tip"})
-        wts = {norm(w["path"]): w for w in _worktrees(ctx.repo)}
-        ctx.wt_paths = set(wts)
         done = _journal_done(journal, plan["plan_id"])
         for it in plan["items"]:
             r = {"item": it["id"], "kind": it["kind"], "path": it["path"], "planned_class": it["cls"]}
@@ -767,7 +787,7 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
                 r["outcome"] = "REFUSED"
                 r["why"] = f"class {it['cls']} is never removed"
                 continue
-            cur = _current(ctx, it, wts)
+            cur = _current(ctx, it)
             if cur is None:
                 r["outcome"] = "GONE_BEFORE_APPLY"
                 continue
@@ -803,7 +823,7 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
                                                      "action": action, "path": it["path"],
                                                      "archive": a["archive_id"], "restore": it.get("restore")})
                 # The plan and archive are only valid for these exact source bytes. Check as late as possible.
-                latest = _current(ctx, it, wts)
+                latest = _current(ctx, it)
                 if latest is None or latest["cls"] != it["cls"] or latest["fingerprint"] != it["fingerprint"]:
                     raise HKError("SOURCE_CHANGED", f"{it['path']} changed before removal")
                 if latest.get("links") and action in ("archive-then-remove", "worktree-remove", "rmtree"):

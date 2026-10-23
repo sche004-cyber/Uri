@@ -238,7 +238,7 @@ def _clean(text: str) -> tuple[str, int]:
 # --------------------------------------------------------------------------- collectors (read-only)
 
 def collect_ledger(path: str | None, g: Git) -> tuple[str, list[dict], int]:
-    lg = Ledger(path)
+    lg = Ledger(path, read_only=True)
     try:
         tasks = lg.db.execute("SELECT * FROM tasks ORDER BY created_at").fetchall()
         heads, wt_heads = [], []

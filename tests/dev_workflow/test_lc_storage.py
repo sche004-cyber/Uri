@@ -95,6 +95,21 @@ def test_ts1_launch_failure_is_failed_not_running(runs, repo):
     assert tr.exit_code_for(rec) == 127
 
 
+def test_r2_04_test_command_secrets_are_redacted_but_identity_uses_raw_args(runs, repo, capsys):
+    key = "sk-" + "A" * 24
+    argv = pyc("pass") + ["password=hunter2", key, "--token", "separated-secret"]
+    rec = tr.start(argv, name="secret", timeout_s=30, cwd=str(repo), root=runs)
+    stored = (runs / rec["id"] / "run.json").read_text(encoding="utf-8")
+    shown = json.dumps(rec) + json.dumps(tr.status(runs, rec["id"])) + json.dumps(tr.all_runs(runs))
+    assert all(secret not in stored + shown for secret in ("hunter2", key, "separated-secret"))
+    assert "[REDACTED:" in stored and "[REDACTED:" in shown
+    assert tr.reuse_key(argv, tr.tree_state(repo)) != tr.reuse_key(
+        pyc("pass") + ["password=othersecret", key], tr.tree_state(repo))
+    tr.main(["--runs", str(runs), "status", rec["id"]])
+    printed = capsys.readouterr().out
+    assert all(secret not in printed for secret in ("hunter2", key, "separated-secret"))
+
+
 def test_ts2_timeout_kills_the_whole_tree(runs, repo, tmp_path):
     pidf = tmp_path / "grandchild.pid"
     code = f"""
@@ -371,6 +386,29 @@ def test_dm1_refresh_with_provenance_and_incremental(mem):
     assert rec["confidence"] == "VERIFIED" and rec["integrated"] == 1
     r2 = dm.refresh(ix)
     assert set(r2["sources"].values()) == {"unchanged"}
+
+
+def test_r2_03_refresh_does_not_create_a_missing_source_ledger(tmp_path, repo):
+    missing = tmp_path / "absent" / "ledger.sqlite3"
+    ix = dm.Index(tmp_path / "index.sqlite3")
+    try:
+        report = dm.refresh(ix, {"ledger": str(missing), "repo": str(repo), "decisions": [],
+                                 "receipts_roots": [], "archive_indexes": []})
+        assert report["sources"]["ledger"].startswith("ERROR ")
+        assert not missing.exists() and not missing.parent.exists()
+    finally:
+        ix.close()
+
+
+def test_r2_03_refresh_does_not_migrate_an_existing_ledger(mem):
+    lp = mem["lp"]
+    with sqlite3.connect(lp) as db:
+        db.execute("DELETE FROM events WHERE kind='SEAL'")
+    before = lp.read_bytes()
+    dm.refresh(mem["ix"], mem["cfg"])
+    assert lp.read_bytes() == before
+    with sqlite3.connect(lp) as db:
+        assert db.execute("SELECT count(*) FROM events WHERE kind='SEAL'").fetchone()[0] == 0
 
 
 def test_dm2_brief_budget_and_content(mem):
@@ -677,6 +715,65 @@ def test_hk2_dir_holding_worktrees_is_protected(sandbox):
     assert items["runtime"]["kind"] == "worktree"
 
 
+def test_r2_01_inventory_excludes_cache_beneath_registered_worktree(sandbox):
+    sb = sandbox
+    holder = sb["roots"] / "live-run"
+    cache = holder / "__pycache__"
+    cache.mkdir(parents=True)
+    (cache / "x.pyc").write_bytes(b"cache")
+    _git(sb["repo"], "worktree", "add", "-q", "--detach", str(holder / "runtime"), sb["base"])
+    plan = _plan(sb)
+    assert _by_path(plan)["live-run"]["cls"] == "PROTECTED"
+    assert not any(it["kind"] == "cache" and it["path"] == str(cache) for it in plan["items"])
+
+
+@pytest.mark.parametrize("protection", ["worktree", "task"])
+def test_r2_01_apply_refuses_cache_when_parent_becomes_protected(sandbox, protection):
+    sb = sandbox
+    plan = _plan(sb)
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    parent = sb["roots"] / "tmpstuff"
+    cache = parent / "__pycache__"
+    ledger = None
+    if protection == "worktree":
+        _git(sb["repo"], "worktree", "add", "-q", "--detach", str(parent / "runtime"), sb["base"])
+    else:
+        ledger = sb["tmp"] / "ledger.sqlite3"
+        lg = tl.Ledger(ledger)
+        lg.create("active", "work", DEV, worktree=str(parent / "runtime"))
+        lg.close()
+    result = hk.apply(pf, journal_dir=sb["tmp"] / "j", ledger=str(ledger) if ledger else None)
+    row = next(x for x in result["results"] if x.get("path") == str(cache))
+    assert row["outcome"] == "SKIPPED_CHANGED" and cache.is_dir()
+
+
+def test_r2_01_cache_parent_protection_after_first_recheck_blocks_removal(sandbox, monkeypatch):
+    sb = sandbox
+    plan = _plan(sb)
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    parent = sb["roots"] / "tmpstuff"
+    cache = parent / "__pycache__"
+    cache_id = next(it["id"] for it in plan["items"] if it["path"] == str(cache))
+    original = hk.Chain.append
+    changed = False
+
+    def protect_after_intent(self, kind, data):
+        nonlocal changed
+        result = original(self, kind, data)
+        if kind == "INTENT" and data.get("item") == cache_id and not changed:
+            changed = True
+            _git(sb["repo"], "worktree", "add", "-q", "--detach", str(parent / "runtime"), sb["base"])
+        return result
+
+    monkeypatch.setattr(hk.Chain, "append", protect_after_intent)
+    result = hk.apply(pf, journal_dir=sb["tmp"] / "j")
+    row = next(x for x in result["results"] if x.get("path") == str(cache))
+    assert changed and row["outcome"] == "FAILED" and "SOURCE_CHANGED" in row["error"]
+    assert cache.is_dir()
+
+
 def test_hk2_active_ledger_task_protects_worktree(sandbox):
     lp = sandbox["tmp"] / "ledger.sqlite3"
     lg = tl.Ledger(lp)
@@ -798,6 +895,31 @@ def test_r1_02_change_after_archive_refuses_removal(sandbox, monkeypatch):
                  approve=[_by_path(plan)["dirty"]["id"]])
     row = next(x for x in r["results"] if x.get("path") == str(dirty))
     assert row["outcome"] == "FAILED" and "SOURCE_CHANGED" in row["error"] and dirty.exists()
+
+
+def test_r2_02_same_tree_head_advance_after_first_recheck_blocks_removal(sandbox, monkeypatch):
+    sb = sandbox
+    plan = _plan(sb)
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    target = sb["paths"]["disposable"]
+    target_id = _by_path(plan)["disposable"]["id"]
+    original = hk.Chain.append
+    moved = False
+
+    def advance_after_intent(self, kind, data):
+        nonlocal moved
+        result = original(self, kind, data)
+        if kind == "INTENT" and data.get("item") == target_id and not moved:
+            moved = True
+            _git(target, "commit", "-q", "--allow-empty", "-m", "same tree, new head")
+        return result
+
+    monkeypatch.setattr(hk.Chain, "append", advance_after_intent)
+    result = hk.apply(pf, journal_dir=sb["tmp"] / "j")
+    row = next(x for x in result["results"] if x.get("path") == str(target))
+    assert moved and row["outcome"] == "FAILED" and "SOURCE_CHANGED" in row["error"]
+    assert target.is_dir() and _git(target, "rev-parse", "HEAD") != sb["base"]
 
 
 def test_r1_01_approved_worktree_with_omitted_link_is_retained(sandbox):
