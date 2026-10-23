@@ -177,6 +177,24 @@ def test_proofread_reference_punctuation_requires_individual_accept(original, ed
     assert "They were informed." in applied
 
 
+@pytest.mark.parametrize(("reference", "changed"), [
+    ("12.3", "12:3"),
+    ("12:3", "12.3"),
+])
+def test_proofread_accept_all_corrections_preserves_reference_separator(reference, changed):
+    original = f"Ref. {reference} applies. They was informed."
+    edited = f"Ref. {changed} applies. They were informed."
+    result = W.proofread(original, client=FakeBrain({"status": "ok", "message": "", "text": edited}))
+    changes = result["suggestions"]
+    separator = [s for s in changes if s["original"] in {".", ":"}]
+    assert len(separator) == 1
+    assert separator[0]["class"] == "rewrite"
+    accepted = [s for s in changes if s["class"] == "correction"]
+    assert [(s["original"], s["replacements"][0]) for s in accepted] == [("was", "were")]
+    applied = W.apply(original, _acc({"suggestions": accepted}, original))["text"]
+    assert applied == f"Ref. {reference} applies. They were informed."
+
+
 def test_negation_change_is_never_a_correction():
     t = "The proposal is approved."
     r = W.proofread(t, client=FakeBrain({"status": "ok", "message": "", "text": "The proposal is not approved."}))

@@ -482,10 +482,10 @@ def _touches_meaning(orig: str, rep: str, *, spelling: dict | None = None, conte
     o, r = orig.strip(), rep.strip()
     if o.lower() == r.lower():
         return False                                     # letter case / spacing only
-    # A separator within an identifier/date, or punctuation around a reference label, can change what is cited.
+    # Any punctuation edit between identifier characters can change what is cited (12.3 -> 12:3).
     # Keep these out of Accept all even when the diff contains no word characters (and text_verify has no flag).
     changed = orig + rep
-    if any(c in changed for c in "/-") and re.fullmatch(r"\w\w", context):
+    if re.search(r"[^\w\s]", changed) and re.fullmatch(r"\w\w", context):
         return True
     if any(c in changed for c in "()") and re.search(r"\w", context):
         return True
