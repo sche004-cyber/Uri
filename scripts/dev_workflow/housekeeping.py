@@ -109,6 +109,14 @@ def is_link(path: str | Path) -> bool:
         return False
 
 
+def _reject_link_ancestors(path: str | Path) -> None:
+    """Reject a link or reparse point in any component of a deletion path."""
+    p = Path(os.path.abspath(path))
+    for component in (*reversed(p.parents), p):
+        if is_link(component):
+            raise HKError("LINK_REFUSED", f"{component} is a link in {p}")
+
+
 def walk(root: Path, *, skip=frozenset(), max_depth: int | None = None):
     """os.walk that never follows symlinks or junctions (the Brain model folders on D: are junctions)."""
     root = Path(root)
@@ -137,8 +145,8 @@ def content_snapshot(root: Path) -> tuple[str, list[str]]:
     """Fingerprint every entry (name, type, mode, size, mtime_ns) without traversing links; fail closed if an entry
     cannot be read. P-1 (live run 2026-10-23): hashing file contents opened every file of every worktree (8,300 opens,
     10-26 s per worktree on Windows; the real-machine inventory timed out at 3 h). Directory metadata from scandir
-    needs no open; any rewrite changes mtime_ns (NTFS 100 ns resolution). Tracked content is additionally bound by git
-    status/HEAD, and an archive still hashes every byte it stores."""
+    needs no open. Metadata alone does not detect a timestamp-preserving rewrite; archived removals compare source
+    bytes with the verified archive immediately before deletion."""
     h = hashlib.sha256()
     links = []
 
@@ -256,13 +264,13 @@ def _worktrees(repo: Path) -> list[dict]:
 _RECORD_CACHE: dict[tuple[str, int, int], frozenset[str]] = {}
 
 
-def _record_paths(records: list[str]) -> dict[str, set[str]]:
+def _record_paths(records: list[str], *, refresh: bool = False) -> dict[str, set[str]]:
     """Absolute paths cited by authoritative records (decisions.md, developmental.md, audit/MM docs, receipts), each
     with the record files that cite it (I-1: the owner judges a citation by its source).
 
     P-1: a record directory is walked without entering driver work trees (`.work`) or nested checkouts (a directory
     holding `.git`) - those are repository copies, not records - and each record file is parsed once per
-    (path, size, mtime) for the life of the process (apply rebuilds its context for every recheck)."""
+    (path, size, mtime) for inventory. Apply rechecks reread records because those fields cannot prove content."""
     found: dict[str, set[str]] = {}
     files: list[Path] = []
     for r in records:
@@ -279,7 +287,7 @@ def _record_paths(records: list[str]) -> dict[str, set[str]]:
             if st.st_size > RECORD_MAX_BYTES:
                 continue
             key = (f.as_posix(), st.st_size, st.st_mtime_ns)
-            cited = _RECORD_CACHE.get(key)
+            cited = None if refresh else _RECORD_CACHE.get(key)
             if cited is None:
                 text = f.read_text(encoding="utf-8", errors="replace")
                 cited = frozenset(norm(m.group(1).rstrip(".:")) for m in PATH_RE.finditer(text))
@@ -325,7 +333,7 @@ def _ledger_refs(ledger: str | None) -> tuple[set[str], set[str]]:
 
 class Ctx:
     def __init__(self, repo: Path, canonical_ref: str, records: list[str], ledger: str | None,
-                 min_age_hours: float, sizes: bool):
+                 min_age_hours: float, sizes: bool, *, refresh_records: bool = False):
         self.repo = Path(repo)
         self.records, self.ledger = list(records), ledger
         rc, sha, _ = git(repo, "rev-parse", "--verify", "-q", f"{canonical_ref}^{{commit}}")
@@ -336,7 +344,7 @@ class Ctx:
         self.canonical_full = full or None
         _, common, _ = git(repo, "rev-parse", "--path-format=absolute", "--git-common-dir")
         self.common_dir = Path(common) if common else None
-        self.cited = _record_paths(records)
+        self.cited = _record_paths(records, refresh=refresh_records)
         self.task_paths, self.task_branches = _ledger_refs(ledger)
         self.min_age_s = min_age_hours * 3600
         self.sizes = sizes
@@ -348,7 +356,7 @@ class Ctx:
     def fresh(self) -> tuple["Ctx", dict[str, dict]]:
         """Rebuild authority and git registration at each source recheck."""
         ctx = Ctx(self.repo, self.canonical_ref, self.records, self.ledger,
-                  self.min_age_s / 3600, False)
+                  self.min_age_s / 3600, False, refresh_records=True)
         wts = {norm(w["path"]): w for w in _worktrees(ctx.repo)}
         ctx.wt_paths = set(wts)
         return ctx, wts
@@ -800,14 +808,19 @@ def inventory(repo, *, canonical_ref=CANONICAL_REF, roots=(), records=(), ledger
     wts = _worktrees(ctx.repo)
     wt_paths = {norm(w["path"]) for w in wts}
     ctx.wt_paths = wt_paths
-    items = [classify_worktree(ctx, w) for w in wts]
+    items = []
+    for w in wts:
+        _reject_link_ancestors(w["path"])
+        items.append(classify_worktree(ctx, w))
     for root in roots:
         root = Path(root)
         if not root.is_dir():
             continue
+        _reject_link_ancestors(root)
         for child in sorted(root.iterdir()):
             if not child.is_dir() or is_link(child) or norm(child) in wt_paths or (child / ".git").exists():
                 continue
+            _reject_link_ancestors(child)
             it = classify_dir(ctx, child)
             items.append(it)
             if it["cls"] == "PROTECTED":
@@ -875,7 +888,8 @@ def archive(src, archive_root, label: str | None = None, extras: dict[str, bytes
     """Verified zip of ``src``. ``extras`` (name -> bytes) are stored under ``extra/`` and listed in the manifest
     with their sha256 (e.g. a worktree's staged patch); restore writes them to ``.housekeeping-extra/``."""
     src = Path(src)
-    if not src.is_dir() or is_link(src):
+    _reject_link_ancestors(src)
+    if not src.is_dir():
         raise HKError("NOT_A_DIR", f"{src} is not a real directory")
     root = Path(archive_root)
     root.mkdir(parents=True, exist_ok=True)
@@ -977,6 +991,27 @@ def verify_archive(ident: str, archive_root) -> dict:
     return {"ok": not errs, "zip": str(zpath), "errors": errs}
 
 
+def _check_source_against_archive(src: Path, zpath: Path) -> None:
+    """Bind the bytes about to be removed to the already verified archive."""
+    with zipfile.ZipFile(zpath) as z:
+        files = json.loads(z.read("manifest.json"))["files"]
+    archived = {e["path"]: e["sha256"] for e in files}
+    current = set()
+    for d, _dirs, names in walk(src):
+        for name in names:
+            p = d / name
+            rel = p.relative_to(src).as_posix()
+            if rel == ".git":
+                continue
+            if is_link(p):
+                raise HKError("SOURCE_CHANGED", f"{p} became a link after archiving")
+            current.add(rel)
+            if archived.get(rel) != file_sha256(p):
+                raise HKError("SOURCE_CHANGED", f"{p} differs from the verified archive")
+    if current != archived.keys():
+        raise HKError("SOURCE_CHANGED", f"{src} file list differs from the verified archive")
+
+
 def restore(ident: str, archive_root, to) -> dict:
     v = verify_archive(ident, archive_root)
     if not v["ok"]:
@@ -1019,8 +1054,7 @@ def _rmtree(path: Path) -> None:
     def onerr(func, p, _exc):
         os.chmod(p, stat.S_IWRITE)
         func(p)
-    if is_link(path):
-        raise HKError("LINK_REFUSED", f"{path} is a link; never deleted through")
+    _reject_link_ancestors(path)
     shutil.rmtree(path, onexc=onerr) if sys.version_info >= (3, 12) else shutil.rmtree(path, onerror=onerr)
 
 
@@ -1153,6 +1187,9 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
                 r["why"] = why
                 continue
             try:
+                if it["kind"] != "branch":
+                    for path in it.get("paths") or [it["path"]]:
+                        _reject_link_ancestors(path)
                 cur = _current(ctx, it)
             except HKError as e:
                 r.update(outcome="FAILED", error=f"recheck failed: {e}")
@@ -1209,6 +1246,11 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
                 if latest.get("links") and action in ("archive-then-remove", "worktree-remove", "rmtree",
                                                       "rmtree-caches"):
                     raise HKError("LINKS_PRESENT", f"{it['path']} contains links omitted by archive")
+                if it["kind"] != "branch":
+                    for path in it.get("paths") or [it["path"]]:
+                        _reject_link_ancestors(path)
+                if action == "archive-then-remove":
+                    _check_source_against_archive(Path(it["path"]), Path(a["zip"]))
                 if action == "archive-then-remove":
                     if it["kind"] == "worktree":
                         git(ctx.repo, "worktree", "remove", "--force", it["path"], check=True)

@@ -1143,6 +1143,50 @@ def test_r1_02_change_after_archive_refuses_removal(sandbox, monkeypatch):
     assert row["outcome"] == "FAILED" and "SOURCE_CHANGED" in row["error"] and dirty.exists()
 
 
+def test_r1_01_same_size_same_mtime_rewrite_after_archive_is_kept(sandbox, monkeypatch):
+    sb = sandbox
+    plan = _plan(sb)
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    dirty = sb["paths"]["dirty"]
+    source = dirty / "work.txt"
+    original = hk.archive
+
+    def rewritten_after_archive(*args, **kwargs):
+        result = original(*args, **kwargs)
+        before = source.stat()
+        source.write_bytes(b"x" * before.st_size)
+        os.utime(source, ns=(before.st_atime_ns, before.st_mtime_ns))
+        return result
+
+    monkeypatch.setattr(hk, "archive", rewritten_after_archive)
+    r = hk.apply(pf, journal_dir=sb["tmp"] / "j", archive_root=sb["tmp"] / "ar",
+                 approve=[_by_path(plan)["dirty"]["id"]])
+    row = next(x for x in r["results"] if x.get("path") == str(dirty))
+    assert row["outcome"] == "FAILED" and "SOURCE_CHANGED" in row["error"]
+    assert source.read_bytes() == b"x" * len(b"uncommitted work\n")
+
+
+def test_r1_02_same_size_same_mtime_record_rewrite_blocks_disposable_apply(sandbox):
+    sb = sandbox
+    record = sb["records"] / "decisions.md"
+    target = sb["paths"]["disposable"]
+    citation = target.as_posix()
+    record.write_text("reference: " + "x" * len(citation), encoding="utf-8")
+    plan = _plan(sb)
+    item = _by_path(plan)["disposable"]
+    assert item["cls"] == "DISPOSABLE"
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    before = record.stat()
+    record.write_text("reference: " + citation, encoding="utf-8")
+    os.utime(record, ns=(before.st_atime_ns, before.st_mtime_ns))
+    r = hk.apply(pf, journal_dir=sb["tmp"] / "j")
+    row = next(x for x in r["results"] if x.get("item") == item["id"])
+    assert row["outcome"] == "SKIPPED_CHANGED" and row["now"]["class"] == "REFERENCED"
+    assert target.exists()
+
+
 def test_r2_02_same_tree_head_advance_after_first_recheck_blocks_removal(sandbox, monkeypatch):
     sb = sandbox
     plan = _plan(sb)
@@ -1307,6 +1351,44 @@ def test_hk7_archive_never_follows_junctions(tmp_path):
     with pytest.raises(hk.HKError):
         hk._rmtree(src / "link")
     assert (outside / "big.bin").exists()
+
+
+@pytest.mark.windows_only
+def test_r1_03_inventory_rejects_junction_plan_root(sandbox):
+    sb = sandbox
+    root = sb["roots"]
+    outside = sb["tmp"] / "outside"
+    root.rename(outside)
+    subprocess.run(["cmd", "/c", "mklink", "/J", str(root), str(outside)],
+                   check=True, capture_output=True)
+    try:
+        with pytest.raises(hk.HKError, match="LINK_REFUSED"):
+            _plan(sb)
+        assert (outside / "tmpstuff" / "notes.txt").exists()
+    finally:
+        root.rmdir()
+
+
+@pytest.mark.windows_only
+def test_r1_03_apply_rejects_new_junction_plan_root(sandbox):
+    sb = sandbox
+    plan = _plan(sb)
+    item = _by_path(plan)["tmpstuff"]
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    root = sb["roots"]
+    outside = sb["tmp"] / "outside"
+    root.rename(outside)
+    subprocess.run(["cmd", "/c", "mklink", "/J", str(root), str(outside)],
+                   check=True, capture_output=True)
+    try:
+        r = hk.apply(pf, journal_dir=sb["tmp"] / "j", archive_root=sb["tmp"] / "ar",
+                     approve=[item["id"]])
+        row = next(x for x in r["results"] if x.get("item") == item["id"])
+        assert row["outcome"] == "FAILED" and "LINK_REFUSED" in row["error"]
+        assert (outside / "tmpstuff" / "notes.txt").exists()
+    finally:
+        root.rmdir()
 
 
 def test_hk8_restore_commands_work(sandbox):
