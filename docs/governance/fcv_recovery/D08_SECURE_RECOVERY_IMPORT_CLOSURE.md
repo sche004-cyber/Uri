@@ -46,20 +46,32 @@ Manager session, 2026-10-23; P0 DEC-104 records both the wording given to P0 and
 
   ```python
   import ast, subprocess
-  def imports(path):  # module names imported by the file at the pinned commit
+  def imports(path):  # names imported by the file at the pinned commit, relative imports kept by name
       src = subprocess.run(["git", "show", f"c036a901:{path}"], capture_output=True).stdout.decode()
       out = set()
       for n in ast.walk(ast.parse(src)):
-          if isinstance(n, ast.ImportFrom) and n.module: out.add("." * n.level + n.module)
+          if isinstance(n, ast.ImportFrom):
+              base = "." * n.level + (n.module or "")
+              out.update(base + ("" if base.endswith(".") else ".") + a.name for a in n.names)
           if isinstance(n, ast.Import): out.update(a.name for a in n.names)
       return sorted(out)
   ```
 
-  Output, URI modules and third-party network packages only: `uri_core/tools/fetch_url.py` ->
-  `uri_core.services.file_extraction` (restored by the checkpoint itself), `uri_web` (`netpolicy`, `records`),
-  `uri_web.safe_fetch`; `uri_web/safe_fetch.py` -> `httpcore`, `httpx` plus its sibling modules `netpolicy` and
-  `records`; `uri_web/__init__.py`, `netpolicy.py`, `records.py` -> standard library only. Closure: the four files
-  below. Independently reproduced by review FB2.
+  Output, filtered to names starting with `.`, `uri_`, `httpx` or `httpcore` (the rest is standard library):
+
+  ```text
+  uri_core/tools/fetch_url.py -> ['uri_core.services.file_extraction.extract_file_text', 'uri_web.netpolicy', 'uri_web.records', 'uri_web.safe_fetch.SafeFetcher']
+  uri_web/__init__.py -> []
+  uri_web/netpolicy.py -> []
+  uri_web/records.py -> []
+  uri_web/safe_fetch.py -> ['.netpolicy', '.records', 'httpcore', 'httpx']
+  ```
+
+  `uri_core.services.file_extraction` is already in the recovered tree: the rollback overlays the `git archive` of
+  baseline `e8e3b65` (`scripts/phase1_offline_rollback.py:154`); it is not in the checkpoint zip. `httpx` and
+  `httpcore` are installed packages, not files of the closure. Closure: the package `uri_web` (`__init__.py`) and
+  its modules `netpolicy`, `records`, `safe_fetch`, the four files below. The first version of this snippet skipped
+  relative imports and did not print the output recorded here (review FB3 FU-01, corrected).
 - **Identities and hashes:** read with `git show c036a901:<path>` and checked against the pins before anything is
   written; a changed pin or an unavailable commit refuses with nothing written (`test_d08_a_changed_support_pin_…`).
 - **Destinations:** only `uri_web/` inside the recovered tree, only where no restored file exists

@@ -1,7 +1,9 @@
 """HYG-1: governance rollback tests clean up the trees they write under work/c1.
 
-The FCV-01 / FCV-11 rollback tests restore the Phase 1 checkpoint into `work/c1/rollback_*` and
-`work/c1/negative_restore_*`, and derive negative checkpoints as `work/c1/checkpoints/negative_*.zip`. Those trees hold
+The FCV-01 / FCV-11 rollback tests restore the Phase 1 checkpoint into `work/c1/rollback_hyg1_*` and
+`work/c1/negative_restore_hyg1_*`, and derive negative checkpoints as `work/c1/checkpoints/negative_hyg1_*.zip`. The
+`hyg1_` tag is only ever written by these tests, so a real rehearsal (`rollback_<hex>`, the tools' default name) run
+in the same checkout is never touched (P0-HYG-A). Those trees hold
 `test_*.py` files of the restored Phase 1 tree, so whole-repository collection used to import them (196 collection
 errors on the AP-6 integration checkout, finding HYG-1).
 
@@ -20,7 +22,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 WORK = ROOT / "work" / "c1"
 # (sub-folder of work/c1, glob) of what the rollback tests create
-PATTERNS = (("", "rollback_*"), ("", "negative_restore_*"), ("checkpoints", "negative_*.zip"))
+PATTERNS = (("", "rollback_hyg1_*"), ("", "negative_restore_hyg1_*"), ("checkpoints", "negative_hyg1_*.zip"))
 
 
 def snapshot(work: Path = WORK) -> set[Path]:

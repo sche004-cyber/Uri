@@ -22,16 +22,16 @@ def derived(mutate):
         for i in z.infolist():
             members.append([i.filename, z.read(i)])
     members = mutate(members)
-    out = ROOT / "work/c1/checkpoints" / ("negative_" + uuid.uuid4().hex + ".zip")
+    out = ROOT / "work/c1/checkpoints" / ("negative_hyg1_" + uuid.uuid4().hex + ".zip")   # HYG-1 tag
     with zipfile.ZipFile(out, "w") as a:
         for n, d in members:
             a.writestr(n, d)
-    return out, hashlib.sha256(out.read_bytes()).hexdigest(), ROOT / "work/c1" / ("negative_restore_" + uuid.uuid4().hex)
+    return out, hashlib.sha256(out.read_bytes()).hexdigest(), ROOT / "work/c1" / ("negative_restore_hyg1_" + uuid.uuid4().hex)
 
 
 def test_exact_frozen_checkpoint_rehearses_and_restores_every_frozen_file():
     assert hashlib.sha256(FROZEN.read_bytes()).hexdigest() == FROZEN_SHA
-    dest = ROOT / "work/c1" / ("rollback_" + uuid.uuid4().hex)
+    dest = ROOT / "work/c1" / ("rollback_hyg1_" + uuid.uuid4().hex)
     ev = R.rehearse(FROZEN, FROZEN_SHA, dest)
     assert ev["status"] == "OFFLINE_SOURCE_OVERLAY_RECOVERY_PASSED" and ev["archive_sha256"] == FROZEN_SHA
     with zipfile.ZipFile(FROZEN) as z:
