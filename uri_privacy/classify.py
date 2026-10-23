@@ -118,9 +118,9 @@ _LABELLED = re.compile(
     # so ordinary prose ("the password policy is strict", "password field is required.") stays readable.
     r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase)(?:'s)?(?: ?(?:->|=>|-|–|→) ?| )"
     r"[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
-    # The value before the label ("X is my password", "use X as the password", review FB4 R1-04). Only at the start
-    # of a word, so the scan stays linear; the value needs a digit or symbol, as above.
-    r"(?<![^\s\"'(])[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})[\"']? (?:is|was|as|=) "
+    # The value before the label ("X is my password", "use X as the password", review FB4 R1-04 / R4-01).
+    # Alphabetic values count too. Exclude unquoted question words so "what is my password" stays readable.
+    r"(?<![^\s\"'(])(?!(?<![\"'])(?:what|where|which|when|why|whose|how)\b)[\"']?([^\s\"',;]{4,})[\"']? (?:is|was|as|=) "
     r"(?:(?:my|the|our|your|a|new|wifi|login) ){0,2}(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|pin)\b|"
     # "pw X" and, after a user/login word, "pass X" (review FB4 R1-04). The value holds a letter and a digit or
     # symbol, so "pass 2026 exams" and "pass COVID tests" stay readable.

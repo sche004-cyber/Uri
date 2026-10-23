@@ -15,6 +15,9 @@ from .helpers import TGateway
 
 LETTER_ONLY_CREDENTIALS = ["API key abcdefghijklmnop", "password huntertwo", "password abcd",
                            "secret key wordvalue", "access token alphabetic", "passcode wordvalue"]
+VALUE_BEFORE_LABEL_WORDS = ("huntertwo", "sunshine", "bluebird", "orchard", "pineapple")
+VALUE_BEFORE_LABEL_FORMS = ("{value} is my password", "use {value} as the password",
+                            '"{value}" is the wifi password', "{value} was our passcode")
 
 
 @pytest.mark.parametrize("text", LETTER_ONLY_CREDENTIALS)
@@ -43,6 +46,44 @@ def test_r3_01_letter_only_labelled_credentials_never_reach_search_transport(tex
     assert result.status == REFUSED
     assert requests == []
     assert text not in result.query
+
+
+@pytest.mark.parametrize("value", VALUE_BEFORE_LABEL_WORDS)
+@pytest.mark.parametrize("form", VALUE_BEFORE_LABEL_FORMS)
+def test_r4_01_alphabetic_value_before_label_is_refused_and_redacted(value, form):
+    text = form.format(value=value)
+    assert CREDENTIAL in classify(text).categories()
+    for destination in ("WEB_SEARCH", "EXTERNAL_AGENT", "EXTERNAL_MODEL", "EXTERNAL_SERVICE"):
+        with pytest.raises(PrivacyRefused):
+            TGateway().prepare(text, requester="t", destination=destination, purpose="p")
+    assert value not in TGateway().prepare(text, requester="t", destination="LOG", purpose="p").text
+
+
+def test_r4_01_alphabetic_value_before_label_never_reaches_search_transport():
+    requests = []
+
+    def capture(request):
+        requests.append(json.loads(request.content)["query"])
+        return httpx.Response(200, json={"results": []})
+
+    text = "huntertwo is my password"
+    result = TavilyProvider(api_key="test", transport=httpx.MockTransport(capture),
+                            privacy=TGateway()).search(text)
+    assert result.status == REFUSED
+    assert requests == []
+    assert "huntertwo" not in result.query
+
+
+@pytest.mark.parametrize("text", ["what is my password", "where is my password",
+                                   "is my password strong enough?"])
+def test_r4_01_password_questions_stay_readable(text):
+    assert TGateway().prepare(text, requester="t", destination="WEB_SEARCH", purpose="p").text == text
+
+
+def test_r4_01_quoted_question_word_used_as_password_is_refused():
+    text = '"what" is my password'
+    with pytest.raises(PrivacyRefused):
+        TGateway().prepare(text, requester="t", destination="WEB_SEARCH", purpose="p")
 
 
 def test_r3_02_forced_random_collision_cannot_restore_another_scopes_value(monkeypatch):
