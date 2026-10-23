@@ -29,7 +29,8 @@ changes (`ws_frozen_check` exit 0).
 ## Verification of the four files (owner restriction, D08-03, 2026-10-23)
 
 Owner decision: "APPROVED WITH RESTRICTIONS. The four additional secure-recovery files may be installed only after
-their necessity, identities, destinations, hashes, and rollback behavior are verified" (P0 DEC-104).
+their necessity, identities, destinations, hashes, and rollback behavior are verified" (owner to the Milestone
+Manager session, 2026-10-23; P0 DEC-104 records both the wording given to P0 and this stricter wording).
 
 | Path (identity) | Source blob at `c036a901` | SHA-256 (pinned in `SUPPORT_FILES`) | Bytes | Destination | Why it is needed |
 |---|---|---|---|---|---|
@@ -41,6 +42,24 @@ their necessity, identities, destinations, hashes, and rollback behavior are ver
 - **Necessity:** the closure is computed with `ast` from the secure `fetch_url.py` (`404e6092…`): exactly these four
   files, no other URI module. The recovered tree imports `uri_core.tools.fetch_url`, and the fetch tool refuses
   loopback and private addresses (review FB1 probes: `127.0.0.1`, `10.0.0.1`, `0x7f000001`, port 9).
+- **How the closure was computed (review FB2 D08R2-02):**
+
+  ```python
+  import ast, subprocess
+  def imports(path):  # module names imported by the file at the pinned commit
+      src = subprocess.run(["git", "show", f"c036a901:{path}"], capture_output=True).stdout.decode()
+      out = set()
+      for n in ast.walk(ast.parse(src)):
+          if isinstance(n, ast.ImportFrom) and n.module: out.add("." * n.level + n.module)
+          if isinstance(n, ast.Import): out.update(a.name for a in n.names)
+      return sorted(out)
+  ```
+
+  Output, URI modules and third-party network packages only: `uri_core/tools/fetch_url.py` ->
+  `uri_core.services.file_extraction` (restored by the checkpoint itself), `uri_web` (`netpolicy`, `records`),
+  `uri_web.safe_fetch`; `uri_web/safe_fetch.py` -> `httpcore`, `httpx` plus its sibling modules `netpolicy` and
+  `records`; `uri_web/__init__.py`, `netpolicy.py`, `records.py` -> standard library only. Closure: the four files
+  below. Independently reproduced by review FB2.
 - **Identities and hashes:** read with `git show c036a901:<path>` and checked against the pins before anything is
   written; a changed pin or an unavailable commit refuses with nothing written (`test_d08_a_changed_support_pin_…`).
 - **Destinations:** only `uri_web/` inside the recovered tree, only where no restored file exists
@@ -72,5 +91,6 @@ canonical `requirements.txt` declares `httpx` directly (it arrives transitively)
 
 ## Evidence
 
-`tests/governance/test_fcv11_guarded_rollback.py`: 14 passed (11 existing, one updated for the support files, 3 new),
+`tests/governance/test_fcv11_guarded_rollback.py`: 16 passed at `c91de8aa` (11 existing, one updated for the support
+files, 5 new: 3 at `4ae062cb`, 2 failure-path tests for review FB1 D08-01/D08-02),
 including a subprocess import of `uri_core.tools.fetch_url` in the recovered tree.
