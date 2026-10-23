@@ -564,3 +564,10 @@ Correction 2026-10-23 (P0 Addendum O update 2): D10 (random key-store secrets pe
 P0 checked: commits `bf7f845e` (2 files) and `4eb1b135` (4 files) exist and touch no protected path. Review queue
 (Codex, order set by the MM thread): PH1-GATE-2-r2, M95-r3, FCV-ROLLBACK-D08-r1, URI-CONTROLS-ESCALATE-r1, VISION-F1-r1.
 
+
+P.14 note (2026-10-23, AP-9 `sk-` check): MM thread verdict "test fixtures, not secrets" for `tests/test_m38_harness.py`
+on `claude/project-thread-sqk105` (`69ef0e4c`) and `experimental/desktop-core-fixes` (`98abdd0a`). P0 re-checked without
+printing values: the file is identical on both branches; every `sk-` match is 7-27 characters including the prefix
+(far shorter than real provider keys), lines 300-485, in redaction-test fixtures. This clears the secret check for
+those two branches only. Still open for AP-9: privacy (Noting_Draft caches, running-app snapshot), binary size
+(innovation-lab), provenance notes. DEC-103 §3 authorises preservation of qualified branches after these checks.
