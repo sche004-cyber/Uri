@@ -1,0 +1,22 @@
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_01_config_notations_never_carry_a_credential
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_01_reviewer_reproductions_never_reach_the_wire
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_02_lookalike_separators_never_build_an_exempt_token_around_a_value
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_02_reviewer_reproductions_never_leave[ssn 1\u02d023\u02d045\u05896789 form]
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_02_reviewer_reproductions_never_leave[my aadhaar 23\u058945\u058967\u058989\u02d00124]
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_02_reviewer_reproductions_never_leave[card 41\u0589111\u0589111\u0589111\u02d011111 declined]
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_03_defanged_emails_are_redacted[john.doe@example[.]com]
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_03_defanged_emails_are_redacted[john.doe[@]example.com]
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_03_defanged_emails_are_redacted[john.doe(@)example.com]
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_03_defanged_emails_are_redacted[john.doe@example(.)com]
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_03_defanged_emails_are_redacted[john.doe @ example . com]
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_03_defanged_emails_are_redacted[john.doe@example .com]
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_03_defanged_emails_are_redacted[john.doe@example. com]
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_03_defanged_emails_are_redacted[john.doe{@}example{.}com]
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_04_pan_with_mixed_separators_is_redacted[PAN ABCPE 1234-F]
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_04_pan_with_mixed_separators_is_redacted[PAN ABCPE.1234 F]
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_04_pan_with_mixed_separators_is_redacted[PAN ABCPE-1234 F]
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_04_code_word_forms_are_refused[cvv2 123]
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_04_code_word_forms_are_refused[cvc2: 456]
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_04_code_word_forms_are_refused[pin: 12 34]
+FAILED tests/privacy/test_pc17.py::test_fb8_r2_04_code_word_forms_are_refused[otp 48 29 13]
+21 failed, 7 passed in 2.37s

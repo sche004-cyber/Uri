@@ -118,20 +118,22 @@ class PrivacyGateway:
                 return self._doubt(meta, dest, cls, signals)
             # A clean original leaves as written, including decomposed accents. The egress form above and the
             # original below must both be clean; disguised or sensitive text still uses the checked egress form.
-            # When the original shows a digit run that only its as-written reading finds (review FB7: a gap such as
-            # "a\u2026" or one "\u33c2" is short as written but long in the egress form), the original itself is
-            # rewritten - the egress form would send those digits; if the egress form also found something, the two
-            # readings cannot be reconciled and the text is refused as doubt.
+            # Whenever the original's own reading finds something the egress form's reading does not (review FB7:
+            # a gap short as written but long once normalized; FB8 R2-02: look-alike separators that normalize into
+            # an exempt IPv4:port or clock), the egress form would send it. The original itself is rewritten when the
+            # egress form found nothing; when both found different things, the readings cannot be reconciled and the
+            # text is refused as doubt.
             if text != original and not cls.credential_kinds:
                 raw = C.classify(original, protected_terms)
-                if not (raw.credential_kinds or raw.residual_encoding or raw.decoded_only):
-                    if not raw.categories() and not cls.categories():
-                        text, cls = original, raw
-                    elif raw.as_written and not cls.categories():
-                        text, cls = original, raw
-                    elif raw.as_written:
+                extra = raw.categories() - cls.categories()
+                if raw.credential_kinds or raw.residual_encoding or raw.decoded_only:
+                    if extra or raw.residual_encoding or raw.decoded_only:
                         return self._doubt(meta, dest, cls, {C.DOUBT_SEPARATOR})
-                elif raw.as_written:
+                elif not raw.categories() and not cls.categories():
+                    text, cls = original, raw
+                elif extra and not cls.categories():
+                    text, cls = original, raw
+                elif extra:
                     return self._doubt(meta, dest, cls, {C.DOUBT_SEPARATOR})
         else:
             cls = C.classify(text, protected_terms)

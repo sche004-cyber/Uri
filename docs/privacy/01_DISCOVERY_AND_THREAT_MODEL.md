@@ -232,3 +232,16 @@ above the AC-14c bound of 1 s in some runs (plan PC-15). Every residual of 6.4-6
 **Residual restated:** gaps of three or more letters as written, including a compatibility character that is itself a
 letter after two letters ("ab" + U+013F), break a run - the 6.4 letter-gap residual, now counted on the text as
 written. Every other residual of 6.4-6.7 stands, including OD-7.
+
+### 6.9 Changes after fallback review FB8 (2026-10-24; amends 6.4 rows 1 and 5, 6.6 rows 2-3, 6.8 row 2)
+
+| Change | Proof (tests/privacy) |
+|---|---|
+| Whatever the original's reading finds that the egress form's reading does not (a digit run hidden by look-alike separators that normalize into an exempt IPv4:port or clock, a credential, any category) is acted on: the original is rewritten, or the text is refused when the readings disagree both ways | `test_pc17.py::test_fb8_r2_02*` |
+| Credentials in config notations: compound or camelCase keys, quoted JSON/YAML keys, `KEY=value`, XML elements, when the value holds a digit | `test_pc17.py::test_fb8_r2_01*` |
+| E-mail written defanged (`[.]`, `(.)`, `[@]`, `(@)`) or with single spaces around `.` | `test_fb8_r2_03*` |
+| PAN with a space or one separator at each group boundary; `cvv2`/`cvc2`; spaced two-digit codes | `test_fb8_r2_04*` |
+
+**Residuals added:** a letter-only value in a config notation (`client_secret: changeme`) - the LDEC-007 residual;
+visible symbols inside a label word (`pass\u00a1word:`) - deliberate obfuscation, as the leetspeak residual. Every
+residual of 6.4-6.8 stands, including OD-7.

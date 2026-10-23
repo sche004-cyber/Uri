@@ -105,7 +105,7 @@ def iban_ok(raw: str) -> bool:
 # FB4 R1-06).
 _LABELLED = re.compile(
     r"(?i)\b(?:(?:otp|one[- ]time (?:password|code|pin)|verification code|security code|auth(?:entication)? code|"
-    r"cvv|cvc|m?pin(?! ?code)|upi pin|atm pin)\b(?: ?(?:number|num|no)\b\.?| ?#)?(?:\s*(?:is|was|=|:|-|#)\s*|\s+)"
+    r"cvv2?|cvc2?|m?pin(?! ?code)|upi pin|atm pin)\b(?: ?(?:number|num|no)\b\.?| ?#)?(?:\s*(?:is|was|=|:|-|#)\s*|\s+)"
     r"(\d{3,8})\b|"
     r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token)"
     r"\s*(?:is|was|=|:)\s*[\"']?([^\s\"',;]{4,})|"
@@ -150,7 +150,8 @@ _AADHAAR_CTX = re.compile(r"(?i)\b(?:aadhaa?r|uid|uidai|e-?kyc)\b[^\n]{0,25}$")
 # runs to one space, and no two optional space runs are adjacent, so these patterns cannot backtrack (review S1-04).
 _LBL = r"(?: ?(?:no\.?|number|num|card|#))?(?: ?[:\-])? ?"
 _PAN = re.compile(r"(?i)\b[a-z]{3}[pchfatbljg][a-z]\d{4}[a-z]\b|"                # "ABCPE1234F", any case
-                  r"(?-i:\b[A-Z]{3}[PCHFATBLJG][A-Z] ?\d{4} ?[A-Z]\b)|"           # "ABCPE 1234 F"
+                  # "ABCPE 1234 F", "ABCPE 1234-F": a space or one separator at each group boundary (FB8 R2-04)
+                  r"(?-i:\b[A-Z]{3}[PCHFATBLJG][A-Z](?: ?[-._/,] ?| )?\d{4}(?: ?[-._/,] ?| )?[A-Z]\b)|"
                   # upper case with a single space anywhere: "ABCP E123 4F" (review FB4 R1-05). (?-i: the leading (?i)
                   # applies to the whole pattern, so without it "hello 2024 a" was a PAN; coordinator finding C5-01.)
                   r"(?-i:\b[A-Z] ?[A-Z] ?[A-Z] ?[PCHFATBLJG] ?[A-Z] ?\d ?\d ?\d ?\d ?[A-Z]\b)|"
@@ -194,10 +195,12 @@ _EMAIL = re.compile(r"(?<![\w.+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9
                     # (review FB4 R1-06: an address whose local part has a Devanagari vowel sign was cut at the sign)
                     r"(?<![\w.+\-" + _MARKS + r"])[^\W_](?:[\w.%+\-" + _MARKS + r"]*[^\W_])?"
                     r"@[^\W_][\w\-" + _MARKS + r"]*(?:\.[\w\-" + _MARKS + r"]+)*\.[^\W\d_](?:[^\W\d_]|[" + _MARKS + r"])+|"
-                    # a single space around "@" (or a line break, folded to a space), and "(at)" / "[at]" / "(dot)"
-                    # forms (review FB5 R1-03); " at " and " dot " in prose stay a residual (words)
-                    r"(?<![\w.+-])[A-Za-z0-9._%+-]+(?: ?@ ?| ?[(\[{] ?at ?[)\]}] ?)[A-Za-z0-9-]+"
-                    r"(?:(?:\.| ?[(\[{] ?dot ?[)\]}] ?)[A-Za-z0-9-]+)*(?:\.| ?[(\[{] ?dot ?[)\]}] ?)[A-Za-z]{2,}\b")
+                    # a single space around "@" or "." (or a line break, folded to a space), and the defanged
+                    # "(at)" / "[@]" / "(dot)" / "[.]" forms (reviews FB5 R1-03, FB8 R2-03); " at " and " dot " in
+                    # prose stay a residual (words)
+                    r"(?<![\w.+-])[A-Za-z0-9._%+-]+(?: ?@ ?| ?[(\[{] ?(?:at|@) ?[)\]}] ?)[A-Za-z0-9-]+"
+                    r"(?:(?: ?\. ?| ?[(\[{] ?(?:dot|\.) ?[)\]}] ?)[A-Za-z0-9-]+)*"
+                    r"(?: ?\. ?| ?[(\[{] ?(?:dot|\.) ?[)\]}] ?)[A-Za-z]{2,}\b")
 _PHONE = re.compile(r"(?<![\w+])\+\d{1,3}[ -]?\(?\d{1,5}\)?(?:[ -]?\d){5,11}(?![\w])|"
                     r"(?<![\w+-])0?[6-9]\d{4}[ .-]\d{5}(?![\w-])|"                        # mobile, 5-5 grouped
                     r"(?<![\w-])\(0\d{2,4}\)\s?\d{3,4}[ -]?\d{4}(?![\w-])|"              # landline (080) 2345 6789
@@ -211,7 +214,16 @@ _PHONE_SPACED = re.compile(r"(?<![\w+.\-/])(?:\(?\d{3}\)?[ .-]\d{3}[ .-]\d{4}|0\
 _PHONE_CTX_AFTER = re.compile(r"(?i)^[^\n]{0,20}\b(?:call|phone|mobile|cell|whatsapp|contact|tel|number|sms)\b")
 _AADHAAR_CTX_AFTER = re.compile(r"(?i)^[^\n]{0,25}\b(?:aadhaa?r|uid|uidai)\b")
 # Spaced one-time and card codes: "OTP is 4 8 2 9 1 3", "cvv: 1 2 3".
-_SPACED_CODE = re.compile(r"(?i)\b(?:otp|cvv|cvc|pin|passcode)\b[^.\n\d]{0,20}?((?:\d ){2,7}\d)(?!\d)")
+# Credentials in config notations (review FB8 R2-01): a key whose name contains a credential word - compound
+# ("client_secret", "DB_PASSWORD", "AWS_SECRET_ACCESS_KEY", "clientSecret"), quoted ('"password": "x"') - before ":"
+# or "=", and XML elements ("<password>x</password>"). The value must hold a digit, so API documentation searches
+# ("client_secret: required", "refresh_token: string") stay readable; a letter-only value is the LDEC-007 residual.
+_KEYWORD = r"(?:pass(?:word|wd|phrase|code)?|pwd|(?:secret|signing|encryption|master)[_-]?key|secret|token|api[_-]?key|private[_-]?key|access[_-]?key|credentials?)"
+_KEYVAL = re.compile(
+    r"(?i)(?<![A-Za-z0-9])[\"']?(?:[A-Za-z0-9]{1,24}[_.-]){0,3}[A-Za-z0-9]{0,24}?" + _KEYWORD + r"[\"']?\s*[:=]\s*"
+    r"[\"']?(?=[^\s\"',;{}<>]*\d)([^\s\"',;{}<>]{4,})|"
+    r"<(?:[A-Za-z0-9_.-]{0,24}?)" + _KEYWORD + r"[^<>]{0,40}>\s*([^<\s]{4,})\s*</")
+_SPACED_CODE = re.compile(r"(?i)\b(?:otp|cvv2?|cvc2?|pin|passcode)\b[^.\n\d]{0,20}?((?:\d{1,2} ){1,7}\d{1,2})(?!\d)")
 _PHONE_CTX = re.compile(r"(?i)\b(?:call|phone|ph|mob|mobile|cell|whatsapp|contact|tel|telephone|sms|text|reach|"
                         r"number|no)\b[^\n]{0,20}$")
 # Luhn-valid IMEI/IMSI and hashes named as such are identifiers of devices and content, not cards or secrets.
@@ -338,7 +350,7 @@ def _before(text: str, i: int) -> str:
 # contains one of these words cannot match a text without them, so its scan is skipped. Each hint is checked against
 # the alternatives of its pattern above; `test_pc13.py::test_hints_are_necessary` checks it on every positive sample.
 _HINTS = {
-    "labelled": re.compile(r"(?i)p[a@4][s5$]{2}|pw|otp|one[- ]time|code|cv[vc]|pin|api|secret|token|key"),
+    "labelled": re.compile(r"(?i)p[a@4][s5$]{2}|pw|otp|one[- ]time|code|cv[vc]|pin|api|secret|token|key|credential"),
     "passport": re.compile(r"(?i)passport"),
     "spaced_code": re.compile(r"(?i)otp|cv[vc]|pin|passcode"),
     "key_split": re.compile(r"AKIA|ASIA|AIza|gh[opsu]_|github_pat_|glpat-|xox[abpr]-|sk-|sk_|rk_live_|tvly-"),
@@ -368,6 +380,8 @@ def _spans(text: str, protected_terms) -> list:
 
     for m in _scan(_LABELLED, text, "labelled"):
         add(CREDENTIAL, m, "labelled_value")
+    for m in _scan(_KEYVAL, text, "labelled"):
+        add(CREDENTIAL, m, "config_value")
     for m in _AADHAAR.finditer(text):
         a, s1, b, s2, c = m.groups()
         grouped = bool(s1) and s1 == s2
@@ -431,7 +445,8 @@ def _spans(text: str, protected_terms) -> list:
     for m in _PHONE_SPACED.finditer(text):
         add(CONTACT, m, "phone_spaced", 0)
     for m in _scan(_SPACED_CODE, text, "spaced_code"):
-        add(CREDENTIAL, m, "spaced_code", 1)
+        if sum(c.isdigit() for c in m.group(1)) >= 3:              # "pin: 12 34"; not "pin 1 2"
+            add(CREDENTIAL, m, "spaced_code", 1)
     for m in _PEM.finditer(text) if "PRIVATE KEY" in text else ():
         add(CREDENTIAL, m, "private_key", 0)
     for m in _scan(_KEY_SPLIT, text, "key_split"):

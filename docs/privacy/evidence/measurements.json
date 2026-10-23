@@ -159,41 +159,41 @@
    "kb": 0.4,
    "destination": "WEB_SEARCH",
    "n": 500,
-   "p50_ms": 2.815,
-   "p95_ms": 3.684,
-   "max_ms": 4.653
+   "p50_ms": 3.035,
+   "p95_ms": 5.264,
+   "max_ms": 5.37
   },
   {
    "kb": 2,
    "destination": "WEB_SEARCH",
    "n": 300,
-   "p50_ms": 13.493,
-   "p95_ms": 20.758,
-   "max_ms": 22.149
+   "p50_ms": 13.485,
+   "p95_ms": 19.585,
+   "max_ms": 24.143
   },
   {
    "kb": 2,
    "destination": "EXTERNAL_MODEL",
    "n": 300,
-   "p50_ms": 16.097,
-   "p95_ms": 18.572,
-   "max_ms": 25.08
+   "p50_ms": 16.114,
+   "p95_ms": 28.251,
+   "max_ms": 30.03
   },
   {
    "kb": 64,
    "destination": "EXTERNAL_MODEL",
    "n": 60,
-   "p50_ms": 493.432,
-   "p95_ms": 683.716,
-   "max_ms": 760.166
+   "p50_ms": 488.233,
+   "p95_ms": 650.549,
+   "max_ms": 712.583
   },
   {
    "kb": 64,
    "destination": "LOG",
    "n": 60,
-   "p50_ms": 417.907,
-   "p95_ms": 582.262,
-   "max_ms": 637.478
+   "p50_ms": 469.639,
+   "p95_ms": 579.405,
+   "max_ms": 590.989
   }
  ],
  "latency_non_ascii": {
@@ -203,96 +203,96 @@
     "chars": 400,
     "destination": "WEB_SEARCH",
     "n": 300,
-    "p50_ms": 3.721,
-    "p95_ms": 5.454
+    "p50_ms": 3.811,
+    "p95_ms": 6.663
    },
    {
     "script": "arabic",
     "chars": 2048,
     "destination": "EXTERNAL_MODEL",
     "n": 150,
-    "p50_ms": 20.376,
-    "p95_ms": 22.152
+    "p50_ms": 19.635,
+    "p95_ms": 38.248
    },
    {
     "script": "arabic",
     "chars": 65536,
     "destination": "EXTERNAL_MODEL",
     "n": 12,
-    "p50_ms": 641.527,
-    "p95_ms": 663.967
+    "p50_ms": 671.509,
+    "p95_ms": 769.764
    },
    {
     "script": "hindi",
     "chars": 400,
     "destination": "WEB_SEARCH",
     "n": 300,
-    "p50_ms": 4.174,
-    "p95_ms": 6.024
+    "p50_ms": 4.215,
+    "p95_ms": 8.04
    },
    {
     "script": "hindi",
     "chars": 2048,
     "destination": "EXTERNAL_MODEL",
     "n": 150,
-    "p50_ms": 22.945,
-    "p95_ms": 37.49
+    "p50_ms": 21.804,
+    "p95_ms": 23.489
    },
    {
     "script": "hindi",
     "chars": 65536,
     "destination": "EXTERNAL_MODEL",
     "n": 12,
-    "p50_ms": 721.061,
-    "p95_ms": 962.272
+    "p50_ms": 786.157,
+    "p95_ms": 848.942
    },
    {
     "script": "japanese",
     "chars": 400,
     "destination": "WEB_SEARCH",
     "n": 300,
-    "p50_ms": 3.97,
-    "p95_ms": 5.992
+    "p50_ms": 4.021,
+    "p95_ms": 7.62
    },
    {
     "script": "japanese",
     "chars": 2048,
     "destination": "EXTERNAL_MODEL",
     "n": 150,
-    "p50_ms": 21.307,
-    "p95_ms": 25.686
+    "p50_ms": 21.197,
+    "p95_ms": 40.45
    },
    {
     "script": "japanese",
     "chars": 65536,
     "destination": "EXTERNAL_MODEL",
     "n": 12,
-    "p50_ms": 678.982,
-    "p95_ms": 876.58
+    "p50_ms": 744.943,
+    "p95_ms": 818.337
    }
   ],
   "adversarial": [
    {
     "input": "'a/' x 32768",
-    "ms": 0.184,
+    "ms": 0.183,
     "result": "PRIVACY_INPUT_TOO_COMPLEX"
    },
    {
     "input": "'a/' x 1024",
-    "ms": 29.364,
+    "ms": 27.806,
     "result": "sent"
    },
    {
     "input": "'a/' x 200",
-    "ms": 1.784,
+    "ms": 1.755,
     "result": "sent"
    }
   ]
  },
  "memory": {
-  "rss_before_mb": 54.2,
-  "rss_after_10k_calls_mb": 54.8,
-  "delta_mb": 0.6,
+  "rss_before_mb": 55.3,
+  "rss_after_10k_calls_mb": 52.7,
+  "delta_mb": -2.5,
   "audit_records_in_memory": 10000,
   "note": "memory-mode audit keeps records in RAM; production uses URI_PRIVACY_HOME (file audit)"
  },
@@ -339,5 +339,5 @@
    "benign_texts": 85
   }
  },
- "elapsed_s": 270.71
+ "elapsed_s": 289.51
 }
