@@ -55,7 +55,7 @@ Three stdlib-only modules under `scripts/dev_workflow/`, plus a small extension 
   - `NOT_FOUND`.
 - `wait <run-id> --timeout S` waits on a **run id**, never on a log pattern. It returns at once for a finished, missing-marker or unknown run, and gives up after its own bounded timeout (exit code `WAIT_TIMEOUT`). This removes the incident class: a watcher can no longer wait on a file the producer never writes, and it cannot outlive the run.
 - **Duplicate-run lock.** `--lock auto` takes an OS lock (`milestones.store.os_lock`, which the OS releases if the holder dies) keyed on command + working directory. A second identical run is refused with `DUPLICATE_RUN` and names the active run id. `--lock <class>` (for example `phase1`) serialises a whole class of heavy runs across trees.
-- **Exact-tree evidence reuse** (`--reuse`). The reuse key is the sha256 of the argv, the working directory relative to the repository root, the git **tree** id of `HEAD`, and an environment fingerprint (Python version and `PYTHONPATH`).
+- **Exact-tree evidence reuse** (`--reuse`). The reuse key is the sha256 of the argv, resolved repository identity, the working directory relative to the repository root, the git **tree** id of `HEAD`, and a digest of the complete inherited environment plus Python interpreter identity. The source tree and environment are rechecked before reuse.
   - Reuse needs a clean tree (`git status --porcelain` empty, untracked files included).
   - The earlier run must be final `COMPLETED` or `FAILED`, and its log hash must still match.
   - A reused result is reported as `REUSED` with the original run id and carries the same exit code. It never upgrades a result, and the driver's mandatory gates are not changed.
@@ -123,8 +123,8 @@ Every destructive step is dry-run first, approval-gated where needed, idempotent
   - It acts only on `DISPOSABLE`, `PRUNABLE`, `CACHE` and, when listed in `--classes`, `OBSOLETE_BRANCH`. It also acts on items the owner explicitly `--approve`s.
   - `PROTECTED` and `ESSENTIAL_EVIDENCE` items are refused even when approved.
   - An approved `DIRTY`, `EVIDENCE` or `REFERENCED` worktree is **archived first** (verified zip, below) and then removed. The archive id goes into the receipt, so the removal can be reversed with `restore`.
-  - Each item is re-inventoried and its fingerprint compared before acting (`SKIPPED_CHANGED` if it moved).
-  - A hash-chained write-ahead journal records `INTENT` before and `DONE` or `FAILED` after each action. The receipt (`housekeeping_receipt.json` + `.md`) is written atomically and records freed bytes, restore commands and the plan sha256.
+  - Each item is re-inventoried and its fingerprint compared before acting (`SKIPPED_CHANGED` if it moved). Removable file contents and link metadata are fingerprinted, and the source is checked again immediately before removal. Approved archive-then-remove refuses a source with links because the archive does not restore them.
+  - A hash-chained write-ahead journal records `INTENT` before and `DONE` or `FAILED` after each action. For archived removals it records the verified archive and restore metadata in `ARCHIVE_READY` before removal, so crash recovery can carry the pointer forward. The receipt (`housekeeping_receipt.json` + `.md`) is written atomically and records freed bytes, restore commands and the plan sha256.
   - Re-applying a plan reports `ALREADY_DONE` items and performs nothing twice.
 - `archive <dir> --to <archive root> [--label L]`:
   - writes ZIP_DEFLATED to a temp file plus `manifest.json` (per-file sha256 and size);

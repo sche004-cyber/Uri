@@ -104,13 +104,17 @@ def tree_state(cwd: Path) -> dict:
 
 
 def env_fingerprint() -> dict:
-    return {"python": sys.version.split()[0], "PYTHONPATH": os.environ.get("PYTHONPATH", "")}
+    # Hash the complete inherited environment: recording its values would leak credentials into run.json.
+    env = json.dumps(sorted(os.environ.items()), ensure_ascii=False, separators=(",", ":"))
+    return {"python": sys.version, "executable": os.path.normcase(os.path.realpath(sys.executable)),
+            "environ_sha256": _sha(env)}
 
 
 def reuse_key(argv: list[str], ts: dict) -> str | None:
     if not ts["tree"] or ts["dirty"] is not False:
         return None
-    return _sha(json.dumps({"argv": argv, "cwd": ts["rel_cwd"], "tree": ts["tree"], "env": env_fingerprint()},
+    return _sha(json.dumps({"argv": argv, "repo": os.path.normcase(os.path.realpath(ts["repo"])),
+                            "cwd": ts["rel_cwd"], "tree": ts["tree"], "env": env_fingerprint()},
                            sort_keys=True))
 
 
@@ -185,20 +189,25 @@ def all_runs(root: Path) -> list[dict]:
 
 
 def find_run(root: Path, ident: str) -> Path | None:
-    """A run id, or the newest run with that name."""
+    """Resolve a run id exactly. Name lookup is a separate status-only operation."""
     if re.fullmatch(r"[A-Za-z0-9_.-]+", ident or "") and (root / ident / "run.json").is_file():
         return root / ident
-    named = [r for r in all_runs(root) if r.get("name") == ident]
+    return None
+
+
+def find_latest_named_run(root: Path, name: str) -> Path | None:
+    """Explicit convenience lookup for status, never for wait."""
+    named = [r for r in all_runs(root) if r.get("name") == name]
     return root / max(named, key=lambda r: r["started_at"])["id"] if named else None
 
 
 def status(root: Path, ident: str) -> dict:
-    d = find_run(root, ident)
+    d = find_run(root, ident) or find_latest_named_run(root, ident)
     if d is None:
         return {"id": ident, "state": "NOT_FOUND"}
     rec = _load(d)
-    if rec is None:
-        return {"id": ident, "state": "MISSING_MARKER", "why": "run.json unreadable"}
+    if rec is None or rec.get("id") != d.name:
+        return {"id": ident, "state": "MISSING_MARKER", "why": "run.json unreadable or run id mismatch"}
     out = {k: rec.get(k) for k in ("id", "name", "argv", "cwd", "head", "started_at", "ended_at", "exit_code",
                                    "duration_s", "log", "log_sha256", "env_failures", "reused_from", "lock",
                                    "contained")}
@@ -232,7 +241,8 @@ def wait(root: Path, ident: str, timeout_s: float, poll_s: float = 2.0) -> dict:
         raise RunError("USAGE", f"--timeout must be in (0, {MAX_TIMEOUT_S:.0f}] seconds")
     deadline = time.monotonic() + timeout_s
     while True:
-        st = status(root, ident)
+        d = find_run(root, ident)
+        st = status(root, d.name) if d else {"id": ident, "state": "NOT_FOUND"}
         if st["state"] not in ("RUNNING", "STALLED"):
             return st
         if time.monotonic() >= deadline:
@@ -294,7 +304,8 @@ def start(argv: list[str], *, name: str, timeout_s: float, cwd: str | None = Non
     ts = tree_state(wd)
     key = reuse_key(argv, ts)
     if reuse and key:
-        prev = _find_reusable(root, key)
+        # Revalidate the source and inherited environment immediately before selecting evidence.
+        prev = _find_reusable(root, key) if reuse_key(argv, tree_state(wd)) == key else None
         if prev is not None:
             return {**{k: prev.get(k) for k in ("exit_code", "log", "log_sha256", "head", "env_failures")},
                     "id": prev["id"], "name": name, "state": "REUSED", "reused_state": prev["state"],

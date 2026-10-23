@@ -32,6 +32,7 @@ import os
 import re
 import secrets
 import shutil
+import sqlite3
 import stat
 import subprocess
 import sys
@@ -130,6 +131,35 @@ def tree_size(root: Path, budget_s: float = 120.0) -> tuple[int, bool]:
         if time.monotonic() > deadline:
             return total, False
     return total, True
+
+
+def content_snapshot(root: Path) -> tuple[str, list[str]]:
+    """Hash every entry without traversing links; fail closed if an entry cannot be read."""
+    h = hashlib.sha256()
+    links = []
+
+    def visit(d: Path):
+        for p in sorted(d.iterdir(), key=lambda p: p.name):
+            rel = p.relative_to(root).as_posix()
+            st = p.lstat()
+            if is_link(p):
+                links.append(rel)
+                try:
+                    target = os.readlink(p)
+                except OSError:
+                    target = "unknown-reparse-target"
+                h.update(canon_json([rel, "link", target, st.st_mode,
+                                     getattr(st, "st_reparse_tag", None)]).encode())
+            elif stat.S_ISDIR(st.st_mode):
+                h.update(canon_json([rel, "dir"]).encode())
+                visit(p)
+            elif stat.S_ISREG(st.st_mode):
+                h.update(canon_json([rel, "file", st.st_mode, st.st_size, file_sha256(p)]).encode())
+            else:
+                raise HKError("UNSUPPORTED_ENTRY", f"{p} is not a regular file, directory or link")
+
+    visit(root)
+    return h.hexdigest(), links
 
 
 # --------------------------------------------------------------------------- hash-chained append-only log
@@ -243,27 +273,32 @@ def _ledger_refs(ledger: str | None) -> tuple[set[str], set[str]]:
     """(worktree paths of non-terminal ledger tasks, branches of non-terminal tasks); v3 state dirs are added to the
     first set (referenced evidence)."""
     try:
-        from scripts.dev_workflow.task_ledger import Ledger, TERMINAL
+        from scripts.dev_workflow.task_ledger import TERMINAL, default_path
     except ImportError:
         return set(), set()
-    p = Path(ledger) if ledger else None
-    if p is not None and not p.is_file():
+    p = Path(ledger) if ledger else default_path()
+    if not p.is_file():
         return set(), set()
-    lg = Ledger(p)
+    wal = p.with_name(p.name + "-wal")
+    if wal.exists() and wal.stat().st_size:
+        raise HKError("LEDGER_BUSY", f"{p} has an active WAL; inventory cannot use an immutable snapshot")
+    # Inventory must not initialize, migrate or checkpoint the source ledger.
+    db = sqlite3.connect(p.resolve().as_uri() + "?mode=ro&immutable=1", uri=True)
+    db.row_factory = sqlite3.Row
     try:
         paths, branches = set(), set()
-        for t in lg.db.execute("SELECT * FROM tasks"):
+        for t in db.execute("SELECT * FROM tasks"):
             if t["status"] in TERMINAL:
                 continue
             if t["worktree"]:
                 paths.add(norm(t["worktree"]))
             if t["branch"]:
                 branches.add(t["branch"])
-        for r in lg.db.execute("SELECT state_dir FROM v3_links"):
+        for r in db.execute("SELECT state_dir FROM v3_links"):
             paths.add(norm(r["state_dir"]))
         return paths, branches
     finally:
-        lg.close()
+        db.close()
 
 
 class Ctx:
@@ -419,7 +454,10 @@ def classify_worktree(ctx: Ctx, w: dict) -> dict:
     item["restore"] = (f"git -C {ctx.repo.as_posix()} worktree add "
                        + (f"{path.as_posix()} {branch_short}" if branch_short else
                           f"--detach {path.as_posix()} {w['head']}"))
-    item["fingerprint"] = sha_text(canon_json([w["head"], w["branch"], w["locked"], dirty, um, reach]))
+    snapshot, links = content_snapshot(path) if item["cls"] != "PROTECTED" else (None, [])
+    item["links"] = links
+    item["fingerprint"] = sha_text(canon_json([w["head"], w["branch"], w["locked"], dirty, um, reach,
+                                                status, snapshot]))
     return item
 
 
@@ -442,8 +480,9 @@ def classify_dir(ctx: Ctx, path: Path) -> dict:
     else:
         item.update(cls="AMBIGUOUS", action="archive-then-remove (needs --approve)")
         item["reasons"].append("no evidence markers and not cited; purpose unknown")
-    entries = sorted(e.name for e in path.iterdir()) if path.is_dir() else []
-    item["fingerprint"] = sha_text(canon_json([um, cited, entries]))
+    snapshot, links = content_snapshot(path) if item["cls"] != "PROTECTED" else (None, [])
+    item["links"] = links
+    item["fingerprint"] = sha_text(canon_json([um, cited, snapshot]))
     return item
 
 
@@ -493,9 +532,10 @@ def inventory(repo, *, canonical_ref=CANONICAL_REF, roots=(), records=(), ledger
             it = classify_dir(ctx, child)
             items.append(it)
             for c in _caches(child):
+                snapshot, links = content_snapshot(c)
                 items.append({"id": "cache:" + sha_text(norm(c))[:12], "kind": "cache", "path": str(c),
                               "cls": "CACHE", "action": "delete (regenerable)", "reasons": ["regenerable cache"],
-                              "parent": it["id"], "fingerprint": sha_text(canon_json([norm(c)]))})
+                              "parent": it["id"], "fingerprint": snapshot, "links": links})
     items += classify_branches(ctx, {w["branch"] for w in wts if w["branch"]})
     if sizes:
         for it in items:
@@ -651,12 +691,12 @@ def _rmtree(path: Path) -> None:
     shutil.rmtree(path, onexc=onerr) if sys.version_info >= (3, 12) else shutil.rmtree(path, onerror=onerr)
 
 
-def _journal_done(journal: Chain, plan_id: str) -> dict[str, str]:
+def _journal_done(journal: Chain, plan_id: str) -> dict[str, dict]:
     done = {}
     for ev in journal.read():
         d = ev.get("data", {})
         if d.get("plan_id") == plan_id and ev.get("kind") in ("DONE", "RECOVERED_DONE"):
-            done[d["item"]] = ev["kind"]
+            done[d["item"]] = d
     return done
 
 
@@ -668,7 +708,10 @@ def _current(ctx: Ctx, it: dict, wts: dict[str, dict]) -> dict | None:
     if it["kind"] == "dir":
         return classify_dir(ctx, Path(it["path"])) if Path(it["path"]).is_dir() else None
     if it["kind"] == "cache":
-        return {**it} if Path(it["path"]).is_dir() else None
+        if not Path(it["path"]).is_dir():
+            return None
+        snapshot, links = content_snapshot(Path(it["path"]))
+        return {**it, "fingerprint": snapshot, "links": links}
     if it["kind"] == "branch":
         rc, sha, _ = git(ctx.repo, "rev-parse", "--verify", "-q", it["path"])
         if rc or not sha:
@@ -715,6 +758,7 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
                 or it["id"] in approve
             if it["id"] in done:
                 r["outcome"] = "ALREADY_DONE"
+                r.update({k: done[it["id"]][k] for k in ("archive", "restore") if k in done[it["id"]]})
                 continue
             if not wanted:
                 r["outcome"] = "NOT_SELECTED"
@@ -744,12 +788,27 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
             elif it["kind"] == "worktree" and approved_only and it["cls"] != "LOCAL_ONLY":
                 action = "archive-then-remove"
             journal.append("INTENT", {"plan_id": plan["plan_id"], "item": it["id"], "action": action,
-                                      "path": it["path"], "fingerprint": it["fingerprint"]})
+                                      "path": it["path"], "fingerprint": it["fingerprint"],
+                                      "restore": it.get("restore")})
             try:
                 detail = {}
                 if action in ("archive-then-remove",):
+                    if cur.get("links"):
+                        raise HKError("LINKS_PRESENT", f"{it['path']} contains links omitted by archive")
                     a = archive(it["path"], archive_root, label=it["id"].replace(":", "-"))
+                    if a["links_not_followed"] or not verify_archive(a["archive_id"], archive_root)["ok"]:
+                        raise HKError("ARCHIVE_INCOMPLETE", f"{it['path']} archive omits links or failed verification")
                     detail["archive"] = a["archive_id"]
+                    journal.append("ARCHIVE_READY", {"plan_id": plan["plan_id"], "item": it["id"],
+                                                     "action": action, "path": it["path"],
+                                                     "archive": a["archive_id"], "restore": it.get("restore")})
+                # The plan and archive are only valid for these exact source bytes. Check as late as possible.
+                latest = _current(ctx, it, wts)
+                if latest is None or latest["cls"] != it["cls"] or latest["fingerprint"] != it["fingerprint"]:
+                    raise HKError("SOURCE_CHANGED", f"{it['path']} changed before removal")
+                if latest.get("links") and action in ("archive-then-remove", "worktree-remove", "rmtree"):
+                    raise HKError("LINKS_PRESENT", f"{it['path']} contains links omitted by archive")
+                if action == "archive-then-remove":
                     if it["kind"] == "worktree":
                         git(ctx.repo, "worktree", "remove", "--force", it["path"], check=True)
                     else:
@@ -765,7 +824,8 @@ def apply(plan_path, *, journal_dir, archive_root=None, approve=(), classes=(), 
                 elif action == "delete-ref":
                     git(ctx.repo, "update-ref", "-d", it["path"], it["head"], check=True)
                 r.update(outcome="DONE", action=action, bytes=it.get("bytes", 0), restore=it.get("restore"), **detail)
-                journal.append("DONE", {"plan_id": plan["plan_id"], "item": it["id"], "action": action, **detail})
+                journal.append("DONE", {"plan_id": plan["plan_id"], "item": it["id"], "action": action,
+                                        "restore": it.get("restore"), **detail})
             except (HKError, OSError) as e:
                 r.update(outcome="FAILED", action=action, error=str(e))
                 journal.append("FAILED", {"plan_id": plan["plan_id"], "item": it["id"], "action": action,
@@ -808,6 +868,8 @@ def recover(journal_dir, repo=None) -> dict:
         key = (d.get("plan_id"), d.get("item"))
         if ev["kind"] == "INTENT":
             open_[key] = d
+        elif ev["kind"] == "ARCHIVE_READY" and key in open_:
+            open_[key].update({k: d[k] for k in ("archive", "restore") if k in d})
         elif ev["kind"] in ("DONE", "FAILED", "RECOVERED_DONE", "RECOVERED_NOT_DONE"):
             open_.pop(key, None)
     out = []
@@ -822,9 +884,10 @@ def recover(journal_dir, repo=None) -> dict:
         else:
             gone = not Path(path).exists()
         kind = "RECOVERED_DONE" if gone else "RECOVERED_NOT_DONE"
-        journal.append(kind, {"plan_id": plan_id, "item": item, "action": d["action"],
+        pointer = {k: d[k] for k in ("archive", "restore") if d.get(k)}
+        journal.append(kind, {"plan_id": plan_id, "item": item, "action": d["action"], **pointer,
                               "observed": "target absent" if gone else "target still present"})
-        out.append({"item": item, "plan_id": plan_id, "result": kind})
+        out.append({"item": item, "plan_id": plan_id, "result": kind, **pointer})
     tmp = sorted(str(p) for p in jdir.glob("*.tmp"))
     return {"ok": True, "recovered": out, "leftover_tmp_files": tmp}
 

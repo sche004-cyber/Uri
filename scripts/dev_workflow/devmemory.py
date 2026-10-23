@@ -42,7 +42,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from scripts.dev_workflow.task_ledger import Ledger, LedgerError, TERMINAL, is_secret_path, redact
+from scripts.dev_workflow.task_ledger import Ledger, LedgerError, TERMINAL, is_secret_path, redact, redact_obj
 
 SCHEMA = 1
 KNOWLEDGE_KINDS = ("lesson", "failed_approach", "environment", "procedure")
@@ -178,6 +178,9 @@ class Index:
     def replace_source(self, source: str, fp: str, items: list[dict], redactions: int) -> int:
         """Swap one source's items in a single transaction. Identical text already stored under another ref of the
         same source is stored once, with the extra refs in ``also_refs`` (deduplication)."""
+        source, n = redact(source)
+        items, more = redact_obj(items)
+        redactions += n + more
         self.db.execute("BEGIN IMMEDIATE")
         try:
             old = [r["id"] for r in self.db.execute("SELECT id FROM items WHERE source=?", (source,))]
@@ -331,8 +334,10 @@ def collect_decisions(path: Path, g: "Git | None" = None) -> tuple[str, list[dic
                          f"corrections: {d.get('corrections_text', '-')} | applicability: {appl} | source: "
                          f"{d.get('sources', '-')} | class: {cls}")
         red += n
+        title, n = _clean(f"{d['id']} {d.get('title', '')}")
+        red += n
         items.append({"ref": f"{d['id']}@{ref_base}:{line_no}", "kind": "decision",
-                      "tier": "cold" if superseded else "warm", "title": f"{d['id']} {d.get('title', '')}",
+                      "tier": "cold" if superseded else "warm", "title": title,
                       "text": text, "confidence": conf, "stale": superseded,
                       "stale_why": "superseded decision" if superseded else None, "at": d.get("date")})
     for line_no, _raw, o in opens:
@@ -466,6 +471,7 @@ def refresh(ix: Index, cfg: dict | None = None, force: bool = False) -> dict:
     sources, g = _sources(cfg)
     report = {"canonical": g.canonical, "sources": {}}
     for name, fn in sources:
+        name = redact(name)[0]
         try:
             fp, items, red = fn()
         except (OSError, ValueError, LedgerError, sqlite3.Error) as e:
@@ -473,7 +479,7 @@ def refresh(ix: Index, cfg: dict | None = None, force: bool = False) -> dict:
             continue
         # The source identity alone misses validity changes (an uncommitted edit to a recorded file); the collected
         # items, staleness included, are part of the fingerprint.
-        fp = sha(fp + "|" + json.dumps([{k: v for k, v in i.items() if k != "_wt"} for i in items], sort_keys=True,
+        fp = sha("redact-all-fields-v2|" + fp + "|" + json.dumps([{k: v for k, v in i.items() if k != "_wt"} for i in items], sort_keys=True,
                                        default=str))
         row = ix.db.execute("SELECT fingerprint FROM sources WHERE source=?", (name,)).fetchone()
         if row and row["fingerprint"] == fp and not force:
@@ -488,20 +494,24 @@ def refresh(ix: Index, cfg: dict | None = None, force: bool = False) -> dict:
         report["dropped_sources"] = gone
     ix.set_meta("canonical", {"ref": cfg.get("canonical_ref") or CANONICAL_REF, "sha": g.canonical,
                               "at": utcnow()})
-    return report
+    return redact_obj(report)[0]
 
 
 def brief(ix: Index, budget_tokens: int = 1200) -> dict:
     """Compact session-start context: hot items only, in priority order, inside the token budget."""
-    canon = ix.meta("canonical", {}) or {}
+    canon = redact_obj(ix.meta("canonical", {}) or {})[0]
     hot = []
     for r in ix.db.execute("SELECT ref, kind, title, text, flags FROM items WHERE tier='hot' AND stale=0 "
                            "ORDER BY source, at, ref"):
         hot.append({"ref": r["ref"], "kind": r["kind"], "title": r["title"], "text": r["text"],
                     **{f"_{k}": v for k, v in json.loads(r["flags"]).items()}})
-    budget = budget_tokens * 4
-    lines = [f"# URI development brief ({utcnow()}; derived index, sources are authoritative)",
-             f"canonical {canon.get('ref')} @ {(canon.get('sha') or 'UNKNOWN')[:12]}"]
+    budget = max(0, budget_tokens) * 4
+    lines = []
+    reserve = len(f"({len(hot)} omitted)") + 1
+    for header in (f"# URI development brief ({utcnow()}; derived index, sources are authoritative)",
+                   f"canonical {canon.get('ref')} @ {(canon.get('sha') or 'UNKNOWN')[:12]}"):
+        if sum(len(x) + 1 for x in lines) + len(header) + reserve <= budget:
+            lines.append(header)
     used = sum(len(x) + 1 for x in lines)
     omitted = 0
     sections = [
@@ -527,7 +537,7 @@ def brief(ix: Index, budget_tokens: int = 1200) -> dict:
         if not rows:
             continue
         head = f"## {title} ({len(rows)})"
-        if used + len(head) + 1 > budget:
+        if used + len(head) + 1 > budget - reserve:
             omitted += len(rows)
             continue
         lines.append(head)
@@ -536,14 +546,17 @@ def brief(ix: Index, budget_tokens: int = 1200) -> dict:
             line = fmt(h)
             if len(line) > 400:
                 line = line[:400] + " ...[recall for more]"
-            if used + len(line) + 1 > budget:
+            if used + len(line) + 1 > budget - reserve:
                 omitted += 1
                 continue
             lines.append(line)
             used += len(line) + 1
     tail = (f"(~{tokens(chr(10).join(lines))} tokens of {budget_tokens}; {omitted} hot items omitted) More: "
             "`devmemory recall \"<topic>\"`, `task_ledger handoff <task>`, `task_ledger context-get <task> <sha>`.")
-    lines.append(tail)
+    for candidate in (tail, f"({omitted} omitted; devmemory recall for more)", f"({omitted} omitted)"):
+        if used + len(candidate) + (1 if lines else 0) <= budget:
+            lines.append(candidate)
+            break
     text = "\n".join(lines)
     return {"text": text, "tokens": tokens(text), "budget_tokens": budget_tokens, "omitted": omitted,
             "canonical": canon}
@@ -558,7 +571,7 @@ def recall(ix: Index, query: str, *, task: str | None = None, kind: str | None =
            include_stale: bool = False, limit: int = 50) -> dict:
     fq = _fts_query(query)
     if not fq:
-        return {"query": query, "hits": [], "tokens": 0}
+        return {"query": redact(query)[0], "hits": [], "tokens": 0}
     sql = ("SELECT i.*, bm25(fts, 4.0, 1.0) AS score FROM fts JOIN items i ON i.id = fts.id WHERE fts MATCH ?"
            + ("" if include_stale else " AND i.stale = 0") + (" AND i.task_id = ?" if task else "")
            + (" AND i.kind = ?" if kind else "") + " ORDER BY score LIMIT ?")
@@ -579,7 +592,8 @@ def recall(ix: Index, query: str, *, task: str | None = None, kind: str | None =
             continue
         used += size
         hits.append(h)
-    return {"query": query, "hits": hits, "tokens": math.ceil(used / 4), "omitted": omitted}
+    safe, _ = redact_obj({"query": query, "hits": hits})
+    return {**safe, "tokens": math.ceil(used / 4), "omitted": omitted}
 
 
 def stats(ix: Index) -> dict:
@@ -589,10 +603,10 @@ def stats(ix: Index) -> dict:
     stale = ix.db.execute("SELECT COUNT(*) n FROM items WHERE stale=1").fetchone()["n"]
     dup = ix.db.execute("SELECT COALESCE(SUM(json_array_length(also_refs)),0) n FROM items").fetchone()["n"]
     chars = ix.db.execute("SELECT COALESCE(SUM(LENGTH(text)),0) n FROM items").fetchone()["n"]
-    return {"index": str(ix.path), "bytes": ix.path.stat().st_size, "items": sum(tiers.values()), "tiers": tiers,
+    return redact_obj({"index": str(ix.path), "bytes": ix.path.stat().st_size, "items": sum(tiers.values()), "tiers": tiers,
             "confidence": conf, "stale": stale, "deduplicated_refs": dup, "indexed_tokens": math.ceil(chars / 4),
             "redactions": sum(s["redactions"] for s in src), "sources": src,
-            "canonical": ix.meta("canonical", {})}
+            "canonical": ix.meta("canonical", {})})[0]
 
 
 def remember(task: str, kind: str, text: str, actor: str, *, commit: str | None = None, path: str | None = None,

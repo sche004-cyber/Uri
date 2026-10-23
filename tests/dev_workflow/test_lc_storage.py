@@ -6,6 +6,7 @@ real ledger, runs directory or repository."""
 import hashlib
 import json
 import os
+import sqlite3
 import subprocess
 import sys
 import textwrap
@@ -151,7 +152,7 @@ def test_ts4_missing_marker_when_supervisor_dies(runs, repo):
         p.wait()
     st = tr.status(runs, "orphan")
     assert st["state"] == "MISSING_MARKER", st
-    w = tr.wait(runs, "orphan", timeout_s=5)
+    w = tr.wait(runs, st["id"], timeout_s=5)
     assert w["state"] == "MISSING_MARKER"
 
 
@@ -177,7 +178,7 @@ def test_ts5_wait_is_bound_to_run_id_not_log_text(runs, repo):
         while time.monotonic() < deadline and tr.status(runs, "long")["state"] != "RUNNING":
             time.sleep(0.2)
         t0 = time.monotonic()
-        w = tr.wait(runs, "long", timeout_s=1.5, poll_s=0.2)
+        w = tr.wait(runs, tr.status(runs, "long")["id"], timeout_s=1.5, poll_s=0.2)
         assert w["state"] == "WAIT_TIMEOUT" and w["run_state"] == "RUNNING"
         assert time.monotonic() - t0 < 10
     finally:
@@ -185,6 +186,14 @@ def test_ts5_wait_is_bound_to_run_id_not_log_text(runs, repo):
         p.wait()
     with pytest.raises(tr.RunError):
         tr.wait(runs, "long", timeout_s=0)
+
+
+def test_r1_08_wait_never_resolves_a_run_name(runs, repo):
+    first = tr.start(pyc("print('first')"), name="repeat", timeout_s=30, cwd=str(repo), root=runs)
+    second = tr.start(pyc("print('second')"), name="repeat", timeout_s=30, cwd=str(repo), root=runs)
+    assert first["id"] != second["id"]
+    assert tr.wait(runs, first["id"], 5)["id"] == first["id"]
+    assert tr.wait(runs, "repeat", 5)["state"] == "NOT_FOUND"
 
 
 def test_ts6_duplicate_run_refused_and_lock_released_after_kill(runs, repo):
@@ -232,6 +241,20 @@ def test_ts7_reuse_only_for_identical_clean_tree(runs, repo):
     tr.start(failing, name="f", timeout_s=30, cwd=str(repo), root=runs, reuse=True)
     again = tr.start(failing, name="f", timeout_s=30, cwd=str(repo), root=runs, reuse=True)
     assert again["state"] == "REUSED" and again["reused_state"] == "FAILED" and tr.exit_code_for(again) == 2
+
+
+def test_r1_04_reuse_is_bound_to_repository_and_complete_environment(runs, repo, tmp_path, monkeypatch):
+    other = _init(tmp_path / "other")
+    assert tr.tree_state(repo)["tree"] == tr.tree_state(other)["tree"]
+    marker = tmp_path / "executions.txt"
+    cmd = pyc(f"open(r'{marker}', 'a').write('x')")
+    first = tr.start(cmd, name="isolate", timeout_s=30, cwd=str(repo), root=runs, reuse=True)
+    second = tr.start(cmd, name="isolate", timeout_s=30, cwd=str(other), root=runs, reuse=True)
+    assert second["state"] == "COMPLETED" and second["id"] != first["id"]
+    monkeypatch.setenv("URI_TEST_REUSE_CONTEXT", "different")
+    third = tr.start(cmd, name="isolate", timeout_s=30, cwd=str(repo), root=runs, reuse=True)
+    assert third["state"] == "COMPLETED" and marker.read_text() == "xxx"
+    assert "different" not in (runs / third["id"] / "run.json").read_text()
 
 
 def test_ts8_environmental_failure_labelled_exit_unchanged(runs, repo):
@@ -361,8 +384,9 @@ def test_dm2_brief_budget_and_content(mem):
     assert "producer's exact output file" in t and "dwm.exe" in t
     assert "DEC-003" not in t                                           # superseded / warm items not in the brief
     small = dm.brief(ix, budget_tokens=60)
-    assert small["tokens"] <= 60 + 40 and small["omitted"] > 0          # tail line is allowed to exceed by itself
+    assert small["tokens"] <= 60 and small["omitted"] > 0
     assert "omitted" in small["text"]
+    assert dm.brief(ix, budget_tokens=1)["tokens"] <= 1
 
 
 def test_dm4_open_question_citing_integrated_commit_is_flagged(mem):
@@ -456,6 +480,22 @@ def test_dm5_secrets_never_indexed(mem):
     assert not ix.db.execute("SELECT 1 FROM items WHERE path LIKE '%.env%'").fetchall()
     assert "hunter2" not in dm.brief(ix, 4000)["text"]
     assert all("hunter2" not in json.dumps(h) for h in dm.recall(ix, "password hunter2")["hits"])
+
+
+def test_r1_05_decision_titles_and_all_index_fields_are_redacted(mem):
+    ix = mem["ix"]
+    dec = mem["dec"]
+    dec.write_text(dec.read_text(encoding="utf-8").replace("Interaction loop", "password=hunter2 Interaction loop"),
+                   encoding="utf-8")
+    dm.refresh(ix, mem["cfg"])
+    ix.replace_source("password=hunter2", "fp", [{"ref": "password=hunter2", "kind": "lesson",
+        "tier": "warm", "title": "password=hunter2", "text": "safe", "path": "password=hunter2",
+        "confidence": "RECORDED", "flags": {"next": "password=hunter2"}}], 0)
+    rows = [dict(r) for r in ix.db.execute("SELECT * FROM items")]
+    fts = [tuple(r) for r in ix.db.execute("SELECT title, text FROM fts")]
+    assert "hunter2" not in json.dumps([rows, fts])
+    hits = dm.recall(ix, "Interaction")["hits"]
+    assert hits and "hunter2" not in json.dumps(hits)
     assert ix.path.read_bytes().find(b"hunter2") == -1
 
 
@@ -589,6 +629,23 @@ def test_hk1_inventory_is_read_only(sandbox):
     assert _digest(sandbox["repo"], [sandbox["wt"], sandbox["roots"]]) == before
 
 
+def test_r1_03_inventory_never_creates_default_ledger(sandbox, monkeypatch):
+    missing = sandbox["tmp"] / "no-ledger" / "task.sqlite3"
+    monkeypatch.setenv("URI_TASK_LEDGER", str(missing))
+    _plan(sandbox)
+    assert not missing.exists() and not missing.parent.exists()
+
+
+def test_r1_03_existing_ledger_is_opened_without_schema_writes(sandbox):
+    lp = sandbox["tmp"] / "old-ledger.sqlite3"
+    with sqlite3.connect(lp) as db:
+        db.executescript(tl.DDL)
+    db.close()
+    before = lp.read_bytes()
+    _plan(sandbox, ledger=str(lp))
+    assert lp.read_bytes() == before
+
+
 def test_hk2_classification(sandbox):
     items = _by_path(_plan(sandbox))
     assert items["main"]["cls"] == "PROTECTED"
@@ -707,6 +764,63 @@ def test_hk4_changed_item_is_skipped(sandbox):
     assert row["outcome"] == "SKIPPED_CHANGED" and sb["paths"]["disposable"].exists()
 
 
+def test_r1_02_cache_and_dirty_bytes_bind_the_plan(sandbox):
+    sb = sandbox
+    plan = _plan(sb)
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    dirty = sb["paths"]["dirty"]
+    (dirty / "work.txt").write_bytes(b"changed same count\n")
+    cache = sb["roots"] / "tmpstuff" / "__pycache__"
+    next(cache.iterdir()).write_bytes(b"new cache bytes")
+    r = hk.apply(pf, journal_dir=sb["tmp"] / "j", archive_root=sb["tmp"] / "ar",
+                 approve=[_by_path(plan)["dirty"]["id"]])
+    rows = {x["path"]: x for x in r["results"] if "item" in x}
+    assert rows[str(dirty)]["outcome"] == "SKIPPED_CHANGED" and dirty.exists()
+    assert rows[str(cache)]["outcome"] == "SKIPPED_CHANGED" and cache.exists()
+
+
+def test_r1_02_change_after_archive_refuses_removal(sandbox, monkeypatch):
+    sb = sandbox
+    plan = _plan(sb)
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    dirty = sb["paths"]["dirty"]
+    original = hk.archive
+
+    def changed_after_archive(*args, **kwargs):
+        result = original(*args, **kwargs)
+        (dirty / "work.txt").write_bytes(b"changed after archive\n")
+        return result
+
+    monkeypatch.setattr(hk, "archive", changed_after_archive)
+    r = hk.apply(pf, journal_dir=sb["tmp"] / "j", archive_root=sb["tmp"] / "ar",
+                 approve=[_by_path(plan)["dirty"]["id"]])
+    row = next(x for x in r["results"] if x.get("path") == str(dirty))
+    assert row["outcome"] == "FAILED" and "SOURCE_CHANGED" in row["error"] and dirty.exists()
+
+
+def test_r1_01_approved_worktree_with_omitted_link_is_retained(sandbox):
+    sb = sandbox
+    dirty = sb["paths"]["dirty"]
+    outside = sb["tmp"] / "outside"
+    outside.mkdir()
+    (outside / "keep.txt").write_text("keep")
+    link = dirty / "link"
+    if os.name == "nt":
+        subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(outside)], check=True, capture_output=True)
+    else:
+        link.symlink_to(outside, target_is_directory=True)
+    plan = _plan(sb)
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    r = hk.apply(pf, journal_dir=sb["tmp"] / "j", archive_root=sb["tmp"] / "ar",
+                 approve=[_by_path(plan)["dirty"]["id"]])
+    row = next(x for x in r["results"] if x.get("path") == str(dirty))
+    assert row["outcome"] == "FAILED" and "LINKS_PRESENT" in row["error"]
+    assert dirty.exists() and hk.is_link(link) and (outside / "keep.txt").exists()
+
+
 def test_hk5_idempotent_apply(sandbox):
     sb = sandbox
     plan = _plan(sb)
@@ -738,6 +852,29 @@ def test_hk6_recover_after_crash(sandbox):
     assert res == {"wt:aaa": "RECOVERED_DONE", "wt:bbb": "RECOVERED_NOT_DONE"}
     assert hk.recover(jd, sb["repo"])["recovered"] == []                      # resolved once
     assert sb["paths"]["cited"].exists() and not j.verify()
+
+
+def test_r1_07_recovery_and_reapply_keep_verified_archive_pointer(sandbox):
+    sb = sandbox
+    plan = _plan(sb)
+    pf = sb["tmp"] / "plan.json"
+    pf.write_text(json.dumps(plan), encoding="utf-8")
+    it = _by_path(plan)["dirty"]
+    ar, jd = sb["tmp"] / "archive", sb["tmp"] / "journal"
+    a = hk.archive(it["path"], ar)
+    assert hk.verify_archive(a["archive_id"], ar)["ok"]
+    j = hk.Chain(jd / "journal.jsonl")
+    base = {"plan_id": plan["plan_id"], "item": it["id"], "action": "archive-then-remove",
+            "path": it["path"], "restore": it["restore"]}
+    j.append("INTENT", base)
+    j.append("ARCHIVE_READY", {**base, "archive": a["archive_id"]})
+    _git(sb["repo"], "worktree", "remove", "--force", it["path"])
+    recovered = hk.recover(jd, sb["repo"])["recovered"]
+    assert recovered[0]["result"] == "RECOVERED_DONE"
+    assert recovered[0]["archive"] == a["archive_id"] and recovered[0]["restore"] == it["restore"]
+    again = hk.apply(pf, journal_dir=jd, archive_root=ar, approve=[it["id"]])
+    row = next(x for x in again["results"] if x.get("item") == it["id"])
+    assert row["outcome"] == "ALREADY_DONE" and row["archive"] == a["archive_id"]
 
 
 def test_hk6_tampered_journal_blocks_apply(sandbox):
