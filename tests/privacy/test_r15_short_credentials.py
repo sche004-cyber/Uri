@@ -81,3 +81,37 @@ def test_r2_01_short_separated_credentials_never_reach_search_transport(text):
 @pytest.mark.parametrize("text", ("password ab", "password issue", "password wasp"))
 def test_r2_01_bare_or_partial_separator_stays_readable(text):
     assert TGateway().prepare(text, requester="t", destination="WEB_SEARCH", purpose="p").text == text
+
+
+@pytest.mark.parametrize("text,value", [
+    ("password; Hunt3r2!xyz", "Hunt3r2!xyz"),
+    ("api key; Hunt3r2!xyz", "Hunt3r2!xyz"),
+    ("password / Hunt3r2!xyz", "Hunt3r2!xyz"),
+    ("api key / x1!", "x1!"),
+])
+def test_r1_01_semicolon_or_slash_labelled_credential_never_leaves(text, value):
+    assert CREDENTIAL in classify(text).categories()
+    gateway = TGateway()
+    for destination in ("WEB_SEARCH", "EXTERNAL_MODEL", "EXTERNAL_AGENT"):
+        with pytest.raises(PrivacyRefused):
+            gateway.prepare(text, requester="t", destination=destination, purpose="p")
+    assert value not in gateway.prepare(text, requester="t", destination="LOG", purpose="p").text
+
+
+@pytest.mark.parametrize("text", ["password; Hunt3r2!xyz", "api key / x1!"])
+def test_r1_01_semicolon_or_slash_credential_never_reaches_search_transport(text):
+    sent = []
+
+    def capture(request):
+        sent.append(json.loads(request.content)["query"])
+        return httpx.Response(200, json={"results": []})
+
+    result = TavilyProvider(api_key="test", transport=httpx.MockTransport(capture),
+                            privacy=TGateway()).search(text)
+    assert result.status == REFUSED
+    assert sent == []
+
+
+@pytest.mark.parametrize("text", ["password / reset help", "api key; rotation guide"])
+def test_r1_01_separator_followed_by_prose_stays_readable(text):
+    assert TGateway().prepare(text, requester="t", destination="WEB_SEARCH", purpose="p").text == text
