@@ -28,7 +28,10 @@ data/office_fact_corpus.json:
       longer name or reference) give FACT_CHECK and no FACT_MISSING.
   (h) FB12 (OD-OD-6): every fact wrapped in the forms a faithful draft writes around it ("Hon'ble", "Late",
       "Minister", "Minister of State" before a title; a subject line ending in a participle; "/dated", "/dt.",
-      "-W.E.F.", "-Date", "-Copy", "(A)" after a reference) never gives FACT_MISSING.
+      "-W.E.F.", "-Date", "-Copy", "(A)" after a reference) never gives FACT_MISSING. FB13: the same courtesy and
+      designation words written before a titled name in the INSTRUCTION ("to Hon'ble Minister Shri <name>", "to
+      Joint Secretary Kumari <name>") leave the facts unchanged, so the plain faithful draft gives no warning; and an
+      amount written with ".00" or ".0" (OD-OD-7) is the same amount.
 A new case gets (b) to (f) and (h) without writing them.
 Commits before FB12 have no FACT_CHECK: a warning without a code is read as FACT_MISSING."""
 from __future__ import annotations
@@ -289,7 +292,8 @@ def test_f_a_longer_name_never_stands_in_for_the_fact(case):
         changed = mutations(kind, text)[0][1]
         # FB9 R2-01: "Kumari" as a middle name; R2-02: a lowercase continuation of a lowercase titled name
         extras = ["Xavier"]
-        if text.split()[-1][:1].isupper():
+        # FB13 R2-01: "Joint Secretary Kumari Xavier" is a designation and a person, not a longer name
+        if text.split()[-1][:1].isupper() and text.split()[-1].lower() not in _DESIGNATIONS:
             extras.append("Kumari Xavier")
         if text.split()[-1][:1].islower() and re.match(r"(?:Shri|Smt|Sh|Km|Kum|Kumari|Sushri|Dr|Mr|Mrs|Ms|Prof)\b",
                                                          text):
@@ -320,6 +324,11 @@ def test_g_listed_faithful_and_changed_drafts(case):
         assert codes and set(codes.values()) == {"FACT_CHECK"}, (ins, blocks, codes)
 
 
+_DESIGNATIONS = {"secretary", "collector", "minister", "commissioner", "director", "officer", "chairman", "member",
+                 "registrar", "superintendent", "principal", "president", "governor", "inspector", "magistrate",
+                 "tehsildar", "deputy", "joint", "additional", "chief", "state"}
+
+
 # (h) FB12 (OD-OD-6): what a faithful draft writes around a fact never makes it FACT_MISSING
 def _faithful_forms(kind: str, text: str) -> list:
     forms = []
@@ -336,8 +345,12 @@ def _faithful_forms(kind: str, text: str) -> list:
                   f"No. {text}(A)"]
     else:
         forms += [f"Subject: {text} sanctioned", f"Subject: Note on {text} received"]
+        if kind == "amount" and re.fullmatch(r"[\d,]+", text):
+            forms += [f"Rs. {text}.00 sanctioned", f"Rs. {text}.0 sanctioned", f"Rs. {text}.00/- sanctioned"]
     return forms
 
+
+_COURTESY = ["Hon'ble ", "Hon'ble Minister ", "Late ", "Collector ", "Joint Secretary ", "Minister of State ", "MLA "]
 
 @pytest.mark.parametrize("case", CORPUS, ids=IDS)
 def test_h_faithful_surroundings_never_give_fact_missing(case):
@@ -348,4 +361,15 @@ def test_h_faithful_surroundings_never_give_fact_missing(case):
             got = _codes(ins, _blocks(case, (i, form)))
             if "FACT_MISSING" in got.values():
                 wrong.append(f"{kind} '{text}' as '{form}'")
+    # FB13 R2-01: the instruction side. A courtesy or designation word before a titled name does not change the facts
+    for i, (kind, text) in enumerate(case["facts"]):
+        if kind != "name" or not _HON.match(text.split()[0]):
+            continue
+        for word in _COURTESY:
+            ins2 = _replace_fact(ins, text, word + text, [t for _, t in case["facts"]])
+            got_facts = [[f["kind"], f["text"]] for f in DR.extract_facts(ins2)]
+            if got_facts != case["facts"]:
+                wrong.append(f"instruction '{word}{text}': facts {got_facts}")
+            elif "FACT_MISSING" in _codes(ins2, _blocks(case)).values():
+                wrong.append(f"instruction '{word}{text}': FACT_MISSING on the faithful draft")
     assert not wrong, (ins, wrong)

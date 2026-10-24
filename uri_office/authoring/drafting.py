@@ -84,7 +84,10 @@ _MAY_MODAL_FOLLOW = re.compile(r"\s*(?:\d+\b|I\b|we\b|you\b|he\b|she\b|it\b|they
 _RELATIVE_MONTH = re.compile(r"\b(?:next|this|last)\s+(" + _MONTHS + r")\b", re.I)
 _DATE_NUM = re.compile(r"^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$|^\d{4}-\d{2}-\d{2}$")
 # FB4 R5-04: the designator is part of the claimed span, so it never becomes a name word.
-_REF = re.compile(r"\b(?:F\.\s?No\.?|O\.\s?M\.\s?No\.?|D\.\s?O\.\s?No\.?|No\.)\s*([A-Za-z0-9][\w./()-]*\d[\w./()-]*)",
+# FB13 R2-02: "&" ("2(14)/2026-B&A", "38/37/2016-P&PW(A)") and an en or em dash ("17011/1/2026–Estt") are part of
+# the code.
+_REF = re.compile(r"\b(?:F\.\s?No\.?|O\.\s?M\.\s?No\.?|D\.\s?O\.\s?No\.?|No\.)\s*"
+                  r"([A-Za-z0-9][\w./()&\u2013\u2014-]*\d[\w./()&\u2013\u2014-]*)",
                   re.I)
 _AMOUNT_PREFIX = re.compile(r"(?:rs\.?|inr|₹)\s*$", re.I)
 # FB4 R5-01: Kum, Km, Kumari and Sushri are honorifics too.
@@ -172,7 +175,7 @@ def _strip(tok: str) -> str:
 
 def _code(tok: str) -> str:
     """A reference code without trailing punctuation, keeping a closing bracket that closes one in the code."""
-    t = tok.rstrip(".,;:'\"")
+    t = tok.rstrip(".,;:'\"&\u2013\u2014-")
     while t.endswith(")") and t.count(")") > t.count("("):
         t = t[:-1].rstrip(".,;:")
     return t
@@ -277,7 +280,7 @@ def extract_facts(instruction: str) -> list:
             kind = "date"
         elif re.fullmatch(r"(?i)\d+-(?:day|week|month|year|hour)s?", tok):       # "5-day workshop"
             kind = "number"
-        elif "/" in tok or (re.search(r"[A-Za-z]", tok) and "-" in tok):
+        elif "/" in tok or (re.search(r"[A-Za-z]", tok) and re.search("[-\u2013\u2014]", tok)):
             kind = "reference"
         elif _AMOUNT_PREFIX.search(text[:m.start()]) or re.match(r"(?i)(?:rs\.?|inr|₹)\d", m.group(0)) \
                 or "," in tok:
@@ -305,6 +308,12 @@ def extract_facts(instruction: str) -> list:
             add("number", value, m.start(), end)
         else:
             spans.append((m.start(), m.end()))
+    # 4b. FB13 R2-01: courtesy and designation words directly before a title ("to Hon'ble Minister Shri ...", "from
+    # Late Smt. ...", "to Joint Secretary Kumari ...") are claimed, so neither a cue nor a capitalised run reads them
+    # as a name
+    for m in _COURTESY_RX.finditer(text):
+        if not taken(m.start(), m.end()):
+            spans.append((m.start(), m.end()))
     # 5a. an honorific with a lowercase full name (FB6 R2-02), claimed before the capitalised runs so a heading
     # "Pension of Shri ramesh kumar sharma" does not lend "Shri" to the run "Pension of Shri" (FB9 R2-02)
     for m in _HON_LOWER_NAME.finditer(text):
@@ -323,7 +332,9 @@ def extract_facts(instruction: str) -> list:
             person_spans.append((m.start(1), m.end(1), True))
 
     runs = _cap_runs(text, taken)
-    parts = [part for start, words in runs for _, part in _split_at_honorifics(start, words)]
+    dropped = []
+    parts = [part for start, words in runs for _, part in _split_at_honorifics(start, words, dropped)]
+    spans.extend(dropped)                 # FB13 R2-01: "to Hon'ble Minister Shri X" -> only "Shri X" is a name
     for part in parts:
         name = _trim(part)
         if len(name) >= 2 and any(not _is_hon(w) and w.lower().rstrip(".") not in _NOT_NAME for _, w in name):
@@ -392,7 +403,8 @@ def _is_cap(w: str) -> bool:
 # FB9 R2-04: post-nominals and heading words end a name; they are never part of it ("Shri Ramesh Kumar IAS",
 # "Subject: Deputation of Anjali Under Rule 12", "Leave of Ramesh Sanctioned").
 _NAME_END = {"ias", "ips", "ifs", "irs", "esq", "esq.", "under", "regarding", "sanctioned", "with", "retd",
-             "retd.", "phd", "ph.d.", "mbbs"}
+             "retd.", "phd", "ph.d.", "mbbs",
+             "sahab", "saheb", "sahib"}           # FB13 R2-03: "Shri Rajendra Prasad Meena Sahab"
 # FB10 R2-02: "Ji" is trimmed only when it is the last word of a name ("Shri Ramesh Ji,", "Sharma Ji"); inside a
 # name it is a name word ("Shri Ram Ji Lal").
 _TRAILING_ONLY = {"ji"}
@@ -432,8 +444,8 @@ def _cap_runs(text: str, taken):
 
 
 # FB12 R2-01: courtesy and designation words written before a title ("Hon'ble Shri", "Late Shri", "Minister Shri",
-# "Minister of State Shri", "MLA Shri", "Collector Shri") are not a middle name and not part of the name. "Kumari"
-# after such a word stays a middle name, as FB9 R2-01 reads it ("Joint Secretary Kumari Xavier" is one longer run).
+# "Minister of State Shri", "MLA Shri", "Collector Shri") are not a middle name and not part of the name. FB13 R2-01:
+# that holds before "Kumari" or "Km" too ("to Joint Secretary Kumari Priya Nair" -> "Kumari Priya Nair").
 _BEFORE_TITLE = {"hon'ble", "hon’ble", "honble", "hon", "honourable", "honorable", "late", "esteemed",
                  "adarniya", "aadarniya", "mla", "mp", "mlc", "minister", "ministers", "secretary", "collector",
                  "commissioner", "director", "chairman", "chairperson", "president", "governor", "mayor", "member",
@@ -442,12 +454,19 @@ _BEFORE_TITLE = {"hon'ble", "hon’ble", "honble", "hon", "honourable", "honorab
                  "bdo", "councillor", "sarpanch", "speaker"}
 
 
+_COURTESY_RX = re.compile(
+    r"(?i)(?<![\w'\u2019])(?:(?:" + "|".join(re.escape(w) for w in sorted(_BEFORE_TITLE, key=len, reverse=True))
+    + r")(?![\w'\u2019])\.?(?:\s+(?:of|the|and))*\s+)+(?=(?-i:" + _HONORIFIC + r")(?![A-Za-z]))")
+
+
 def _courtesy_only(words) -> bool:
     return all(w.lower().rstrip(".,") in _BEFORE_TITLE or w.lower() in _CONNECTORS for _, w in words)
 
 
-def _split_at_honorifics(start, words):
-    """FB4 R5-01: every honorific starts a new name ("Shri Ram Kumar and Smt. Sita Devi" is two names)."""
+def _split_at_honorifics(start, words, dropped=None):
+    """FB4 R5-01: every honorific starts a new name ("Shri Ram Kumar and Smt. Sita Devi" is two names).
+    FB13 R2-01: the span of a dropped courtesy or designation run ("Hon'ble Minister" before "Shri ...") is appended
+    to `dropped`, so the caller can claim it and no cue ("to", "from", "of") reads it as a name."""
     parts, cur = [], []
     for i, (a, w) in enumerate(words):
         # a second honorific right after one ("Dr. (Smt.)") belongs to the same person; FB8: an honorific word at the
@@ -463,9 +482,18 @@ def _split_at_honorifics(start, words):
         middle = (not w.endswith(".") and not w.startswith("(") and prev and not _is_hon(prev)
                   and w.lower() in ("kumari", "kum", "km", "shri")
                   and prev.lower() not in _CONNECTORS and prev.lower().rstrip(".,") not in _NOT_NAME
-                  and (prev.lower().rstrip(".,") not in _BEFORE_TITLE or w.lower() in ("kumari", "km", "kum")))
+                  and prev.lower().rstrip(".,") not in _BEFORE_TITLE)
         if _is_hon(w) and not last and not middle and cur and not all(_is_hon(x) for _, x in cur):
-            if not _courtesy_only(cur):          # "Hon'ble Minister" before "Shri ..." is dropped, not a name
+            # "Hon'ble Minister" before "Shri ..." is dropped, not a name; so is such a tail after another person
+            # ("Ms Anjali Verma and Hon'ble Shri ...": the tail is "and Hon'ble")
+            k = len(cur)
+            while k and (cur[k - 1][1].lower().rstrip(".,") in _BEFORE_TITLE or cur[k - 1][1].lower() in _CONNECTORS):
+                k -= 1
+            if any(x.lower().rstrip(".,") in _BEFORE_TITLE for _, x in cur[k:]):
+                if dropped is not None:
+                    dropped.append((cur[k][0], cur[-1][0] + len(cur[-1][1])))
+                cur = cur[:k]
+            if cur:
                 parts.append(cur)
             cur = []
         cur.append((a, w))
@@ -487,8 +515,12 @@ def _trim(words):
 
 
 # ---- presence ----------------------------------------------------------------------------------------------------------
+_DASHES = str.maketrans({"\u2013": "-", "\u2014": "-"})
+
+
 def _norm(s: str) -> str:
-    return " ".join(_clean(s or "").split())
+    """Spacing normalised; FB13 R2-02: an en or em dash reads as "-" (also in the suffix and prefix rules)."""
+    return " ".join(_clean(s or "").translate(_DASHES).split())
 
 
 def _after_word(hay: str, end: int) -> str:
@@ -496,7 +528,7 @@ def _after_word(hay: str, end: int) -> str:
     return m.group(0).lower() if m else ""
 
 
-def _fact_rx(t: str, slash_after: bool = False):
+def _fact_rx(t: str, slash_after: bool = False, zero_paise: bool = False):
     """The word-for-word token rule. FB12: for a reference a "/" may follow ("14/7/2026-Vig/dated"), and so may a
     date word written without a space ("HR/Trg/2026/145dt. 3.10.2026"); whether what follows makes another file is
     then a FACT_CHECK question (_REF_SUFFIX), never a FACT_MISSING one."""
@@ -504,6 +536,9 @@ def _fact_rx(t: str, slash_after: bool = False):
     body = re.sub(r"(?i)\b(lakh|crore)s?\b", r"\1s?", body)
     if slash_after:
         after = r"(?:(?![^\W_])|(?=(?:dated|dtd|dt)\b))(?![,.]\d)"
+    elif zero_paise:
+        # OD-OD-7: "4,75,000.00" and "4,75,000.0" are the amount "4,75,000"; "4,75,000.50" is not
+        after = r"(?![^\W_])(?!/(?!-))(?:\.00?(?!\d))?(?![,.]\d)"
     else:
         after = r"(?![^\W_])(?!/(?!-))(?![,.]\d)"
     return re.compile(r"(?<![^\W_])(?<![/])(?<!\d[,.])" + body + after, re.I)
@@ -560,7 +595,7 @@ def _name_occurrences(name: str, text: str, longer: list, draft_longer=()) -> li
     capitalised word after a lowercase name ("Shri ramesh kumar Xavier", FB8) make an occurrence a longer name:
     FACT_CHECK when every occurrence is one."""
     # spacing is normalised within each line; a newline (a block boundary) is kept
-    hay = "\n".join(" ".join(line.split()) for line in _clean(text or "").splitlines())
+    hay = "\n".join(" ".join(line.split()) for line in _clean(text or "").translate(_DASHES).splitlines())
     covers = [(m.start(), m.end()) for big in longer if _extends(name, big) for m in _fact_rx(_norm(big)).finditer(hay)]
     draft_covers = [(m.start(), m.end()) for big in draft_longer if _extends(name, big)
                     for m in re.finditer(r"(?<![^\W_])" + re.escape(_norm(big)) + r"(?![^\W_])", hay)
@@ -635,7 +670,9 @@ def _fact_occurrences(fact: str, draft_text: str, instruction: str | None = None
     t = _norm(fact)
     if not t:
         return [None]
-    rx = _fact_rx(t, slash_after=kind == "reference")
+    if kind == "amount":
+        t = re.sub(r"\.0{1,2}$", "", t)          # OD-OD-7: the instruction's "Rs. 4,75,000.00" is "4,75,000"
+    rx = _fact_rx(t, slash_after=kind == "reference", zero_paise=kind == "amount")
     hay = _norm(draft_text)
     words = t.split()
     ends_num_word = bool(_NUM_WORD_RX.match(words[-1]))

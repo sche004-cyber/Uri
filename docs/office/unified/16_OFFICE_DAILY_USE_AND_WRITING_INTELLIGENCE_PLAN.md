@@ -339,7 +339,9 @@ at most one warning, with one of two codes:
   is not a different date; a number followed by another number word is a different number (FB4 R5-03); and a name
   inside a longer name that is itself a fact of the instruction does not count ("Shri Anil Kumar" next to "Shri Anil
   Kumar Singh" are two people, FB5 R6-02). A reference may be followed by "/" or by a date word written without a
-  space. No extension rule ever produces FACT_MISSING.
+  space; an en or em dash reads as "-" (FB13); "&" is part of a reference code ("2(14)/2026-B&A", "P&PW(A)", FB13).
+  An amount followed by ".00" or ".0" is the same amount ("4,75,000.00" is "4,75,000"); non-zero paise ("4,75,000.50")
+  are a different amount (OD-OD-7). No extension rule ever produces FACT_MISSING.
 - FACT_CHECK: the fact appears word for word, but every occurrence is inside what the rules read as a longer name or
   reference. The message names both forms: "'Anjali' appears only as 'Anjali Sharma'. Check it is the same
   person." / "'14/2/2026' appears only as '14/2/2026-1'. Check it is the same file." The panel shows it as a quieter
@@ -380,7 +382,11 @@ FACT_CHECK coverage (formerly the "Caught" / "Not caught" lists of "Exception in
 - Given FACT_CHECK although the draft is faithful (the rules read an extension; the owner checks and saves):
   - a capitalised ordinary word of up to six letters joined by a hyphen after a reference ("-Copy", "-Encl.",
     "-Urgent", "-Final", "-Draft", "-Annex", "-Sub:") and a hyphenated date after it ("-04.10.2026"), and the bare
-    prefixes "OM-" and "DO-" (FB12 R2-04).
+    prefixes "OM-" and "DO-" (FB12 R2-04);
+  - a designation or another word after the name on the same line without a comma, including after a tab or a
+    no-break space ("Shri Rajendra Prasad Meena Deputy Secretary is requested ...", "... Meena Section Officer"):
+    read as a longer name (FB13 R2-03). "Sahab", "Saheb" and "Sahib" after a name end it, so "Shri Rajendra Prasad
+    Meena Sahab" gives no warning; "Under Secretary" gives none either ("Under" ends a name).
 - No FACT_CHECK, so an extended draft gives no warning:
   - a lowercase name without a title continued with lowercase words ("ramesh kumar" -> "ramesh kumar sharma");
   - a lowercase titled name continued inside a sentence ("Shri ramesh kumar sharma is informed"), so that "Shri
@@ -396,7 +402,7 @@ FACT_CHECK coverage (formerly the "Caught" / "Not caught" lists of "Exception in
   - a date, amount or number followed by more digits or words ("3rd October 2026-27", "15 days and 2",
     "Rs. 2,45,000/- lakh");
   - a reference extended in these forms (FB10 R2-04, FB11): "...-Estt.I" / "...-Estt.II", "..._1", an "A." prefix,
-    an en dash ("...-Estt–1"), a part-file marker after a space (". (Pt.)"), a capitalised code longer than six
+    a part-file marker after a space (". (Pt.)"), a capitalised code longer than six
     letters, a lowercase code ("-admn"), a date or reference word used as a code ("-Reg.", "-DT."), and a word
     prefix that is not a code of at most three capitals ("Reg-", "ENo-");
   - a name continued after a post-nominal or a heading word ("Shri Anil Verma IAS Kumar", "Shri Anil Retd. Verma",
@@ -583,11 +589,40 @@ gives FACT_MISSING.
   "Mr" ... after a name start a second name, so the two people are two facts and the draft gives no warning.
 - R2-04 (LOW): "-Copy", "-Encl.", "-Urgent", "-Final", "-Draft", "-Annex", "-Sub:", "-04.10.2026", "OM-", "DO-"
   give FACT_CHECK, never FACT_MISSING (listed above).
-- R2-05 (LOW): a single capital section bracket ("...-Estt.(A)", "...-Vig(A)") gives FACT_CHECK.
+- R2-05 (LOW): a single capital section bracket ("...-Estt.(A)", "...-Vig(A)") gives FACT_CHECK. An en dash
+  inside a reference ("...-Estt–1"), listed before as not caught, gives FACT_CHECK since FB13.
 - Corpus (309 instructions): property (c), (d) and (e) expect FACT_MISSING for a replaced fact and FACT_CHECK for
   the reference changes that extend it ("-1", "(Pt.)", "A-"); (f) expects FACT_CHECK; (g) moves the 23 changed
   drafts that are extensions to a new checked_drafts list (FACT_CHECK, no FACT_MISSING) and adds six FB12 cases;
   new property (h) wraps every fact in the faithful forms above and asserts no FACT_MISSING.
+
+Repairs after fallback review FB13 of 01ac1695 (REJECT; record
+`D:/uri-dev/lifecycle/OFFICE-DAILY-USE-r14/fallback/FB13_subagent_01ac1695.audit.txt`; every FB12 finding confirmed
+fixed and the two-signal design kept). Correction history: the FB12 R2-01 statement above that the instruction's own
+fact is "Shri Mohan Lal" was true only when the courtesy words started a capitalised run. With "to"/"from" before
+them ("to Hon'ble Minister Shri Mohan Lal", "to Collector Shri Arvind Rao", "to Late Shri Ram Prasad's family") the
+dropped words were not claimed, so the cue read "Hon'ble", "Collector" or "Late" as a one-word name, and a faithful
+draft got FACT_MISSING for it. And the FB12 exception that kept "Kumari" as a middle name after a designation kept
+the designation inside the fact ("Joint Secretary Kumari Priya Nair").
+- R2-01: courtesy and designation words directly before a title (any case, with "of", "the" or "and" between them)
+  are now claimed before the name stages, and a tail of such words after another person in the same run ("Ms Anjali
+  Verma and Hon'ble Shri ...") is cut off and claimed too. The statement above is now true: the instruction's facts
+  are only the titled names ("Shri Mohan Lal", "Shri Arvind Rao", "Shri Ram Prasad", "Kumari Priya Nair"). The words
+  are dropped before "Kumari" and "Km" as well.
+- R2-02: a reference code may contain "&" ("2(14)/2026-B&A", "11/3/2026-P&PW", "38/37/2016-P&PW(A)") and an en or
+  em dash ("17011/1/2026–Estt"); the extractor no longer cuts it short, so a changed section after the "&" or the
+  dash gives FACT_MISSING. Presence checks read an en or em dash as "-", in the suffix and prefix rules too, so a
+  faithful draft that writes the dash either way gives no warning.
+- R2-03 (LOW): listed under "Given FACT_CHECK although the draft is faithful"; "Sahab", "Saheb", "Sahib" end a name.
+- R2-04 (owner decision OD-OD-7): ".00" and ".0" after an amount are the same amount, in the draft and in the
+  instruction; non-zero paise still give FACT_MISSING.
+- R2-05 (LOW): no change; the limitation is listed ("Shri Ram Kumar Shri Mohan Lal").
+- Corpus (317 instructions): property (h) adds the instruction side (each titled name written after "Hon'ble",
+  "Hon'ble Minister", "Late", "Collector", "Joint Secretary", "Minister of State" or "MLA" must give the same facts
+  and no FACT_MISSING on the faithful draft) and ".00", ".0", ".00/-" after every digit amount; (f) no longer adds
+  "Kumari Xavier" after a name that ends in a designation word ("Joint Secretary Kumari Xavier" is a designation and
+  a person); (g) adds "B&A", "P&PW(A)", en-dash file numbers, ".00" amounts and the instruction-side courtesy forms,
+  each with faithful drafts (no warning) and changed drafts (FACT_MISSING).
 
 Fact-check limitations that remain (outside the scope above):
 - a single capitalised word after "of" that is a place or a body but follows a word not in the designation list
@@ -605,7 +640,8 @@ Fact-check limitations that remain (outside the scope above):
 - ordinal and fraction words ("first", "half");
 - "and <number word>" followed by a noun ("Rs. 25,000 and fifty rupees more") is not read as part of the number;
 - "May 3" without a preposition, ordinal or year before it (for example at the start of a sentence) is not a date;
-- a fact written differently in the draft: "11 AM" against "11 a.m." or "23rd" against "23" is reported, not matched;
+- a fact written differently in the draft: "11 AM" against "11 a.m." or "23rd" against "23" is reported, not matched
+  (an amount with ".00" or ".0" is matched, OD-OD-7);
 - swapped numbers and a fact present but used in the wrong place;
 - words in Indian languages.
 
@@ -636,6 +672,9 @@ and the V3.1 fallback applies. No GPU-heavy run overlaps an M95 live run; Brain 
   word but only inside what the rules read as a longer name or reference; its message names both forms. The service
   returns both in `warnings` with their codes; the Office shows "Missing: ..." warning-coloured and "Check: ..."
   quieter (section 4, "Two signals").
+- OD-OD-7 (decided by the owner 2026-10-24, MM LDEC-015, after FB13): a trailing ".00" or ".0" after an amount is the
+  same amount ("Rs. 4,75,000.00" is "Rs. 4,75,000"); non-zero paise (".50") are a different amount and give
+  FACT_MISSING.
 - OD-WI-2 (preference): default language `en-IN` (Indian English spelling) - chosen by default from the owner's
   context; one line to change.
 
