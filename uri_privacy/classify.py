@@ -107,7 +107,8 @@ _LABELLED = re.compile(
     r"(?i)\b(?:(?:otp|one[- ]time (?:password|code|pin)|verification code|security code|auth(?:entication)? code|"
     r"cvv2?|cvc2?|m?pin(?! ?code)|upi pin|atm pin)\b(?: ?(?:number|num|no)\b\.?| ?#)?(?:\s*(?:is|was|=|:|-|#)\s*|\s+)"
     r"(\d{3,8})\b|"
-    r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token)"
+    r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
+    r"(?:private|master|signing|encryption) key)"
     r"\s*(?:is|was|=|:)\s*[\"']?([^\s\"',;]{4,})|"
     # "API key abcdefghijklmnop": a key label followed by one long letter-only token (review r6 R3-01).
     r"\b(?:api[ _-]?key|secret key|access token|auth token)\s+([A-Za-z]{16,})\b|"
@@ -124,6 +125,11 @@ _LABELLED = re.compile(
     # Word secrets written without "is"/":" ("password - X", "password -> X", "password X" after a line break) or a few
     # words before it ("the password for wifi is X", review FB1 R1-04). The value must then hold a digit or a symbol,
     # so ordinary prose ("the password policy is strict", "password field is required.") stays readable.
+    r"\b(?:api[ _-]?key|apikey|(?:client |api )?secret(?: key)?|(?:access|auth|bearer|refresh|api|session) token|"
+    r"token|(?:private|master|signing|encryption) key)(?:'s)?(?: ?(?:->|=>|-|–|→|\(|,) ?\"?| )"
+    r"[\"']?(?=[^\s\"',;()]*[A-Za-z])(?=[^\s\"',;()]*[\d!@#$%^&*_+=\[\]{}<>?/\\|~])([^\s\"',;()]{8,})|"
+    # (review FB10 R1-01: before it, only the password labels had these separator forms; keys and tokens are 8+
+    # characters, so "token ERC-20" stays readable - a 4-7 character secret here is a stated residual)
     r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase)(?:'s)?(?: ?(?:->|=>|-|–|→) ?| )"
     r"[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
     # The value before the label ("X is my password", "use X as the password", review FB4 R1-04). A value with a digit
@@ -145,7 +151,7 @@ _LABELLED = re.compile(
     r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase)\b[^.\n]{1,30}?\b(?:is|:) ?[\"']?"
     r"(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
     r"\b(?:otp|m?pin(?! ?code)|passcode|cvv)\b[^.\n\d]{1,30}?\b(?:is|:)\s*(\d{3,8})\b|"
-    r"(?<!zip )(?<!postal )(?<!error )(?<!status )(?<!area )(?<!country )\bcode\b\s*(?:is|was|:)?\s*(\d{6})(?!\d))")
+    r"(?<!zip )(?<!postal )(?<!error )(?<!status )(?<!area )(?<!country )(?<!pin )(?<!pin-)\bcode\b\s*(?:is|was|:)?\s*(\d{6})(?!\d))")
 # Aadhaar: written 4-4-4 it is flagged on its Verhoeff check; twelve run-together digits also need an Aadhaar/UID word
 # nearby (Verhoeff passes one random 12-digit number in ten: order and tracking numbers stay readable).
 _AADHAAR = re.compile(r"(?<![\d.-])([2-9]\d{3})([ .-]?)(\d{4})([ .-]?)(\d{4})(?![\d-]|\.\d)")
@@ -223,7 +229,7 @@ _AADHAAR_CTX_AFTER = re.compile(r"(?i)^[^\n]{0,25}\b(?:aadhaa?r|uid|uidai)\b")
 # ("client_secret", "DB_PASSWORD", "AWS_SECRET_ACCESS_KEY", "clientSecret"), quoted ('"password": "x"') - before ":"
 # or "=", and XML elements ("<password>x</password>"). The value must hold a digit, so API documentation searches
 # ("client_secret: required", "refresh_token: string") stay readable; a letter-only value is the LDEC-007 residual.
-_KEYWORD = r"(?:pass(?:word|wd|phrase|code)?|pwd|(?:secret|signing|encryption|master)[_-]?key|secret|token|api[_-]?key|private[_-]?key|access[_-]?key|credentials?)"
+_KEYWORD = r"(?:pass(?:word|wd|phrase|code)?|pwd|(?:secret|signing|encryption|master|private)[ _-]?key|secret|token|api[_-]?key|private[_-]?key|access[_-]?key|credentials?)"
 _KEYVAL = re.compile(
     r"(?i)(?<![A-Za-z0-9])[\"']?(?:[A-Za-z0-9]{1,24}[_.-]){0,3}[A-Za-z0-9]{0,24}?" + _KEYWORD + r"[\"']?\s*[:=]\s*"
     r"[\"']?(?=[^\s\"',;{}<>]*\d)([^\s\"',;{}<>]{4,})|"
@@ -306,9 +312,15 @@ _EXEMPT = re.compile("|".join((_DATE_RANGE, _DATE, _CLOCK, _CLOCK_COMPACT, _IPV4
 _DIGITS = re.compile(r"\d+")
 
 
+def _exempt_tokens(text: str):
+    """Exempt-token matches; ".." between tokens counts as a separator ("2026-10-23..2026-10-30", an ISO interval;
+    review FB10 R1-02). Replacing ".." by two spaces keeps every position and cannot form a date, clock or IPv4."""
+    return _EXEMPT.finditer(text.replace("..", "  ") if ".." in text else text)
+
+
 def _exempt_mask(text: str) -> bytearray:
     exempt = bytearray(len(text))
-    for m in _EXEMPT.finditer(text):
+    for m in _exempt_tokens(text):
         exempt[m.start():m.end()] = b"\x01" * (m.end() - m.start())
     return exempt
 
@@ -648,7 +660,13 @@ _ISO_DATETIME = re.compile(r"\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,
 
 
 def _unusual_digit_separators(text: str) -> bool:
+    # Digits inside exempt tokens (dates, clock times, ISO timestamps, IPv4) are not counted, as in the digit budget
+    # (review FB10 R1-02: "On 12/05/2023 & 13/05/2023" and "10.0.0.1; 10.0.0.2" were refused as disguises).
     text = _ISO_DATETIME.sub(" ", text)
+    chars = list(text)
+    for m in _exempt_tokens(text):
+        chars[m.start():m.end()] = " " * (m.end() - m.start())
+    text = "".join(chars)
     for m in _SEP_RUN.finditer(text):
         run = m.group(0)
         if sum(c.isdigit() for c in run) < 9:          # 9: an SSN is the shortest identifier this covers

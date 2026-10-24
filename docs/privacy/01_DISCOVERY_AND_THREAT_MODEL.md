@@ -258,3 +258,16 @@ residual of 6.4-6.8 stands, including OD-7.
 **Egress path added (correction of section 3):** E10 - web-research page and feed fetches (`uri_web/pipeline.py`):
 the URLs and feeds the user named are fetched from the host the user named, with the query string as typed; they do
 not pass the gateway. Owner decision OD-8. Every residual of 6.4-6.9 stands, including OD-7.
+
+### 6.11 Changes after fallback review FB10 (2026-10-24; first review with no STRUCTURAL finding)
+
+| Change | Proof (tests/privacy) |
+|---|---|
+| Key, secret and token labels take every separator form (dash, arrow, en dash, bare space, parenthesis, comma, quote, "is", ":") when the value holds a letter and a digit or symbol and is 8+ characters | `test_pc19.py::test_fb10_r1_01*` |
+| Text made only of dates, clock times, ISO timestamps and IPv4 addresses is not refused whatever joins them (`;`, `&`, `..`, arrows) | `test_pc19.py::test_fb10_r1_02*` |
+| "pin code NNNNNN" is a postal code (ADDRESS, redacted) | `test_pc19.py::test_fb10_r1_03*` |
+
+**Residuals added:** a 4-7 character secret after a key, secret or token label written with a dash, arrow, space,
+parenthesis or comma (the same value with ":", "=" or "is" is caught). **Latency correction:** Japanese prose takes the
+two-reading path (U+3002 becomes "."); the AC-14c owner decision covers every script whose egress form differs (plan
+PC-15, PC-18, PC-19). Every residual of 6.4-6.10 stands, including OD-7 and OD-8.
