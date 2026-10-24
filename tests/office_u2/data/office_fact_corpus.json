@@ -6395,6 +6395,211 @@
      "The meeting is on 9th November 2026."
     ]
    ]
+  },
+  {
+   "id": "S-40",
+   "instruction": "Grant earned leave to SMT. KAMLA DEVI, UDC from 3rd November 2026.",
+   "facts": [
+    [
+     "name",
+     "SMT. KAMLA DEVI"
+    ],
+    [
+     "date",
+     "3rd November 2026"
+    ]
+   ],
+   "faithful_drafts": [
+    [
+     "Office Order",
+     "Earned leave to SMT. KAMLA DEVI, UDC from 3rd November 2026."
+    ],
+    [
+     "Office Order",
+     "Earned leave to Smt. Kamla Devi, UDC from 3rd November 2026."
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "Office Order",
+     "Earned leave to SMT. VIMLA DEVI, UDC from 3rd November 2026."
+    ],
+    [
+     "Office Order",
+     "Earned leave to the UDC from 3rd November 2026."
+    ]
+   ]
+  },
+  {
+   "id": "S-41",
+   "instruction": "Write a letter to shri Ramesh Kumar about the review on 4th December 2026.",
+   "facts": [
+    [
+     "name",
+     "shri Ramesh Kumar"
+    ],
+    [
+     "date",
+     "4th December 2026"
+    ]
+   ],
+   "faithful_drafts": [
+    [
+     "To",
+     "Shri Ramesh Kumar",
+     "The review is on 4th December 2026."
+    ],
+    [
+     "To",
+     "shri Ramesh Kumar",
+     "The review is on 4th December 2026."
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "To",
+     "Shri Suresh Kumar",
+     "The review is on 4th December 2026."
+    ]
+   ]
+  },
+  {
+   "id": "S-42",
+   "instruction": "Invite Kumari Priya Nair to the function on 3rd November 2026.",
+   "facts": [
+    [
+     "name",
+     "Kumari Priya Nair"
+    ],
+    [
+     "date",
+     "3rd November 2026"
+    ]
+   ],
+   "faithful_drafts": [
+    [
+     "Invitation",
+     "Kumari Priya Nair",
+     "The function is on 3rd November 2026."
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "Invitation",
+     "Kumari Priya Menon",
+     "The function is on 3rd November 2026."
+    ]
+   ]
+  },
+  {
+   "id": "S-43",
+   "instruction": "Write to Sri Venkatesh Rao and Shrimati Lakshmi Devi about the meeting on 9th November 2026.",
+   "facts": [
+    [
+     "name",
+     "Sri Venkatesh Rao"
+    ],
+    [
+     "name",
+     "Shrimati Lakshmi Devi"
+    ],
+    [
+     "date",
+     "9th November 2026"
+    ]
+   ],
+   "faithful_drafts": [
+    [
+     "To",
+     "Sri Venkatesh Rao",
+     "Shrimati Lakshmi Devi",
+     "The meeting is on 9th November 2026."
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "To",
+     "Sri Venkatesh Rao",
+     "Shrimati Lakshmi Bai",
+     "The meeting is on 9th November 2026."
+    ],
+    [
+     "To",
+     "Shrimati Lakshmi Devi",
+     "The meeting is on 9th November 2026."
+    ]
+   ]
+  },
+  {
+   "id": "S-44",
+   "instruction": "Write to Deputy Secretary Ramesh Kumar and Shri Anil Verma about the meeting on 5th December 2026.",
+   "facts": [
+    [
+     "name",
+     "Ramesh Kumar"
+    ],
+    [
+     "name",
+     "Shri Anil Verma"
+    ],
+    [
+     "date",
+     "5th December 2026"
+    ]
+   ],
+   "faithful_drafts": [
+    [
+     "To",
+     "Ramesh Kumar, Deputy Secretary",
+     "Shri Anil Verma",
+     "The meeting is on 5th December 2026."
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "To",
+     "Ramesh Kumar, Deputy Secretary",
+     "Shri Anil Sharma",
+     "The meeting is on 5th December 2026."
+    ]
+   ],
+   "checked_drafts": [
+    [
+     "To",
+     "Suresh Kumar, Deputy Secretary",
+     "Shri Anil Verma",
+     "The meeting is on 5th December 2026."
+    ]
+   ]
+  },
+  {
+   "id": "S-45",
+   "instruction": "Reply to the letter from Shri Arvind Kumar Singh, Joint Secretary.",
+   "facts": [
+    [
+     "name",
+     "Shri Arvind Kumar Singh"
+    ]
+   ],
+   "faithful_drafts": [
+    [
+     "To",
+     "Shri Arvind Kumar Singh",
+     "Sir, the reply is enclosed."
+    ],
+    [
+     "To",
+     "Shri Arvind Kumar Singh Collector",
+     "Sir, the reply is enclosed."
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "To",
+     "Shri Arvind Kumar Sinha",
+     "Sir, the reply is enclosed."
+    ]
+   ]
   }
  ]
 }

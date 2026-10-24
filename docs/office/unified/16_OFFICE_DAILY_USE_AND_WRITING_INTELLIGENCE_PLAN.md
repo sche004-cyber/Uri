@@ -322,7 +322,10 @@ Fact-check scope (owner decision 2026-10-24, OD-OD-4). Driver r6 ran 11 Codex re
 c2d0786a..41eb14b4 and every round found another phrasing that a rule-based check misses or misreads (lowercase or
 unmarked names, a month on its own, designations after names); it stopped at its 12-round budget. A deterministic
 check cannot meet "every fact, never silently" for free text, so the owner scoped the guarantee to marked facts:
-- names with an honorific (Shri, Smt., Kum., Sushri, Dr, Mr, Ms ...) or an explicit cue ("to", "from", "of",
+- names with an honorific (Shri, Smt., Kum., Sushri, Sri, Shrimati, Dr, Mr, Ms ...; since FB16 also in capitals,
+  "SHRI", "SMT.", "DR", and in lowercase, "shri", "smt.", "mr", with the short forms "Sh", "Km", "Kum", "Ms" in
+  capitals or lowercase only with a dot, with no space after a dotted title, "Smt.Kamla Devi", and with the title at the end of the line
+  before the name) or an explicit cue ("to", "from", "of",
   "appoint ... as", a letter recipient);
 - dates with a day or a year (day-month, month-day, numeric dates, "Nth (day) of Month", "Month YYYY", periods);
 - amounts and numbers written in digits, numbers in words, and a number's unit from the unit list;
@@ -721,10 +724,40 @@ was a surname ("Shri Asghar Ali Engineer"); corrected below.
   "–Deputy Commissioner Shri").
 - Office UI: the scope note now says that "Missing" covers titled names, dates, amounts, numbers and file numbers and
   that a name without a title only gets "Check".
-- Corpus (335 instructions): properties (c) to (e) expect FACT_CHECK for a changed untitled name and FACT_MISSING for
+- Corpus (335 instructions at d540c918; 337 after the follow-up b87d5b69 added S-38 and S-39, corrected in FB16):
+  properties (c) to (e) expect FACT_CHECK for a changed untitled name and FACT_MISSING for
   everything else; one changed draft (S-9, "Anjali") moved to checked_drafts; seven FB15 cases (S-31 to S-37) cover
   R2-01 to R2-04 in both directions. fb5 and fb12 expectations for untitled names changed to FACT_CHECK, each with a
   note.
+
+Repairs after fallback review FB16 of b87d5b69 (REJECT; record
+`D:/uri-dev/lifecycle/OFFICE-DAILY-USE-r17/fallback/FB16_subagent_b87d5b69.audit.txt`; no correctly written titled
+name, date, amount, number or reference got weaker). Correction history: from FB15 (OD-OD-8) the firm guarantee for
+titled names held only for the exact title-case honorifics; "SHRI RAMESH KUMAR", "MS. ANJALI VERMA", "SMT KAMLA DEVI",
+"shri Ramesh Kumar", "Smt.Kamla Devi", "Shri" at the end of the line before the name and "Invite Kumari Priya Nair"
+were read as untitled, so a replaced name got only FACT_CHECK. "SMT. KAMLA DEVI, UDC" even gave the facts "SMT" and
+"KAMLA DEVI".
+- R2-01: an honorific is recognised in any case (title case, capitals, lowercase); the short forms that are also
+  units or abbreviations (Sh, Km, Kum, Ms) count in capitals or lowercase only with a dot, so "MS Word", "5 km" and
+  "5 KM" are not titles; "Sri", "Shrimati" and "Srimati" are honorifics (orchestrator default, reversible). Before
+  extraction and presence, "Smt.Kamla" is read as "Smt. Kamla" and a title at the end of a line is joined to the name
+  on the next line, in the instruction and the draft alike (the fact text then shows "Smt. Kamla Devi"). A lowercase
+  title starts a capitalised run. "Kumari", "Km" or "Kum" after an instruction verb ("Invite", "Inform", "Depute",
+  ...) is a title, not a middle name. The presence check stays case-insensitive as before, so "SHRI RAMESH KUMAR"
+  still matches "Shri Ramesh Kumar".
+- R2-02 (LOW): before the courtesy test of an untitled person before "and", a leading designation is stripped from
+  that person ("Deputy Secretary Ramesh Kumar and Shri ..." keeps "Ramesh Kumar"), and an article after "and" is
+  skipped ("Kavita Sharma and the District Collector Shri ..." keeps "Kavita Sharma"); dropping either gives
+  FACT_CHECK.
+- R2-03 (LOW): a draft name that differs from an instruction name only by one trailing designation head word ("Shri
+  Anil Verma Collector") is the same person, not a longer name: no warning. ", Joint Secretary." (a designation made
+  only of courtesy or designation words after a titled person, at a clause end) is not an untitled name fact.
+- R2-04 (LOW): the corpus counts in this plan are corrected; the Office scope note now also names the soft trailing
+  designation ("a name only without its trailing designation").
+- Corpus (343 instructions): new property (i) writes every single-title name of the corpus in capitals (short titles
+  only with a dot for Sh, Km, Kum, Ms), with a lowercase title, with no space after a dotted title and with the title
+  on the line before, and requires one titled fact, no FACT_MISSING on the faithful drafts, and FACT_MISSING for a
+  dropped name and for a changed first name; (g) adds S-40 to S-45.
 
 Fact-check limitations that remain (outside the scope above):
 - a single capitalised word after "of" that is a place or a body but follows a word not in the designation list

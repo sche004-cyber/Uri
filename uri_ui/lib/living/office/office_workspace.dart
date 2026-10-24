@@ -397,8 +397,8 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
   // title only ever gets "Check".
   static const draftScopeNote = 'URI checks names with a title (Shri, Smt., Dr ...), dates, amounts, numbers and file '
       'numbers: "Missing" means one is not in the draft as you wrote it. "Check" means a name without a title was not '
-      'found, or a fact is there only inside a longer name or file number. Nothing else is checked: read the whole '
-      'draft before saving.';
+      'found, or a fact is there only inside a longer name or file number, or a name only without its trailing '
+      'designation. Nothing else is checked: read the whole draft before saving.';
 
   /// OD-2: facts from the owner's instruction that the drafted document does not contain, in words, and (OD-OD-4)
   /// the fact-check scope, above the Word editor until the edit closes. OD-OD-6: FACT_MISSING lines ("Missing: ...")

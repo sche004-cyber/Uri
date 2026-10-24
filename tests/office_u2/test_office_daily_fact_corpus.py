@@ -35,6 +35,10 @@ data/office_fact_corpus.json:
       the designations before the title are generated from head words, qualifiers and tails (41 forms), so the rule
       "a titled name starts at its honorific" is tested generically.
 A new case gets (b) to (f) and (h) without writing them.
+  (i) FB16: every titled name written in capitals ("SHRI RAMESH KUMAR"; "Sh", "Km", "Kum", "Ms" only with a dot),
+      with a lowercase title ("shri Ramesh Kumar"), with no space after a dotted title ("Smt.Kamla Devi") and with the
+      title at the end of the line before the name, stays one titled fact: the faithful drafts (the name as in the
+      corpus and as in the variant) give no FACT_MISSING, and a dropped or replaced name gives FACT_MISSING.
 OD-OD-8 (FB15): a changed or dropped name without a title gives FACT_CHECK, not FACT_MISSING, in (c) to (e) and
 (g); every titled name, date, amount, number and reference keeps FACT_MISSING.
 Commits before FB12 have no FACT_CHECK: a warning without a code is read as FACT_MISSING."""
@@ -52,7 +56,7 @@ CORPUS = json.loads((Path(__file__).parent / "data" / "office_fact_corpus.json")
 IDS = [c["id"] for c in CORPUS]
 
 # Independent of the module under test, so the same file runs against older commits.
-_HON = re.compile(r"\(?(?:Shri|Smt|Sh|Km|Kum|Kumari|Sushri|Dr|Mr|Mrs|Ms|Prof)\.?\)?$")
+_HON = re.compile(r"\(?(?:Shri|Smt|Sh|Km|Kum|Kumari|Sushri|Dr|Mr|Mrs|Ms|Prof|Sri|Shrimati|Srimati)\.?\)?$", re.I)
 _BRACKET_WORDS = re.compile(r"\s*\((?:[a-z]+[\s-]*)+\)", re.I)
 _MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october",
            "november", "december"]
@@ -407,4 +411,63 @@ def test_h_faithful_surroundings_never_give_fact_missing(case):
                 wrong.append(f"instruction '{word}{text}': facts {got_facts}")
             elif "FACT_MISSING" in _codes(ins2, _blocks(case)).values():
                 wrong.append(f"instruction '{word}{text}': FACT_MISSING on the faithful draft")
+    assert not wrong, (ins, wrong)
+
+
+# (i) FB16: titled names written in other forms stay titled (firm)
+_SHORT = {"sh", "km", "kum", "ms"}
+_LOWER_OK = {"shri", "smt", "sri", "shrimati", "srimati", "sushri", "kumari", "dr", "mr", "mrs", "prof"}
+
+
+def _title_variants(text: str) -> list:
+    words = text.split()
+    k = 0
+    while k < len(words) and _HON.match(words[k]):
+        k += 1
+    if k != 1 or len(words) < 2:
+        return []
+    hon, rest = words[0], " ".join(words[1:])
+    out = [("line", hon + "\n" + rest)]
+    if not (hon.rstrip(".").lower() in _SHORT and not hon.endswith(".")):
+        out.append(("caps", text.upper()))
+    if hon.rstrip(".").lower() in _LOWER_OK or hon.endswith("."):
+        out.append(("lower", hon.lower() + " " + rest))
+    if hon.endswith("."):
+        out.append(("nospace", hon + rest))
+    return out
+
+
+def _same_name(a: str, b: str) -> bool:
+    def norm(x):
+        return re.sub(r"\.(?=[A-Za-z])", ". ", " ".join(x.split())).lower()
+    return norm(a) == norm(b)
+
+
+_TI_CASES = [c for c in CORPUS if any(k == "name" and _title_variants(t) for k, t in c["facts"])]
+
+
+@pytest.mark.parametrize("case", _TI_CASES, ids=[c["id"] for c in _TI_CASES])
+def test_i_titled_names_in_other_forms_stay_firm(case):
+    ins = case["instruction"]
+    others = [t for _, t in case["facts"]]
+    wrong = []
+    for i, (kind, text) in enumerate(case["facts"]):
+        if kind != "name":
+            continue
+        for form, v in _title_variants(text):
+            ins2 = _replace_fact(ins, text, v, others)
+            facts = [f["text"] for f in DR.extract_facts(ins2) if f["kind"] == "name"]
+            mine = [f for f in facts if _same_name(f, v)]
+            if not mine:
+                wrong.append(f"{form} '{v}': facts {facts}")
+                continue
+            fact = mine[0]
+            for faithful in (_blocks(case), _blocks(case, (i, v))):
+                if "FACT_MISSING" in _codes(ins2, faithful).values():
+                    wrong.append(f"{form} '{v}': FACT_MISSING on a faithful draft {_codes(ins2, faithful)}")
+            if _codes(ins2, _blocks(case, (i, "the officer"))).get(fact) != "FACT_MISSING":
+                wrong.append(f"{form} '{v}': dropped name not FACT_MISSING")
+            what, new = mutations(kind, text)[-1]          # the first name changed (the surname may be soft)
+            if _codes(ins2, _blocks(case, (i, new))).get(fact) != _expected(what, kind, text):
+                wrong.append(f"{form} '{v}': {what} '{new}' gave {_codes(ins2, _blocks(case, (i, new))).get(fact)}")
     assert not wrong, (ins, wrong)

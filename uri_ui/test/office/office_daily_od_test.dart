@@ -303,6 +303,7 @@ void main() {
     expect(find.textContaining('read the whole draft before saving'), findsOneWidget);
     // OD-OD-8: the note says that a name without a title only gets "Check"
     expect(find.textContaining('"Check" means a name without a title was not found'), findsOneWidget);
+    expect(find.textContaining('only without its trailing designation'), findsOneWidget);
     await _unmount(tester);
   });
 
