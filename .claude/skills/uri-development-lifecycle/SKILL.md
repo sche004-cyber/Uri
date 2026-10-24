@@ -294,9 +294,7 @@ code alone never means the phase is qualified: live UI, security, regression and
 ## Integration preconditions and authorisation (stage 11)
 
 Integrate (or ask the owner) only when all of these hold, and name them in the authorisation record:
-the exact accepted commits; a final driver-counted independent ACCEPT/ACCEPT WITH FINDINGS on that SHA (or, when the
-driver recorded `NO_INDEPENDENT_REVIEWER` on that SHA, a fallback review accepted by `task_ledger accept` as in
-"Review paths" above); no open
+the exact accepted commits; a final driver-counted independent ACCEPT/ACCEPT WITH FINDINGS on that SHA; no open
 blocking finding; canonical re-checked for intervening changes (a moved canonical means rebase and re-review); a PASS UI
 qualification record for each user-facing capability (or the owner's explicit acceptance of the named
 NOT VERIFIED items); frozen-file integrity (`protected_paths` diff); provenance; combined regression gates;
@@ -309,12 +307,19 @@ Authorisation has two paths (owner decision LDEC-016 and its 2026-10-24 clarific
 - **Standing policy (automatic).** When every precondition above holds (all independent reviews, tests, security
   checks and integration gates pass on the exact commit) and no significant owner-level decision is involved, the
   integration proceeds without a fresh owner approval. Record the standing-policy authorisation in the Milestone
-  Manager ledger first: an `INTEGRATION` approval for the exact commit that cites the standing policy (LDEC-016).
+  Manager ledger first: an `INTEGRATION` approval for the exact commit, resolved with `owner_words` = the verbatim
+  LDEC-016 clarification and `source` = "LDEC-016 standing policy (not a per-commit owner approval)", plus the
+  evidence that each precondition holds.
 - **Explicit owner approval.** Mandatory for significant security, privacy, permission, architectural or other
   restricted decisions, among them: security exceptions or unresolved security findings; privacy-policy or
   sensitive-data changes; new permissions, credentials, privileges or dependencies; frozen or protected paths
   (`authorized_protected_changes`); production deployment or cutover; any finding marked as an owner decision;
   work the owner has reserved or deferred. Ask the owner, with the preconditions, and record their words.
+- **Fallback-accepted work.** A commit accepted only through the fallback review path ("Review paths"; the driver
+  recorded `NO_INDEPENDENT_REVIEWER`, so there is no driver-counted ACCEPT and no driver VERIFIED stop) is not
+  covered by the standing policy: Auditor selection item 3 (D1) applies, and it takes the explicit owner approval
+  path, with the fallback review, the gates run on the exact SHA against the baseline and the push command named
+  in the request.
 
 Both paths:
 
@@ -323,9 +328,10 @@ Both paths:
   the push.
 - **How the integration is performed.** The run stays `authorized: false` and stops BLOCKED `OWNER_AUTHORIZATION`
   at VERIFIED with the exact push command in `blocker.needs`. After the authorisation is recorded, re-check the
-  canonical tip (`git ls-remote`; a moved target means rebase and re-review), then run that fast-forward push
-  with the lease pinned to the verified tip (`--force-with-lease=<ref>:<verified tip>`), and verify the remote
-  afterwards. Do not edit `authorized` in a running config (that is a policy change: BLOCKED CONFIG, cleared
+  canonical tip (`git ls-remote`; it must equal the driver's recorded `target_tip_before`, otherwise rebase and
+  re-review) and confirm `git merge-base --is-ancestor <verified tip> <sha>`, then run that fast-forward push
+  with the lease pinned to the verified tip (`--force-with-lease=<ref>:<verified tip>`, so a moved target is
+  refused), and verify the remote afterwards. Do not edit `authorized` in a running config (that is a policy change: BLOCKED CONFIG, cleared
   only by the owner).
 - **Revert-only rollback.** The integration receipt written by the integrating session names the rollback as
   `git revert --no-edit <base>..<tip>` followed by a reviewed fast-forward; never a force-push or a history
