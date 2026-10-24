@@ -336,13 +336,17 @@ but extends into a longer name or a longer number is caught only where the rules
 - Caught:
   - a capitalised continuation of a name ("Anjali Sharma", "Smt. Sunita Kumari Singh");
   - a hyphenated surname;
-  - a lowercase titled name continued at the end of a block or inside a sentence, up to four lowercase words after
-    the title ("Shri ramesh kumar sharma verma");
+  - a lowercase titled name continued at the end of a block or before punctuation, up to four lowercase words
+    after the title ("To / Shri ramesh kumar sharma", "Pension of Shri ramesh kumar sharma");
   - a longer name with the same start ("Shri Anil Kumar Singh");
   - a reference with a suffix, a part file or a prefix ("14/2/2026-1", "...-Estt.-II", "...(Pt.)", "...-Estt./1",
-    "A-14/2/2026").
+    "A-14/2/2026"). A designator joined by a hyphen ("No-", "F.No-", "Ref-", "O.M.No-", "D.O.No-"), a trailing
+    "-dated", "-dt", "-reg" or "-regarding", and a bracket longer than four characters ("(2 pages)") are not
+    extensions.
 - Not caught, so the extended draft gives no warning:
   - a lowercase name without a title continued with lowercase words ("ramesh kumar" -> "ramesh kumar sharma");
+  - a lowercase titled name continued inside a sentence ("Shri ramesh kumar sharma is informed"): it is read as
+    sentence text, so that "Shri ramesh kumar reported for duty" is never a false warning (FB10 R2-03);
   - a titled lowercase name continued past four lowercase words;
   - a capitalised name continued in lowercase ("Ramesh iyer");
   - a continuation after a comma, in brackets or after a possessive ("Ramesh Kumar, Yadav", "Shri ramesh kumar
@@ -350,7 +354,14 @@ but extends into a longer name or a longer number is caught only where the rules
   - a second honorific with a dot after a name ("Anjali Dr. Sharma");
   - a capitalised connector ("Anjali Of Delhi");
   - a date, amount or number followed by more digits or words ("3rd October 2026-27", "15 days and 2",
-    "Rs. 2,45,000/- lakh").
+    "Rs. 2,45,000/- lakh");
+  - a reference extended in these forms (FB10 R2-04): "...-Estt.I" / "...-Estt.II", "..._1", an "A." prefix, an en
+    dash ("...-Estt–1"), and a part-file marker after a space (". (Pt.)");
+  - a name continued after a post-nominal or a heading word ("Shri Anil Verma IAS Kumar", "Shri Anil Retd. Verma",
+    "Shri Anil Verma With Kumar") (FB10 R2-05);
+  - two people with titles written next to each other without "and" or a comma ("Shri Ram Kumar Smt Sita Devi"):
+    with a dot after the second title they are two names; without one, the second title is read as a middle name, so
+    the pair is one name fact.
 
 A missing or changed marked fact (one not present word for word) always warns. The extension cases above are the
 only exception, and they are not blockers under OD-OD-5.
@@ -462,6 +473,29 @@ fixed; this is the last repair round for the extension class under OD-OD-5):
 - Corpus (297 instructions): property (f) adds "<name> Kumari Xavier" and, for titled lowercase names, "<name>
   xavier". Property (e) adds a faithful "<name> IAS" / "Under Rule 12" draft. References get "-1", "(Pt.)" and
   "A-" changes in (c), (d) and (e).
+
+Repairs after fallback review FB10 of 264e3036 (REJECT; record
+`D:/uri-dev/lifecycle/OFFICE-DAILY-USE-r11/fallback/FB10_subagent_264e3036.audit.txt`). Two FB9 repairs caused
+regressions, and one older false warning was found. All three are false warnings or a replaced fact, not
+extensions, so they were blocking:
+- R2-01, a regression from FB9 R2-03: "No-14/2/2026-Estt", "F.No-", "Ref-", "<file>-dated", "<file>-reg." and
+  "<file>(2 pages)" gave a false FACT_MISSING. The FB9 sentence "preceded directly by '<letter or digit>-' ... is
+  another file" was untrue for designators. A designator joined by a hyphen, those trailing words, and brackets
+  longer than four characters are now excluded. "-1", "-II", "(1)", "(Pt.)", "-Admn" and "A-" still warn.
+- R2-02, a regression from FB9 R2-04: "Ji" in the name-end list cut "Shri Ram Ji Lal" down to "Shri Ram", so a
+  replaced surname passed silently. "Ji" is now trimmed only as the last word of a name ("Shri Ramesh Ji,").
+- R2-03 (older): a faithful sentence "Shri ramesh kumar reported for duty on Monday." gave a false FACT_MISSING.
+  The draft read "Shri ramesh kumar reported" as a longer name. Lowercase extra words in a draft name now count as
+  an extension only when they reach a block end or punctuation, and never when one of them looks like a verb (ends
+  in -ed or -ing). The FB9 exception text said a lowercase continuation "inside a sentence" was caught; it is now
+  listed under "Not caught".
+- Found while checking that the FB9 cases still hold: the FB9 middle-name rule read "Respected Shri Ramesh Ji" as
+  one name. A salutation ("Respected", "Revered", "Dear", "Sir", "Madam") is no longer a name word before a title.
+- R2-04 and R2-05: the forms are listed under "Not caught" above.
+- Corpus: 301 instructions. New property (g) gives explicit faithful drafts that must not warn and changed drafts
+  that must warn: "No-"/"F.No-"/"Ref-"/"O.M.No-"/"D.O.No-", "-dated", "-reg.", "(2 pages)", "Shri Ram Ji Lal",
+  "Shri Ramesh Ji", and a lowercase titled name followed by a verb. Every FB9 case, test and probe result still
+  holds.
 
 Fact-check limitations that remain (outside the scope above):
 - a single capitalised word after "of" that is a place or a body but follows a word not in the designation list

@@ -144,7 +144,7 @@ _NOT_NAME = {"write", "draft", "prepare", "compose", "please", "kindly", "issue"
              "appoint", "direct", "depute", "relieve", "post", "approve", "forward", "submit", "reply", "under",
              "f.no", "o.m", "d.o", "put", "up", "meeting", "rupees", "only", "training", "purchase", "notify",
              "fill", "allot", "budget", "fine", "sanctioning", "granting", "relieving", "transferring", "on",
-             "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"}
+             "respected", "revered", "madam", "sir", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"}
 _NUM_WORD = (r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|"
              r"seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|"
              r"lakhs?|crores?)")
@@ -391,8 +391,11 @@ def _is_cap(w: str) -> bool:
 
 # FB9 R2-04: post-nominals and heading words end a name; they are never part of it ("Shri Ramesh Kumar IAS",
 # "Subject: Deputation of Anjali Under Rule 12", "Leave of Ramesh Sanctioned").
-_NAME_END = {"ias", "ips", "ifs", "irs", "esq", "esq.", "under", "regarding", "sanctioned", "with", "ji", "retd",
+_NAME_END = {"ias", "ips", "ifs", "irs", "esq", "esq.", "under", "regarding", "sanctioned", "with", "retd",
              "retd.", "phd", "ph.d.", "mbbs"}
+# FB10 R2-02: "Ji" is trimmed only when it is the last word of a name ("Shri Ramesh Ji,", "Sharma Ji"); inside a
+# name it is a name word ("Shri Ram Ji Lal").
+_TRAILING_ONLY = {"ji"}
 
 
 def _cap_runs(text: str, taken):
@@ -436,10 +439,12 @@ def _split_at_honorifics(start, words):
         # end of a run is a surname ("Anjali Kumari"), not the start of another name
         last = i == len(words) - 1
         # FB9 R2-01: a dotless honorific word after a name word, not after "and", is a middle name ("Sunita Kumari
-        # Singh", "Anil Kumari Prasad"); "Shri Ram Kumar and Smt Sita Devi" still splits (a comma ends the run anyway)
+        # Singh", "Anil Kumari Prasad", "Shri Ramesh Shri Vastava"); "Shri Ram Kumar and Smt Sita Devi" still splits
+        # (a comma ends the run anyway). FB10: not after a salutation or another word that is not a name word
+        # ("Respected Shri Ramesh Ji", "Dear Shri Anil").
         prev = words[i - 1][1] if i else ""
         middle = (not w.endswith(".") and not w.startswith("(") and prev and not _is_hon(prev)
-                  and prev.lower() not in _CONNECTORS)
+                  and prev.lower() not in _CONNECTORS and prev.lower().rstrip(".,") not in _NOT_NAME)
         if _is_hon(w) and not last and not middle and cur and not all(_is_hon(x) for _, x in cur):
             parts.append(cur)
             cur = []
@@ -456,7 +461,7 @@ def _trim(words):
     words = list(words)
     while words and bad(words[0][1]) and not _is_hon(words[0][1]):
         words.pop(0)
-    while words and bad(words[-1][1]):
+    while words and (bad(words[-1][1]) or words[-1][1].lower().rstrip(".") in _TRAILING_ONLY):
         words.pop()
     return words
 
@@ -502,6 +507,18 @@ def _extends(name: str, big: str) -> bool:
     return False
 
 
+def _sentence_continuation(name: str, big: str, rest: str) -> bool:
+    """FB10 R2-03: a longer draft name whose extra words are all lowercase ("Shri ramesh kumar reported") is ordinary
+    sentence text unless it reaches a block end or punctuation ("To / Shri ramesh kumar sharma", "Pension of Shri
+    ramesh kumar sharma"); an extra word that looks like a verb ("reported", "joined", "applying") never counts."""
+    extra = _norm(big)[len(_norm(name)):].split() if _norm(big).lower().startswith(_norm(name).lower()) else []
+    if not extra or not all(w[:1].islower() for w in extra):
+        return False
+    if any(re.search(r"(?:ed|ing)$", w) for w in extra):
+        return True
+    return not re.match(r"[ \t]*(?:\n|$|[.,;:()!?])", rest)
+
+
 def _name_hits(name: str, text: str, longer: list, draft_longer=()) -> int:
     """Count occurrences of a name outside a longer name that extends it. Longer names of the instruction cover their
     occurrences in any case (FB5 R6-02); longer names found only in the draft cover only their own, case-sensitive
@@ -510,7 +527,8 @@ def _name_hits(name: str, text: str, longer: list, draft_longer=()) -> int:
     hay = "\n".join(" ".join(line.split()) for line in _clean(text or "").splitlines())
     covers = [(m.start(), m.end()) for big in longer if _extends(name, big) for m in _fact_rx(_norm(big)).finditer(hay)]
     covers += [(m.start(), m.end()) for big in draft_longer if _extends(name, big)
-               for m in re.finditer(r"(?<![^\W_])" + re.escape(_norm(big)) + r"(?![^\W_])", hay)]
+               for m in re.finditer(r"(?<![^\W_])" + re.escape(_norm(big)) + r"(?![^\W_])", hay)
+               if not _sentence_continuation(name, big, hay[m.end():])]
     # FB8: a name with a lowercase word ("Shri ramesh kumar") is not seen by the capitalised-run stage, so in the
     # draft an occurrence followed directly on the same line by a capitalised name word ("Shri ramesh kumar Xavier")
     # is a longer name, not this one. A lowercase word after it is read as prose (plan 16 limitation).
@@ -529,8 +547,13 @@ def _name_hits(name: str, text: str, longer: list, draft_longer=()) -> int:
                and not any(a <= m.start() and m.end() <= b and (b - a) > (m.end() - m.start()) for a, b in covers))
 
 
-_REF_SUFFIX = re.compile(r"(?:-[A-Za-z0-9]|\([A-Za-z0-9]|\.[-/(]|/[A-Za-z0-9])")
+# FB10 R2-01: "-dated", "-dt", "-reg", "-regarding" and a bracket longer than a part-file marker ("(2 pages)",
+# "(Annexure ...)") are not suffixes; a designator joined by a hyphen ("No-", "F.No-", "Ref-", "O.M.No-", "D.O.No-")
+# is not a prefix. "-1", "-II", "-Admn", "(1)", "(Pt.)" and "A-" still are.
+_REF_SUFFIX = re.compile(r"(?:-(?!(?:dated|dt|reg|regarding)\b)[A-Za-z0-9]|\([A-Za-z0-9.]{1,4}\)|\.[-/(]|"
+                         r"/[A-Za-z0-9])", re.I)
 _REF_PREFIX = re.compile(r"[A-Za-z0-9]-$")
+_REF_DESIGNATOR_HYPHEN = re.compile(r"(?i)(?:\bno|\bref|\bf\.?\s?no|\bo\.?\s?m\.?\s?no|\bd\.?\s?o\.?\s?no)\.?-$")
 
 
 def fact_present(fact: str, draft_text: str, instruction: str | None = None, kind: str | None = None) -> bool:
@@ -556,7 +579,8 @@ def fact_present(fact: str, draft_text: str, instruction: str | None = None, kin
             same_after.add(_after_word(src, m.end()))
     for m in rx.finditer(hay):
         # FB9 R2-03: "14/2/2026-1", "...-Estt.-II", "...-Estt.(Pt.)", "...-Estt./1" and "A-14/2/2026" are other files
-        if kind == "reference" and (_REF_SUFFIX.match(hay[m.end():]) or _REF_PREFIX.search(hay[:m.start()])):
+        if kind == "reference" and (_REF_SUFFIX.match(hay[m.end():]) or (
+                _REF_PREFIX.search(hay[:m.start()]) and not _REF_DESIGNATOR_HYPHEN.search(hay[:m.start()]))):
             continue
         if ends_num_word or ends_plain_digit:
             after = hay[m.end():]

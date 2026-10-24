@@ -19,6 +19,9 @@ data/office_fact_corpus.json:
       person, so it never stands in for the fact. FB9 adds "<name> Kumari Xavier" (an honorific word as a middle
       name) and "<name> xavier" for a lowercase titled name at the end of a block; (e) adds a faithful draft with
       "<name> IAS" and "Subject: Deputation of <name> Under Rule 12"; references get "-1", "(Pt.)" and "A-" changes.
+  (g) FB10: a case may list explicit faithful drafts (never warn) and changed drafts (must warn), for forms the
+      generated drafts cannot express ("No-<file>", "<file>-dated", "(2 pages)", "Shri Ram Ji Lal", a lowercase titled
+      name followed by a verb).
 A new case gets (b) to (f) without writing them."""
 from __future__ import annotations
 
@@ -274,3 +277,16 @@ def test_f_a_longer_name_never_stands_in_for_the_fact(case):
                     if text not in [w["text"] for w in DR.missing_facts(ins, draft)]:
                         missed.append(f"'{text}' + '{extra}' in the {where}, body -> '{body_new}'")
     assert not missed, (ins, missed)
+
+
+# (g) FB10: explicit faithful and changed drafts listed in the corpus
+G_CASES = [c for c in CORPUS if c.get("faithful_drafts") or c.get("changed_drafts")]
+
+
+@pytest.mark.parametrize("case", G_CASES, ids=[c["id"] for c in G_CASES])
+def test_g_listed_faithful_and_changed_drafts(case):
+    ins = case["instruction"]
+    for blocks in case.get("faithful_drafts", []):
+        assert DR.missing_facts(ins, "\n".join(blocks)) == [], (ins, blocks)
+    for blocks in case.get("changed_drafts", []):
+        assert DR.missing_facts(ins, "\n".join(blocks)), (ins, blocks)
