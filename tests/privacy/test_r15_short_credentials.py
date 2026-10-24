@@ -43,3 +43,41 @@ def test_r1_01_short_labelled_credentials_never_reach_search_transport(text):
     assert result.status == REFUSED
     assert sent == []
     assert text not in result.query
+
+
+SHORT_CREDENTIALS = (
+    "password: abc",
+    "password is ab",
+    "api key: xy",
+    "password: a-",
+    "password: a.",
+    "password: z",
+)
+
+
+@pytest.mark.parametrize("text", SHORT_CREDENTIALS)
+def test_r2_01_short_separated_credentials_are_refused_and_redacted(text):
+    assert CREDENTIAL in classify(text).categories()
+    with pytest.raises(PrivacyRefused):
+        TGateway().prepare(text, requester="t", destination="WEB_SEARCH", purpose="p")
+    assert TGateway().prepare(text, requester="t", destination="LOG", purpose="p").text == "[redacted]"
+
+
+@pytest.mark.parametrize("text", SHORT_CREDENTIALS)
+def test_r2_01_short_separated_credentials_never_reach_search_transport(text):
+    requests = []
+
+    def capture(request):
+        requests.append(json.loads(request.content)["query"])
+        return httpx.Response(200, json={"results": []})
+
+    result = TavilyProvider(api_key="test", transport=httpx.MockTransport(capture),
+                            privacy=TGateway()).search(text)
+    assert result.status == REFUSED
+    assert requests == []
+    assert text not in result.query
+
+
+@pytest.mark.parametrize("text", ("password ab", "password issue", "password wasp"))
+def test_r2_01_bare_or_partial_separator_stays_readable(text):
+    assert TGateway().prepare(text, requester="t", destination="WEB_SEARCH", purpose="p").text == text

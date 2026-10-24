@@ -109,7 +109,7 @@ _LABELLED = re.compile(
     r"(\d{3,8})\b|"
     r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
     r"(?:private|master|signing|encryption) key)"
-    r"\s*(?:is|was|=|:)\s*[\"']?([^\s\"',;]{4,}|(?=[^\s\"',;]{0,2}[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])[^\s\"',;]{1,3})|"
+    r"\s*(?:is\b|was\b|=|:)\s*[\"']?([^\s\"',;]{1,})|"
     # "API key abcdefghijklmnop": a key label followed by one long letter-only token (review r6 R3-01).
     r"\b(?:api[ _-]?key|secret key|access token|auth token)\s+([A-Za-z]{16,})\b|"
     # An HTTP Basic credential whatever its base64 letters (review FB9 R1-03), and recovery / backup / 2FA codes

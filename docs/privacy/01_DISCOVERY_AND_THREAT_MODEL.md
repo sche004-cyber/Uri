@@ -176,7 +176,7 @@ decision **OD-7** (follow-up). Section 6.3 called it OD-6, which the plan alread
 | Change to 6.4 | Proof (tests/privacy) |
 |---|---|
 | Digit runs bridge punctuation and whitespace gaps of any length (r6 R2-01); gaps holding letters still break a run after 3 characters | `test_ldec006.py::test_ldec006_long_punctuation_gaps*` |
-| Labelled credentials: letter-only values are refused when a separator joins label and value ("password: x", "password is x"), after a key label as one 16+ letter token, and before a possessive label that ends the sentence ("x is my password."; a quoted value always) | `test_r6_review_repairs.py::test_r3_01*`, `test_r4_01*` |
+| Labelled credentials: letter-only values of any length, including one to three letters or short values ending in `-` or `.`, are refused when a separator joins label and value ("password: x", "password is x"), after a key label as one 16+ letter token, and before a possessive label that ends the sentence ("x is my password."; a quoted value always) | `test_r6_review_repairs.py::test_r3_01*`, `test_r4_01*`; `test_r15_short_credentials.py::test_r2_01_*` |
 | Split keys after a fixed-length prefix (AKIA/ASIA 16, AIza 35, ghp_/gho_/ghs_/ghu_ 36, glpat- 20) are refused when the groups add up to the body length, with or without digits | `test_pc13.py::test_r5_01*` |
 | Text with nothing to rewrite is sent byte-identical (no NFKC change to half-width katakana, Arabic presentation forms, ligatures, NBSP, URL paths); text that needs a rewrite is sent in the egress form and re-checked | `test_pc13.py::test_r5_02*`, `test_c3_repairs.py::test_canonical_is_what_is_sent` |
 | Pseudonym tokens carry a keyed, non-reversible scope tag; a token never restores in another scope | `test_pc13.py::test_scope_tag*`, `test_r6_review_repairs.py::test_r3_02*` |
@@ -242,7 +242,8 @@ written. Every other residual of 6.4-6.7 stands, including OD-7.
 | E-mail written defanged (`[.]`, `(.)`, `[@]`, `(@)`) or with single spaces around `.` | `test_fb8_r2_03*` |
 | PAN with a space or one separator at each group boundary; `cvv2`/`cvc2`; spaced two-digit codes | `test_fb8_r2_04*` |
 
-**Residuals added:** a letter-only value in a config notation (`client_secret: changeme`) - the LDEC-007 residual;
+**Residuals added:** a letter-only value in a compound config notation (`client_secret: changeme` or
+`client_secret: abc`, including short values) - the LDEC-007 residual;
 visible symbols inside a label word (`pass\u00a1word:`) - deliberate obfuscation, as the leetspeak residual. Every
 residual of 6.4-6.8 stands, including OD-7.
 
