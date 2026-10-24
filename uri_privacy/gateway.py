@@ -107,9 +107,13 @@ class PrivacyGateway:
         # A log line in doubt is written fully redacted.
         if dest not in P.LOCAL:
             original = text
-            if C.scan_cost(text) > C.MAX_SCAN_COST:            # review FB5 R1-02: seconds to minutes of matching
+            # review FB5 R1-02: seconds to minutes of matching. Every reading counts, the egress form's too: "ａ／" and
+            # "a%2F" cost nothing as written and fold to "a/" (FB13 R1-05).
+            if C.reading_cost(text) > C.MAX_SCAN_COST:
                 return self._doubt(meta, dest, C.Classification([], Counter(), False, False), {"TOO_COMPLEX"})
             text, signals = C.egress_form(text)
+            if text != original and C.reading_cost(text) > C.MAX_SCAN_COST:
+                return self._doubt(meta, dest, C.Classification([], Counter(), False, False), {"TOO_COMPLEX"})
             cls = C.classify(text, protected_terms)
             if cls.decoded_only:
                 signals.add(C.DOUBT_ENCODED)

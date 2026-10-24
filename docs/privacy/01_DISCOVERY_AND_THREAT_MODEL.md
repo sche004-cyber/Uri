@@ -317,3 +317,23 @@ to the rule in the table; the 6.4 row "password is x" was corrected to match.
 **Residual added:** a letter-only value of 1-3 letters after "is", a dash or an arrow ("password is ab",
 "token -> xy") - the LDEC-007 residual, as for a bare label followed by one word. Every residual of 6.4-6.13 stands,
 including OD-7 and OD-8.
+
+### 6.15 Changes after fallback review FB13 (2026-10-24; no STRUCTURAL finding)
+
+| Change | Proof (tests/privacy) |
+|---|---|
+| Any other punctuation run between a credential label (plain, plural, "pass phrase", or a compound config key) and its value | `test_pc23.py::test_fb13_r1_01*` |
+| Tables whose header names a credential column (TSV, CSV, markdown, aligned columns), a two-cell markdown row, and command-line credentials (`curl -u`, `mysql -p`, `sshpass -p`, `net use /user:`, "login with alice / X") | `test_pc23.py::test_fb13_r1_02*` |
+| Known-prefix keys split by any short punctuation run; fixed-length bodies counted with and without `-`/`_` | `test_pc23.py::test_fb13_r1_03*` |
+| PGP armoured and PuTTY private keys are CREDENTIAL, whole; a key block ends at END, the next BEGIN or the end of the text | `test_pc23.py::test_fb13_r1_04*` |
+| The matching-cost bound applies to every reading and to the egress form, and counts the reused Assist URL-userinfo rules | `test_pc23.py::test_fb13_r1_05*`, `test_pc23_new_patterns_stay_linear` |
+| Passport forms (comma, parenthesis, dash or space in the value, value before the label), `CVV(123)`, `<at>`/`<dot>` e-mail | `test_pc23.py::test_fb13_r1_06*` |
+
+**Residuals added:** a value glued to its label by "." or "_" ("password.X9!", "password_X9!"; such shapes are file
+and variable names); a 1-3 character value after a bare space ("password 7x!", "password 12"); a value more than
+30 characters after its label ("the password for my bank account at the branch near me is X"); a PIN written in words;
+a bearer token shorter than 8 characters; e-mail with a quoted local part, an IP-literal or dotless domain, or "#" for
+"@"; a mixed-case PAN split by spaces ("AbCpE 1234 f", which cannot be told apart from prose, coordinator finding C5-01);
+lower-case `xoxb-` key groups on separate lines (they read as prose); a username / password pair without a login or
+credentials word; letter-only table cells and letter-only values in "login with alice / X" (LDEC-007). Every residual of 6.4-6.14
+stands, including OD-7 and OD-8.

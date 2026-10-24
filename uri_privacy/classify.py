@@ -103,11 +103,14 @@ def iban_ok(raw: str) -> bool:
 # excluded.
 # The password label also matches "pass-word", "pass_word" and digit/symbol spellings ("P@ssword", "passw0rd", review
 # FB4 R1-06).
+# Separators between a label and its value that the specific forms below do not list (review FB13 R1-01).
+# Never a placeholder's own brackets: a random pseudonym token can end in a label ("[[CONTACT_..._xqpwd]] [[...").
+_OTHER_SEP = r"(?!\s*\]\]|\s*\[\[)(?:\s*[|>#*~^&%$@+<\[\]{}`'\"\\)]{1,3}\s*|[?!]{1,3}(?=\S)|\s+[._?!]{1,3}\s+)"
 _LABELLED = re.compile(
     r"(?i)\b(?:(?:otp|one[- ]time (?:password|code|pin)|verification code|security code|auth(?:entication)? code|"
-    r"cvv2?|cvc2?|m?pin(?! ?code)|upi pin|atm pin)\b(?: ?(?:number|num|no)\b\.?| ?#)?(?:\s*(?:is|was|=|:|-|#)\s*|\s+)"
+    r"cvv2?|cvc2?|m?pin(?! ?code)|upi pin|atm pin)\b(?: ?(?:number|num|no)\b\.?| ?#)?(?:\s*(?:is|was|=|:|-|#|\()\s*|\s+)"
     r"(\d{3,8})\b|"
-    r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
+    r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
     r"(?:private|master|signing|encryption) key)"
     # ":" or "=" take any value; "is"/"was" a value with a digit or symbol, or a 4+ letter word (LDEC-007); an arrow
     # a value with a digit or symbol - "token -> refresh flow", "password is ok" stay readable (coordinator review of
@@ -117,13 +120,13 @@ _LABELLED = re.compile(
     r"\s*(?:->|=>|→)\s*[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{1,}))|"
     # Semicolon and slash separate a value with credential syntax, or a lone letter-only value at clause end.
     # A following prose word ("password / reset help") keeps the text readable.
-    r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
+    r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
     r"(?:private|master|signing|encryption) key)\s*[;/]\s*[\"']?"
     r"(?:(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{1,})|"
     r"([A-Za-z]+)(?=\s*(?:[,!?'\")\]]|\.(?=\s|$)|$)))|"
     # A short value after a dash is explicit when the value ends the clause. Keep prose such as
     # "reset your password - see the help page" readable.
-    r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
+    r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
     r"(?:private|master|signing|encryption) key)\s*[-–]\s*[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])"
     r"([^\s\"',;]{1,})(?=\s*(?:[,!?'\")\]]|$))|"
     # "API key abcdefghijklmnop": a key label followed by one long letter-only token (review r6 R3-01).
@@ -134,7 +137,7 @@ _LABELLED = re.compile(
     r"\b(?:recovery|backup|2fa|mfa|two[- ]factor)\s+codes?\b\W{0,3}(?:is\s+)?(\d(?:[ -]?\d){5,9})(?!\d)|"
     # A credential set or changed to a value ("set the password to X", "changed my PIN to 4821"; FB12 R1-02).
     r"\b(?:set(?:s|ting)?|chang(?:e|ed|es|ing)|reset(?:s|ting)?|updat(?:e|ed|es|ing))\b[^.\n]{0,20}?"
-    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|m?pin|api[ _-]?key|secret(?: key)?|token)\b"
+    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase|m?pin|api[ _-]?key|secret(?: key)?|token)\b"
     r" (?:to|as) [\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
     # "pass: x" / "pass=x" (never "pass is"), and a code word a few words before its digits ("the PIN for the locker
     # is 4821"). A bare "code" needs exactly 6 digits (OTP length) and no zip/postal/error/status/area word before it.
@@ -150,25 +153,34 @@ _LABELLED = re.compile(
     r"[\"']?(?=[^\s\"',;()]*[A-Za-z])(?=[^\s\"',;()]*[\d!@#$%^&*_+=\[\]{}<>?/\\|~])([^\s\"',;()]{8,})|"
     # (review FB10 R1-01: before it, only the password labels had these separator forms; keys and tokens are 8+
     # characters, so "token ERC-20" stays readable - a 4-7 character secret here is a stated residual)
-    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase)(?:'s)?(?: ?(?:->|=>|-|–|→) ?| )"
+    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase)(?:'s)?(?: ?(?:->|=>|-|–|→) ?| )"
     r"[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
     # The value before the label ("X is my password", "use X as the password", review FB4 R1-04). A value with a digit
     # or symbol counts wherever the label stands; a letter-only value only when the label ends the sentence and the
     # value is not a question word or pronoun (r6 R4-01, LDEC-007): "huntertwo is my password." is refused, "this is
     # my password manager" and "what is my password" stay readable.
     r"(?<![^\s\"'(])[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})[\"']? (?:is|was|as|=) "
-    r"(?:(?:my|the|our|your|a|new|wifi|login) ){0,2}(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|pin)\b|"
+    r"(?:(?:my|the|our|your|a|new|wifi|login) ){0,2}(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase|pin)\b|"
     # (Every alternative starts at a word boundary, the group above opens with \b: a quoted value is matched from its
     # first letter, after the quote. A quoted value is never a question word: '"what" is my password' is refused.)
     r"(?:(?<=[\"'])|(?<![^\s(])(?!(?:what|where|which|when|why|whose|how|this|that|these|those|here|there|mine|yours|"
     r"ours|theirs|same|also|still)\b))([A-Za-z]{4,})[\"']? (?:is|was|as|=) "
-    r"(?:(?:my|the|our|your|a|new|wifi|login) ){0,2}(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|pin)"
+    r"(?:(?:my|the|our|your|a|new|wifi|login) ){0,2}(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase|pin)"
     r"(?=\s*(?:[.,;:!?)\]\"']|$))|"
+    # Any other punctuation between a label and its value ("password | X", "token > X", "password # X", "password . X";
+    # review FB13 R1-01). "?" and "!" count glued to the value or with a space on both sides, "." only with a space on
+    # both sides, so "forgot password? Win10 laptop" and "password.v2.json" stay readable. The value holds a letter and a digit or symbol (password labels: 4+ characters, or 6+ digits;
+    # key and token labels: 8+ characters).
+    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase)" + _OTHER_SEP +
+    r"[\"']?(?:(?=[^\s\"',;]*[A-Za-z])(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|(\d{6,}))|"
+    r"\b(?:api[ _-]?key|apikey|(?:client |api )?secret(?: key)?|(?:access|auth|bearer|refresh|api|session) token|"
+    r"token|(?:private|master|signing|encryption) key)" + _OTHER_SEP +
+    r"[\"']?(?=[^\s\"',;()]*[A-Za-z])(?=[^\s\"',;()]*[\d!@#$%^&*_+=\[\]{}<>?/\\|~])([^\s\"',;()]{8,})|"
     # "pw X" and, after a user/login word, "pass X" (review FB4 R1-04). The value holds a letter and a digit or
     # symbol, so "pass 2026 exams" and "pass COVID tests" stay readable.
     r"(?:\bpw|(?:user(?:name)?|login|id|wifi|account)\b[^\n]{0,30}?\bpass) "
     r"[\"']?(?=[^\s\"',;]*[A-Za-z])(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
-    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase)\b[^.\n]{1,30}?(?:\bis|(?<!\d):(?!//|\d)) ?[\"']?"
+    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase)\b[^.\n]{1,30}?(?:\bis|(?<!\d):(?!//|\d)) ?[\"']?"
     r"(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
     r"\b(?:otp|m?pin(?! ?code)|passcode|cvv)\b[^.\n\d]{1,30}?\b(?:is|:)\s*(\d{3,8})\b|"
     r"(?<!zip )(?<!postal )(?<!error )(?<!status )(?<!area )(?<!country )(?<!pin )(?<!pin-)\bcode\b\s*(?:is|was|:)?\s*(\d{6})(?!\d))")
@@ -190,7 +202,7 @@ _PAN = re.compile(r"(?i)\b[a-z]{3}[pchfatbljg][a-z]\d{4}[a-z]\b|"               
                   r"(?-i:\b[A-Z](?:[-._/,] ?)?[A-Z](?:[-._/,] ?)?[A-Z](?:[-._/,] ?)?[PCHFATBLJG](?:[-._/,] ?)?[A-Z]"
                   r"(?:[-._/,] ?)?\d(?:[-._/,] ?)?\d(?:[-._/,] ?)?\d(?:[-._/,] ?)?\d(?:[-._/,] ?)?[A-Z]\b)|"
                   r"\b[a-z]{3}[pchfatbljg][a-z] ?[-._/,] ?(?!(?:19|20)\d\d)\d{4} ?[-._/,] ?[a-z]\b")
-# Known API key prefixes followed by groups split by single spaces or dashes: "AKIA TWII 6XUU IX2C IXU3" (review FB4
+# Known API key prefixes followed by groups split by spaces, dashes or other punctuation (FB13 R1-03): "AKIA TWII 6XUU IX2C IXU3" (review FB4
 # R1-05). A prefix with a fixed body length (AWS, Google, GitHub, GitLab) is a key when the groups add up to exactly
 # that length, digits or not (r6 R5-01). Otherwise the groups hold at least 16 characters and either two digits with a
 # mixed letter/digit group, an upper-case-and-digit-only body, or a letter-case change inside a group (random mixed
@@ -198,10 +210,16 @@ _PAN = re.compile(r"(?i)\b[a-z]{3}[pchfatbljg][a-z]\d{4}[a-z]\b|"               
 _KEY_BODY = {"AKIA": 16, "ASIA": 16, "AIza": 35, "ghp_": 36, "gho_": 36, "ghs_": 36, "ghu_": 36, "glpat-": 20}
 _KEY_SPLIT = re.compile(r"(?<![A-Za-z0-9])(AKIA|ASIA|AIza|ghp_|gho_|ghs_|ghu_|github_pat_|glpat-|xox[abpr]-|"
                         r"sk-(?:proj-|ant-)?|sk_live_|sk_test_|rk_live_|tvly-)"
-                        r"([A-Za-z0-9_]{0,40}(?:[ -][A-Za-z0-9_]{1,40}){1,15})(?![A-Za-z0-9_])")
+                        # groups split by a space, a dash or one other punctuation mark (review FB13 R1-03)
+                        r"([A-Za-z0-9_]{0,80}(?:[ .,:;|/+-]{1,3}[A-Za-z0-9_]{1,40}){0,15})(?![A-Za-z0-9_])")
 # A PEM private key block, whole (review FB5 R1-07: it was SECRET_LIKE per body line and its last line was sent).
-_PEM = re.compile(r"-----BEGIN [A-Z0-9 ]{0,40}PRIVATE KEY-----(?:(?!-----END)[\s\S]){0,20000}?"
-                  r"(?:-----END [A-Z0-9 ]{0,40}PRIVATE KEY-----|$)")
+# PGP armoured private key blocks and PuTTY private key files too (review FB13 R1-04). A block ends at its END line,
+# the next BEGIN or the end of the text, so repeated headers stay linear and a block without END is still covered
+# (before, each BEGIN scanned 20000 characters and a longer block without END was not matched at all).
+_PEM = re.compile(r"-----BEGIN [A-Z0-9 ]{0,40}PRIVATE KEY(?: BLOCK)?-----(?:(?!-----(?:END|BEGIN) )[\s\S])*?"
+                  r"(?:-----END [A-Z0-9 ]{0,40}PRIVATE KEY(?: BLOCK)?-----|(?=-----BEGIN )|$)|"
+                  r"PuTTY-User-Key-File-\d+:(?:(?!Private-MAC:|PuTTY-User-Key-File-)[\s\S])*?"
+                  r"(?:Private-MAC: ?[0-9A-Fa-f]*|(?=PuTTY-User-Key-File-)|$)")
 _SSN_SEP = r" ?[-./,:()] ?|[^\w\n]|_"          # one standard (optionally spaced) or any single punctuation separator
 _SSN = re.compile(r"(?<![\d-])(?!000|666|9\d\d)\d{3}-(?!00)\d{2}-(?!0000)\d{4}(?![\d-])|"
                   # labelled: "ssn 123456789", "ssn 123 45 6789", "ssn 123.45.6789" (review S1-05)
@@ -210,7 +228,11 @@ _SSN = re.compile(r"(?<![\d-])(?!000|666|9\d\d)\d{3}-(?!00)\d{2}-(?!0000)\d{4}(?
 _SSN_BARE = re.compile(r"(?<![\d-])(?!000|666|9\d\d)\d{3}(?:" + _SSN_SEP + r")?(?!00)\d{2}(?:" + _SSN_SEP
                        + r")?(?!0000)\d{4}(?!\d)")
 _SSN_CTX_AFTER = re.compile(r"(?i)^[^\n]{0,20}\b(?:ssn|social security)\b")
-_PASSPORT = re.compile(r"(?i)\bpassport" + _LBL + r"(?:(?:no|number) )?(?:is )?([A-Z][0-9]{7}|[A-Z0-9]{6,9}\d)\b")
+# Also "passport number, K1234567", "passport (K1234567)", "passport K-1234567", "K1234567 is my passport number"
+# (review FB13 R1-06).
+_PASSPORT = re.compile(r"(?i)\bpassport" + _LBL + r"(?:(?:no|number) )?(?:is |, ?|\( ?)?([A-Z][0-9]{7}|[A-Z0-9]{6,9}\d|"
+                       r"[A-Z][ -][0-9]{7})\b|"
+                       r"(?-i:\b([A-Z][ -]?[0-9]{7})\b)[^\n]{0,24}?\bpassport\b")
 _IBAN = re.compile(r"(?i)\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,4})?\b")
 _ACCOUNT = re.compile(r"(?i)\b(?:a/c|acct|account|bank account)" + _LBL + r"(\d(?:[ -]?\d){7,20})\b")
 # Cards written with separators between groups (Assist covers unspaced dots and dashes; reviews S1-05,
@@ -228,10 +250,10 @@ _EMAIL = re.compile(r"(?<![\w.+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9
                     # a single space around "@" or "." (or a line break, folded to a space), and the defanged
                     # "(at)" / "[@]" / "(dot)" / "[.]" forms (reviews FB5 R1-03, FB8 R2-03); " at " and " dot " in
                     # prose stay a residual (words)
-                    r"(?<![\w.+-])[A-Za-z0-9_%+-]+(?:(?:\.|[(\[{]\.[)\]}])[A-Za-z0-9_%+-]+)*"
-                    r"(?: ?@ ?| ?[(\[{] ?(?:at|@) ?[)\]}] ?)[A-Za-z0-9-]+"
-                    r"(?:(?: ?\. ?| ?[(\[{] ?(?:dot|\.) ?[)\]}] ?)[A-Za-z0-9-]+)*"
-                    r"(?: ?\. ?| ?[(\[{] ?(?:dot|\.) ?[)\]}] ?)[A-Za-z]{2,}\b")
+                    r"(?<![\w.+-])[A-Za-z0-9_%+-]+(?:(?:\.|[(\[{<]\.[)\]}>])[A-Za-z0-9_%+-]+)*"
+                    r"(?: ?@ ?| ?[(\[{<] ?(?:at|@) ?[)\]}>] ?)[A-Za-z0-9-]+"
+                    r"(?:(?: ?\. ?| ?[(\[{<] ?(?:dot|\.) ?[)\]}>] ?)[A-Za-z0-9-]+)*"
+                    r"(?: ?\. ?| ?[(\[{<] ?(?:dot|\.) ?[)\]}>] ?)[A-Za-z]{2,}\b")
 _PHONE = re.compile(r"(?<![\w+])\+\d{1,3}[ -]?\(?\d{1,5}\)?(?:[ -]?\d){5,11}(?![\w])|"
                     r"(?<![\w+-])0?[6-9]\d{4}[ .-]\d{5}(?![\w-])|"                        # mobile, 5-5 grouped
                     r"(?<![\w-])\(0\d{2,4}\)\s?\d{3,4}[ -]?\d{4}(?![\w-])|"              # landline (080) 2345 6789
@@ -249,20 +271,105 @@ _AADHAAR_CTX_AFTER = re.compile(r"(?i)^[^\n]{0,25}\b(?:aadhaa?r|uid|uidai)\b")
 # ("client_secret", "DB_PASSWORD", "AWS_SECRET_ACCESS_KEY", "clientSecret"), quoted ('"password": "x"') - before ":"
 # or "=", and XML elements ("<password>x</password>"). The value must hold a digit or symbol, so API documentation searches
 # ("client_secret: required", "refresh_token: string") stay readable; a letter-only value is the LDEC-007 residual.
-_KEYWORD = r"(?:pass(?:word|wd|phrase|code)?|pwd|(?:secret|signing|encryption|master|private)[ _-]?key|secret|token|api[_-]?key|private[_-]?key|access[_-]?key|credentials?)"
+_KEYWORD = r"(?:pass(?:words?|wd| ?phrase|code)?|pwd|(?:secret|signing|encryption|master|private)[ _-]?key|secret|token|api[_-]?key|private[_-]?key|access[_-]?key|credentials?)"
 _KEYVAL = re.compile(
     r"(?i)(?<![A-Za-z0-9])[\"']?(?:[A-Za-z0-9]{1,24}[_.-]){0,3}[A-Za-z0-9]{0,24}?" + _KEYWORD + r"[\"']?\s*[:=]\s*"
     r"[\"']?(?=[^\s\"',;{}<>]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;{}<>]{1,})|"
     # the same keys with the separator forms of the plain labels ("DB_PASSWORD is X", "client_secret - X",
     # "export DB_PASSWORD X"; review FB12 R1-01): the value holds a letter and a digit or symbol and is 8+ characters
     r"(?<![A-Za-z0-9])[\"']?(?:[A-Za-z0-9]{1,24}[_.-]){0,3}[A-Za-z0-9]{0,24}?" + _KEYWORD + r"[\"']?"
-    r"(?: (?:is|was) | ?(?:->|=>|-|\u2013|\u2192|\(|,) ?|\s+)[\"']?"
+    r"(?: (?:is|was) | ?(?:->|=>|-|\u2013|\u2192|\(|,|;|/) ?|" + _OTHER_SEP + r"|\s+)[\"']?"
     r"(?=[^\s\"',;{}<>()]*[A-Za-z])(?=[^\s\"',;{}<>()]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;{}<>()]{8,})|"
     # the value before a compound key that ends the sentence ("Hunt3r2!xyz is the DB_PASSWORD.")
     r"(?<![^\s\"'(])[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{8,})[\"']? (?:is|was|as) "
     r"(?:(?:my|the|our|your|a|new) ){0,2}(?:[A-Za-z0-9]{1,24}[_.-]){1,3}[A-Za-z0-9]{0,24}?" + _KEYWORD +
     r"(?=\s*(?:[.,;:!?)\]\"']|$))|"
     r"<(?:[A-Za-z0-9_.-]{0,24}?)" + _KEYWORD + r"[^<>]{0,40}>\s*([^<\s]{4,})\s*</")
+# Credentials on command lines (review FB13 R1-02): "curl -u user:X", "mysql -pX", "sshpass -p X", "net use ...
+# /user:alice X", and "login with alice / X" (the value holds a letter and a digit or symbol, 6+ characters).
+_CLI_CRED = re.compile(
+    r"(?i)\b(?:curl|wget|https?|httpie)\b[^\n]{0,80}?\s(?:-u|--user)[ =]?[\"']?[^\s:\"']{1,64}:([^\s\"']+)|"
+    r"\b(?:mysql(?:dump|admin)?|mariadb)\b[^\n]{0,80}?\s(?-i:-p)([^\s\"']+)|"
+    r"\bsshpass\b[^\n]{0,40}?\s(?-i:-p) ?([^\s\"']+)|"
+    r"\bnet\s+use\b[^\n]{0,120}?/user:\S+\s+([^\s\"'/]+)|"
+    r"\b(?:login|log in|sign in|signed in|creds?|credentials?)\b[^\n/]{0,30}?(?<![^\s:])[\w.@+-]{1,40} ?/ ?[\"']?"
+    r"(?=[^\s\"',;]*[A-Za-z])(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?\\|~])([^\s\"',;]{6,})")
+# A table whose header names a credential column (TSV, CSV, markdown, columns aligned by 2+ spaces), and a two-cell
+# markdown row "| password | X |" (review FB13 R1-02). Read on the text as written: folding joins the lines. A cell
+# counts when it holds a digit or symbol (a letter-only cell is the LDEC-007 residual, and "| password | string |" in
+# API documentation stays readable).
+_CRED_HEADER = re.compile(r"(?i)(?:p[a@4][s5$]{2}(?:w[o0]rd|wd|code| ?phrase)s?|pwd|pin|secret|client[ _]?secret|"
+                          r"api[ _-]?key|(?:access[ _-]?)?token|credentials?)")
+_CELL_VALUE = re.compile(r"(?=\S*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])\S+")
+
+
+def _cells(line: str):
+    """(kind, [(start, end)]) for a table-shaped line: kind "\\t", "|", "," (CSV) or "  "; None otherwise."""
+    if "\t" in line:
+        kind, bounds = "\t", [(m.start(), m.end()) for m in re.finditer(r"[^\t]*", line) if m.start() == 0
+                              or line[m.start() - 1] == "\t"]
+    elif line.lstrip().startswith("|") and line.count("|") >= 3:
+        a, b = line.index("|") + 1, line.rindex("|")
+        kind, bounds, s = "|", [], a
+        for k in range(a, b + 1):
+            if k == b or line[k] == "|":
+                bounds.append((s, k))
+                s = k + 1
+    elif "," in line:
+        kind, bounds, s = ",", [], 0
+        for k in range(len(line) + 1):
+            if k == len(line) or line[k] == ",":
+                bounds.append((s, k))
+                s = k + 1
+    elif re.search(r"\S {2,}\S", line):
+        kind, bounds = "  ", [(m.start(), m.end()) for m in re.finditer(r"\S+(?: \S+)*", line)]
+    else:
+        return None
+    cells = []
+    for s, e in bounds:
+        while s < e and line[s].isspace():
+            s += 1
+        while e > s and line[e - 1].isspace():
+            e -= 1
+        cells.append((s, e))
+    return (kind, cells) if len(cells) >= 2 else None
+
+
+def _table_spans(text: str):
+    if "|" not in text and "\n" not in text:             # a header row needs a data row, or a two-cell "|" row
+        return []
+    out, lines, pos = [], text.split("\n"), 0
+    offsets = []
+    for line in lines:
+        offsets.append(pos)
+        pos += len(line) + 1
+    shapes = [_cells(line) for line in lines]
+    for i, shape in enumerate(shapes):
+        if not shape:
+            continue
+        kind, cells = shape
+        line = lines[i]
+        names = [line[s:e] for s, e in cells]
+        cols = [k for k, n in enumerate(names) if _CRED_HEADER.fullmatch(n)]
+        if not cols:
+            continue
+        if kind == "|" and len(cells) == 2 and cols == [0] and _CELL_VALUE.fullmatch(names[1]):
+            out.append((offsets[i] + cells[1][0], offsets[i] + cells[1][1]))     # "| password | X |"
+        for j in range(i + 1, min(len(lines), i + 201)):
+            row = shapes[j]
+            if not row or row[0] != kind:
+                break
+            if kind == "|" and re.fullmatch(r"[\s|:-]+", lines[j]):
+                continue                                                         # markdown separator row
+            if len(row[1]) != len(cells):
+                break
+            for k in cols:
+                s, e = row[1][k]
+                if _CELL_VALUE.fullmatch(lines[j][s:e]):
+                    out.append((offsets[j] + s, offsets[j] + e))
+    return out
+
+
 _SPACED_CODE = re.compile(r"(?i)\b(?:otp|cvv2?|cvc2?|pin|passcode)\b[^.\n\d]{0,20}?((?:\d{1,2} ){1,7}\d{1,2})(?!\d)")
 _PHONE_CTX = re.compile(r"(?i)\b(?:call|phone|ph|mob|mobile|cell|whatsapp|contact|tel|telephone|sms|text|reach|"
                         r"number|no)\b[^\n]{0,20}$")
@@ -315,12 +422,20 @@ MAX_SCAN_COST = 8_000_000
 
 def scan_cost(text: str) -> int:
     total = 0
-    for m in _B64_RUN.finditer(text):
-        n = m.end() - m.start()
-        if n >= 40:
-            run = m.group(0)
-            total += (2 * (run.count("/") + run.count("+")) + 1) * n
+    for m in _B64_LONG.finditer(text):         # only runs of 40+ cost anything; matching them directly skips words
+        run = m.group(0)
+        total += (2 * (run.count("/") + run.count("+")) + 1) * len(run)
+    # The Assist URL-userinfo rules ("\b[a-z][a-z0-9+.-]*://") scan to the end of a run of those characters from every
+    # word start inside it: "AKIA." x 13108 took 9 s (found while repairing FB13 R1-05).
+    for m in _SCHEME_LONG.finditer(text):
+        run = m.group(0)
+        total += (run[0].isalpha() + len(_SCHEME_START.findall(run))) * len(run)
     return total
+
+
+_B64_LONG = re.compile(r"(?<![A-Za-z0-9+/])[A-Za-z0-9+/]{40,}")
+_SCHEME_LONG = re.compile(r"(?<![A-Za-z0-9+.-])[A-Za-z0-9+.-]{40,}")
+_SCHEME_START = re.compile(r"(?<=[+.-])[A-Za-z]")
 # LONG_NUMBER: the digit budget, owner decision LDEC-006 (2026-10-23). Text bound for a non-local destination may not
 # carry 9 or more digits in one run, whatever the grouping, separators or line breaks. A run is digit groups joined by
 # punctuation/whitespace gaps of any length, or gaps of 1-3 characters holding at most 2 letters. Digits that
@@ -431,6 +546,7 @@ _HINTS = {
     "labelled": re.compile(r"(?i)p[a@4][s5$]{2}|pw|otp|one[- ]time|code|cv[vc]|pin|api|secret|token|key|credential|"
                            r"authorization"),
     "passport": re.compile(r"(?i)passport"),
+    "cli": re.compile(r"(?i)curl|wget|http|mysql|mariadb|sshpass|net\s+use|log ?in|sign|cred"),
     "spaced_code": re.compile(r"(?i)otp|cv[vc]|pin|passcode"),
     "key_split": re.compile(r"AKIA|ASIA|AIza|gh[opsu]_|github_pat_|glpat-|xox[abpr]-|sk-|sk_|rk_live_|tvly-"),
     "account": re.compile(r"(?i)a/c|acct|account"),
@@ -445,7 +561,7 @@ def _scan(rx, text, hint):
     return rx.finditer(text) if _HINTS[hint].search(text) else ()
 
 
-_AT_WORD = re.compile(r"(?i)[(\[{] ?at ?[)\]}]")
+_AT_WORD = re.compile(r"(?i)[(\[{<] ?at ?[)\]}>]")
 
 
 def _spans(text: str, protected_terms) -> list:
@@ -461,6 +577,8 @@ def _spans(text: str, protected_terms) -> list:
         add(CREDENTIAL, m, "labelled_value")
     for m in _scan(_KEYVAL, text, "labelled"):
         add(CREDENTIAL, m, "config_value")
+    for m in _scan(_CLI_CRED, text, "cli"):
+        add(CREDENTIAL, m, "command_line")
     for m in _AADHAAR.finditer(text):
         a, s1, b, s2, c = m.groups()
         grouped = bool(s1) and s1 == s2
@@ -475,7 +593,7 @@ def _spans(text: str, protected_terms) -> list:
         if _SSN_CTX_AFTER.search(text[m.end():m.end() + 30]):
             add(GOV_ID, m, "ssn_label_after", 0)
     for m in _scan(_PASSPORT, text, "passport"):
-        add(GOV_ID, m, "passport", 1)
+        add(GOV_ID, m, "passport")
     for m in _assist._CARD.finditer(text):
         if _NOT_CARD_CTX.search(_before(text, m.start())) or re.fullmatch(r"\d+\.\d+", m.group(0)):
             continue                                    # IMEI context, or one decimal number ("2.718281828459045")
@@ -526,29 +644,39 @@ def _spans(text: str, protected_terms) -> list:
     for m in _scan(_SPACED_CODE, text, "spaced_code"):
         if sum(c.isdigit() for c in m.group(1)) >= 3:              # "pin: 12 34"; not "pin 1 2"
             add(CREDENTIAL, m, "spaced_code", 1)
-    for m in _PEM.finditer(text) if "PRIVATE KEY" in text else ():
+    for m in _PEM.finditer(text) if ("PRIVATE KEY" in text or "PuTTY-User-Key-File" in text) else ():
         add(CREDENTIAL, m, "private_key", 0)
     for m in _scan(_KEY_SPLIT, text, "key_split"):
         # Trailing space-separated lower-case words are prose after the key ("... IXU3 leaked"), not key groups.
         # A fixed-length prefix is checked on the groups as written (a lower-case key body is still a key).
         fixed = _KEY_BODY.get(m.group(1))
         g = m.group(2) if fixed else re.sub(r"(?: [a-z]{4,})+$", "", m.group(2))
-        alnum = re.sub(r"[ -]", "", g)
-        parts = re.split(r"[ -]", g)
-        if fixed:                                  # the groups up to some boundary add up to exactly the body length
-            n, cut = 0, None
-            for gm in re.finditer(r"[A-Za-z0-9_]+", g):
-                n += len(gm.group(0))
-                if n == fixed:
-                    cut = gm.end()
+        if fixed:
+            # The groups up to some boundary add up to exactly the body length. "-" and "_" are body characters of
+            # some keys (AIza, glpat-) and separators in others, so both readings are tried (review FB13 R1-03).
+            cut = None
+            for body in (r"[A-Za-z0-9_]+", r"[A-Za-z0-9]+", r"[A-Za-z0-9_-]+"):
+                n = 0
+                for gm in re.finditer(body, g):
+                    n += len(gm.group(0))
+                    if n == fixed:
+                        cut = gm.end()
+                        break
+                    if n > fixed:
+                        break
+                if cut:
                     break
-            g = g[:cut] if cut else g
-            alnum = re.sub(r"[ -]", "", g)
-        if (len(alnum) == fixed if fixed else len(alnum) >= 16 and (
+            if cut:
+                out.append(Finding(CREDENTIAL, m.start(), m.start(2) + cut, "split_key"))
+            continue
+        alnum = re.sub(r"[^A-Za-z0-9_]", "", g)
+        parts = re.split(r"[^A-Za-z0-9_]", g)
+        punct = re.search(r"[.,:;|/+]", g) is not None      # "sk-learn.preprocessing.StandardScaler" is a module path
+        if len(alnum) >= 16 and (
                 (sum(c.isdigit() for c in alnum) >= 2 and any(re.search(r"[A-Za-z]", p) and re.search(r"\d", p)
                                                                for p in parts))
-                or (re.search(r"[A-Z]", g) and re.fullmatch(r"[A-Z0-9 -]+", g))
-                or any(re.search(r"[a-z][A-Z]", p) for p in parts))):
+                or (not punct and re.search(r"[A-Z]", g) and re.fullmatch(r"[A-Z0-9 -]+", g))
+                or (not punct and any(re.search(r"[a-z][A-Z]", p) for p in parts))):
             out.append(Finding(CREDENTIAL, m.start(), m.start(2) + len(g), "split_key"))
     for m in _PINCODE.finditer(text):
         add(ADDRESS, m, "pincode")
@@ -976,6 +1104,16 @@ def _still_encoded(text: str) -> bool:
     return False
 
 
+def reading_cost(text: str) -> int:
+    """scan_cost of the costliest text classify() will scan: the input and each folded reading. Full-width "ａ／" and
+    "a%2F" cost nothing as written and fold to "a/" (review FB13 R1-05)."""
+    cost = scan_cost(text)
+    if text.isascii() and "%" not in text and "&" not in text:
+        return cost                  # folding ASCII without escapes only changes whitespace, which ends every run here
+    readings = [("", "decode")] + ([(" ", "decode"), (" ", "space"), ("", "literal")] if _needs_readings(text) else [])
+    return max([cost] + [scan_cost(fold(text, cf, enc)[0]) for cf, enc in readings])
+
+
 def classify(text: str, protected_terms=()) -> Classification:
     if not isinstance(text, str):
         raise TypeError("text must be str")
@@ -1005,6 +1143,8 @@ def classify(text: str, protected_terms=()) -> Classification:
         if folded is not text:
             spans = [Finding(f.category, S[f.start], E[f.end - 1], f.rule, f.members) for f in spans]
         found.extend(spans)
+    for s, e in _table_spans(text):                       # table layout exists only as written (review FB13 R1-02)
+        found.append(Finding(CREDENTIAL, s, e, "table_value"))
     decoded_only = bool(decoded_cats - literal_cats) and len(readings) > 1 and _ENCODED.search(text) is not None
     # The digit budget is also counted on the text AS WRITTEN: one character per code point, digit values folded,
     # and only characters that are letters as written counting as letters (review FB7). Every folded reading counts
