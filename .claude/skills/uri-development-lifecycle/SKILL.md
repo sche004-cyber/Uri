@@ -65,8 +65,8 @@ lifecycle numbers in the first column.
    `canonical_url`, baseline (`remote_branch` + the `expect` SHA you verified; the driver finds the remote by URL),
    candidate branch + worktree (outside the main checkout), criteria file, `review_focus`,
    `protected_paths` (`"ws_frozen_check"` = the frozen list), `permitted_paths`, gates, reviewer/implementer
-   providers, limits, integration policy (`authorized: false` until the stage-11 authorisation for this target is
-   recorded; see "Integration preconditions and authorisation").
+   providers, limits, integration policy (`authorized: false`; integration is decided and performed at stage 11,
+   see "Integration preconditions and authorisation", not by changing this field).
    Put `state_dir` OUTSIDE the candidate worktree. Keep the template's UX `review_focus` lines and its
    `environment_notes` (auditor evidence classes) for user-facing work.
 5. Select the auditor now (section "Auditor selection"); a provider change after the first run is a config change
@@ -254,7 +254,8 @@ Driver outcomes map by stage and blocker kind:
 |---|---|
 | round REJECT routed to repair (FIXING) | REVISE |
 | BLOCKED `STALLED` or `RETRY_LIMIT` | REJECT (this candidate) |
-| BLOCKED `OWNER_*` (including `OWNER_DECISION` for a repair refused as protected or out of scope), or a finding with `owner_decision: true` | BLOCKED (needs the owner) |
+| BLOCKED `OWNER_AUTHORIZATION` with `blocker.stage: VERIFIED` | the verdict, ready for stage 11 ("Integration preconditions and authorisation" decides standing policy or owner) |
+| any other BLOCKED `OWNER_*` (including `OWNER_DECISION` for a repair refused as protected or out of scope), or a finding with `owner_decision: true` | BLOCKED (needs the owner) |
 | BLOCKED `NO_ACTIONABLE_FINDINGS` | BLOCKED; if all the round's commands were BLOCKED, or its `tests_run` and `inspected` are empty, an auditor failure (Auditor selection) |
 | any other BLOCKED kind (e.g. `TAMPER`, `CONFIG`, `EVIDENCE`, `RESOURCE`, `BUDGET`, `REVIEWER_EXEC`, `REPAIR_FAILED`, `STEP_LIMIT`), WAITING_FOR_MODEL, NOT_VERIFIED | BLOCKED |
 | VERIFIED / COMPLETE on an independent ACCEPT or ACCEPT WITH FINDINGS | that verdict |
@@ -270,10 +271,13 @@ code alone never means the phase is qualified: live UI, security, regression and
 - Only `stage: VERIFIED/COMPLETE`, or BLOCKED `OWNER_AUTHORIZATION` with `blocker.stage: VERIFIED`, together with
   `evidence_ok_for_candidate: true` supports "independently accepted".
   WAITING_FOR_MODEL, BLOCKED, NOT_VERIFIED or a missing receipt means NOT QUALIFIED; say so.
-- BLOCKED with `OWNER_*` ⇒ ask the owner the specific question in `blocker.needs`; after their answer, record it
-  with `unblock <cfg> --note "<their decision>"` and run again. Never set `authorized: true` without a stage-11
-  authorisation recorded for this exact target, and never extend `authorized_protected_changes` without the
-  owner's explicit approval.
+- BLOCKED `OWNER_AUTHORIZATION` with `blocker.stage: VERIFIED` ⇒ go to stage 11 ("Integration preconditions and
+  authorisation"); ask the owner only when the explicit-approval path applies. The driver's wording "needs owner
+  authorisation" is fixed driver text; stage 11 decides.
+- Any other BLOCKED with `OWNER_*` ⇒ ask the owner the specific question in `blocker.needs`; after their answer,
+  record it with `unblock <cfg> --note "<their decision>"` and run again. Never set `authorized: true` or extend
+  `authorized_protected_changes` on your own, and never run `unblock` for a CONFIG block yourself (the owner's
+  acknowledgement of a policy change is the control).
 - A review made by another channel (e.g. a separate cloud session) may be recorded with `import-review`; it can
   route findings to repair but never counts as an ACCEPT.
 - Report the auditor used (Codex or Claude, fallback reason), the reviewed SHA, the verdict in the words above and
@@ -290,7 +294,9 @@ code alone never means the phase is qualified: live UI, security, regression and
 ## Integration preconditions and authorisation (stage 11)
 
 Integrate (or ask the owner) only when all of these hold, and name them in the authorisation record:
-the exact accepted commits; a final driver-counted independent ACCEPT/ACCEPT WITH FINDINGS on that SHA; no open
+the exact accepted commits; a final driver-counted independent ACCEPT/ACCEPT WITH FINDINGS on that SHA (or, when the
+driver recorded `NO_INDEPENDENT_REVIEWER` on that SHA, a fallback review accepted by `task_ledger accept` as in
+"Review paths" above); no open
 blocking finding; canonical re-checked for intervening changes (a moved canonical means rebase and re-review); a PASS UI
 qualification record for each user-facing capability (or the owner's explicit acceptance of the named
 NOT VERIFIED items); frozen-file integrity (`protected_paths` diff); provenance; combined regression gates;
@@ -315,8 +321,15 @@ Both paths:
 - **Ledger before push.** The independent review, the acceptance and the authorisation are recorded in the
   Milestone Manager ledger before anything is pushed to canonical; the integration record and the receipt follow
   the push.
-- **Revert-only rollback.** The receipt's rollback is `git revert --no-edit <base>..<tip>` followed by a reviewed
-  fast-forward; never a force-push or a history rewrite.
+- **How the integration is performed.** The run stays `authorized: false` and stops BLOCKED `OWNER_AUTHORIZATION`
+  at VERIFIED with the exact push command in `blocker.needs`. After the authorisation is recorded, re-check the
+  canonical tip (`git ls-remote`; a moved target means rebase and re-review), then run that fast-forward push
+  with the lease pinned to the verified tip (`--force-with-lease=<ref>:<verified tip>`), and verify the remote
+  afterwards. Do not edit `authorized` in a running config (that is a policy change: BLOCKED CONFIG, cleared
+  only by the owner).
+- **Revert-only rollback.** The integration receipt written by the integrating session names the rollback as
+  `git revert --no-edit <base>..<tip>` followed by a reviewed fast-forward; never a force-push or a history
+  rewrite.
 - A push refused by the session's permission check is not routed around: record a blocker and ask the owner.
 
 ## Current application: URI Office (owner directive 2026-10-15)
