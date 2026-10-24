@@ -31,7 +31,9 @@ data/office_fact_corpus.json:
       "-W.E.F.", "-Date", "-Copy", "(A)" after a reference) never gives FACT_MISSING. FB13: the same courtesy and
       designation words written before a titled name in the INSTRUCTION ("to Hon'ble Minister Shri <name>", "to
       Joint Secretary Kumari <name>") leave the facts unchanged, so the plain faithful draft gives no warning; and an
-      amount written with ".00" or ".0" (OD-OD-7) is the same amount.
+      amount written with ".00" or ".0" (OD-OD-7) is the same amount, also before a unit ("2.00 lakh", FB14). FB14:
+      the designations before the title are generated from head words, qualifiers and tails (41 forms), so the rule
+      "a titled name starts at its honorific" is tested generically.
 A new case gets (b) to (f) and (h) without writing them.
 Commits before FB12 have no FACT_CHECK: a warning without a code is read as FACT_MISSING."""
 from __future__ import annotations
@@ -326,7 +328,8 @@ def test_g_listed_faithful_and_changed_drafts(case):
 
 _DESIGNATIONS = {"secretary", "collector", "minister", "commissioner", "director", "officer", "chairman", "member",
                  "registrar", "superintendent", "principal", "president", "governor", "inspector", "magistrate",
-                 "tehsildar", "deputy", "joint", "additional", "chief", "state"}
+                 "tehsildar", "deputy", "joint", "additional", "chief", "state", "section", "engineer", "district",
+                 "block", "assistant", "senior", "junior", "executive", "general", "special", "divisional"}
 
 
 # (h) FB12 (OD-OD-6): what a faithful draft writes around a fact never makes it FACT_MISSING
@@ -347,10 +350,22 @@ def _faithful_forms(kind: str, text: str) -> list:
         forms += [f"Subject: {text} sanctioned", f"Subject: Note on {text} received"]
         if kind == "amount" and re.fullmatch(r"[\d,]+", text):
             forms += [f"Rs. {text}.00 sanctioned", f"Rs. {text}.0 sanctioned", f"Rs. {text}.00/- sanctioned"]
+        unit = re.fullmatch(r"([\d,]+) (lakhs?|crores?|thousand)", text)
+        if kind == "amount" and unit:                   # FB14 R2-04: "Rs. 2.00 lakh" is "Rs. 2 lakh"
+            forms += [f"Rs. {unit.group(1)}.00 {unit.group(2)} sanctioned", f"Rs. {unit.group(1)}.0 {unit.group(2)}"]
     return forms
 
 
-_COURTESY = ["Hon'ble ", "Hon'ble Minister ", "Late ", "Collector ", "Joint Secretary ", "Minister of State ", "MLA "]
+# FB14 R2-02: designations generated from head words and qualifiers, so the rule "a titled name starts at its
+# honorific" is tested generically, not by a word list
+_HEAD_WORDS = ["Director", "Secretary", "Officer", "Engineer", "Collector", "Commissioner", "Superintendent",
+               "Magistrate", "Minister", "Registrar", "Inspector", "Development Officer"]
+_QUALIFIERS = ["", "District ", "Divisional ", "Block ", "Sub-Divisional ", "Deputy ", "Joint ", "Additional ",
+               "Chief ", "Senior ", "Junior ", "Executive ", "Assistant ", "Hon'ble ", "Hon'ble Union "]
+_TAILS = ["", " of Police", " of State for Finance", " General", " (Revenue)"]
+_COURTESY = ["Hon'ble ", "Late ", "MLA ", "Drawing and Disbursing Officer ", "Vice Chancellor "] + [
+    f"{_QUALIFIERS[i % len(_QUALIFIERS)]}{_HEAD_WORDS[i % len(_HEAD_WORDS)]}{_TAILS[i % len(_TAILS)]} "
+    for i in range(36)]
 
 @pytest.mark.parametrize("case", CORPUS, ids=IDS)
 def test_h_faithful_surroundings_never_give_fact_missing(case):

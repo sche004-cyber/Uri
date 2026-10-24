@@ -84,11 +84,21 @@ _MAY_MODAL_FOLLOW = re.compile(r"\s*(?:\d+\b|I\b|we\b|you\b|he\b|she\b|it\b|they
 _RELATIVE_MONTH = re.compile(r"\b(?:next|this|last)\s+(" + _MONTHS + r")\b", re.I)
 _DATE_NUM = re.compile(r"^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$|^\d{4}-\d{2}-\d{2}$")
 # FB4 R5-04: the designator is part of the claimed span, so it never becomes a name word.
-# FB13 R2-02: "&" ("2(14)/2026-B&A", "38/37/2016-P&PW(A)") and an en or em dash ("17011/1/2026–Estt") are part of
-# the code.
-_REF = re.compile(r"\b(?:F\.\s?No\.?|O\.\s?M\.\s?No\.?|D\.\s?O\.\s?No\.?|No\.)\s*"
-                  r"([A-Za-z0-9][\w./()&\u2013\u2014-]*\d[\w./()&\u2013\u2014-]*)",
-                  re.I)
+# FB13 R2-02 / FB14 R2-03: "&" ("2(14)/2026-B&A", "38/37/2016-P&PW(A)") and an en or em dash ("17011/1/2026–Estt")
+# are part of the code only when a section code follows them: digits, a roman numeral or a capitalised code of at most
+# six letters that is not an honorific (the shape of _REF_SUFFIX). Before a lowercase word, a longer word or an
+# honorific they are punctuation ("12/3/2026—it", "12/3/2026–Pension case", "12/3/2026—Shri Ram Lal").
+_NOT_CODE_HON = r"(?!(?:Shri|Smt|Sh|Km|Kum|Kumari|Sushri|Dr|Mr|Mrs|Ms|Prof)(?![A-Za-z]))"
+# a code is not the first part of a hyphenated word ("12/3/2026–Sub-Divisional"), and a title-case word followed by
+# another title-case word is prose ("12/3/2026–Deputy Commissioner Shri ..."); capitals ("–PMS", "–ESTT") are codes
+_REF_JOIN_CODE = (r"(?=\d|" + _NOT_CODE_HON + r"(?:[A-Z]{1,6}(?![A-Za-z'’]|-[A-Za-z]{3,}|\s+"
+                  r"(?:Shri|Smt|Sh|Km|Kum|Kumari|Sushri|Dr|Mr|Mrs|Ms|Prof)\.?(?![A-Za-z]))"
+                  r"|[A-Z][A-Za-z]{0,5}(?![A-Za-z'’]|-[A-Za-z]{3,}|\s+[A-Z][a-z])))")
+_REF_CODE_CHAR = r"(?:[\w./()-]|[&\u2013\u2014]" + _REF_JOIN_CODE + r")"
+_REF = re.compile(r"\b(?i:F\.\s?No\.?|O\.\s?M\.\s?No\.?|D\.\s?O\.\s?No\.?|No\.)\s*"
+                  r"([A-Za-z0-9]" + _REF_CODE_CHAR + r"*\d" + _REF_CODE_CHAR + r"*)")
+# FB14 R2-06: a section bracket after a space belongs to a code that ends in letters ("1/2/2026-P&PW (A)")
+_REF_SPACED_PART = re.compile(r" \((?:[A-Z]{1,3}|[IVX]+|\d+)\)")
 _AMOUNT_PREFIX = re.compile(r"(?:rs\.?|inr|₹)\s*$", re.I)
 # FB4 R5-01: Kum, Km, Kumari and Sushri are honorifics too.
 HONORIFICS = ("Shri", "Smt", "Sh", "Km", "Kum", "Kumari", "Sushri", "Dr", "Mr", "Mrs", "Ms", "Prof")
@@ -205,6 +215,9 @@ def extract_facts(instruction: str) -> list:
     # 1. references, designator included in the claimed span
     for m in _REF.finditer(text):
         code = _code(m.group(1))
+        sp = _REF_SPACED_PART.match(text, m.start(1) + len(code))
+        if sp and code[-1:].isalpha():
+            code += sp.group(0)
         add("reference", code, m.start(), m.start(1) + len(code))
         spans.append((m.start(), m.start(1) + len(code)))
     # 2. dates. FB5 R6-01: "Nth (day) of Month" first, then day-month and month-day, then "Month YYYY" and
@@ -308,12 +321,6 @@ def extract_facts(instruction: str) -> list:
             add("number", value, m.start(), end)
         else:
             spans.append((m.start(), m.end()))
-    # 4b. FB13 R2-01: courtesy and designation words directly before a title ("to Hon'ble Minister Shri ...", "from
-    # Late Smt. ...", "to Joint Secretary Kumari ...") are claimed, so neither a cue nor a capitalised run reads them
-    # as a name
-    for m in _COURTESY_RX.finditer(text):
-        if not taken(m.start(), m.end()):
-            spans.append((m.start(), m.end()))
     # 5a. an honorific with a lowercase full name (FB6 R2-02), claimed before the capitalised runs so a heading
     # "Pension of Shri ramesh kumar sharma" does not lend "Shri" to the run "Pension of Shri" (FB9 R2-02)
     for m in _HON_LOWER_NAME.finditer(text):
@@ -332,9 +339,14 @@ def extract_facts(instruction: str) -> list:
             person_spans.append((m.start(1), m.end(1), True))
 
     runs = _cap_runs(text, taken)
+    # FB14 R2-02: a run that ends directly (or after a bracket) before an honorific that an earlier stage claimed
+    # ("Executive Engineer Shri ramesh kumar", "Commissioner (Revenue) Smt. ...") ends as if it were split there
+    runs = [(start, words, bool(re.match(r"(?:[ \t]+\([^()\n]{1,40}\))?[ \t]+" + _HONORIFIC + r"(?![A-Za-z])",
+                                         text[words[-1][0] + len(words[-1][1]):])))
+            for start, words in runs]
     dropped = []
-    parts = [part for start, words in runs for _, part in _split_at_honorifics(start, words, dropped)]
-    spans.extend(dropped)                 # FB13 R2-01: "to Hon'ble Minister Shri X" -> only "Shri X" is a name
+    parts = [part for start, words, bh in runs for _, part in _split_at_honorifics(start, words, dropped, bh)]
+    spans.extend(dropped)                 # FB13/FB14 R2-01/R2-02: only the titled name is a name
     for part in parts:
         name = _trim(part)
         if len(name) >= 2 and any(not _is_hon(w) and w.lower().rstrip(".") not in _NOT_NAME for _, w in name):
@@ -354,8 +366,8 @@ def extract_facts(instruction: str) -> list:
             designation_spans.append((start, end))
     spans.extend(designation_spans)
 
-    for start, words in runs:
-        for part_start, part in _split_at_honorifics(start, words):
+    for start, words, bh in runs:
+        for part_start, part in _split_at_honorifics(start, words, None, bh):
             if taken(part[0][0], part[-1][0] + len(part[-1][1])):
                 continue
             name = _trim(part)
@@ -387,7 +399,8 @@ def extract_facts(instruction: str) -> list:
 
 # A bracketed honorific ("Dr. (Smt.) Kavita Krishnan") is one word of the name (FB5 R6-04).
 _BRACKET_HON = r"\((?:" + "|".join(HONORIFICS) + r")\.?\)"
-_WORD = re.compile(_BRACKET_HON + r"|[^\s,;:()\[\]\"]+")
+# FB14 R2-03: an en or em dash separates words ("12/3/2026—Shri Ram Lal")
+_WORD = re.compile(_BRACKET_HON + r"|[^\s,;:()\[\]\"–—]+")
 # Abbreviations that end in a dot without ending a sentence (FB5 R6-04).
 _NON_TERMINAL = {"mohd.", "md.", "mohd", "md", "jr.", "sr.", "st."}
 
@@ -403,11 +416,12 @@ def _is_cap(w: str) -> bool:
 # FB9 R2-04: post-nominals and heading words end a name; they are never part of it ("Shri Ramesh Kumar IAS",
 # "Subject: Deputation of Anjali Under Rule 12", "Leave of Ramesh Sanctioned").
 _NAME_END = {"ias", "ips", "ifs", "irs", "esq", "esq.", "under", "regarding", "sanctioned", "with", "retd",
-             "retd.", "phd", "ph.d.", "mbbs",
-             "sahab", "saheb", "sahib"}           # FB13 R2-03: "Shri Rajendra Prasad Meena Sahab"
+             "retd.", "phd", "ph.d.", "mbbs"}
 # FB10 R2-02: "Ji" is trimmed only when it is the last word of a name ("Shri Ramesh Ji,", "Sharma Ji"); inside a
 # name it is a name word ("Shri Ram Ji Lal").
-_TRAILING_ONLY = {"ji"}
+# FB14 R2-01: "Sahab", "Saheb", "Sahib" likewise ("Shri Rajendra Prasad Meena Sahab"); as given names they stay ("Shri
+# Sahab Singh Chauhan", "Shri Saheb Rao Patil").
+_TRAILING_ONLY = {"ji", "sahab", "saheb", "sahib"}
 
 
 def _cap_runs(text: str, taken):
@@ -418,7 +432,7 @@ def _cap_runs(text: str, taken):
         w, a, b = m.group(0), m.start(), m.end()
         gap = text[prev_end:a] if prev_end is not None else ""
         # FB6 R2-01: a newline is a block boundary in a draft ("Shri Venkatesh Iyer" / "Assistant Section Officer")
-        breaks = bool(re.search(r"[,;:()\[\]\"\n]", gap)) or taken(a, b)
+        breaks = bool(re.search(r"[,;:()\[\]\"\n–—]", gap)) or taken(a, b)
         if run and not breaks and prev_end is not None:
             last = run[-1][1]
             # a word ending in "." ends the sentence unless it is an honorific, an initial ("A.", "O.M.") or a
@@ -451,23 +465,64 @@ _BEFORE_TITLE = {"hon'ble", "hon’ble", "honble", "hon", "honourable", "honorab
                  "commissioner", "director", "chairman", "chairperson", "president", "governor", "mayor", "member",
                  "state", "deputy", "joint", "additional", "chief", "magistrate", "judge", "officer", "inspector",
                  "registrar", "superintendent", "principal", "ambassador", "consul", "tehsildar", "tahsildar", "sdm",
-                 "bdo", "councillor", "sarpanch", "speaker"}
+                 "bdo", "councillor", "sarpanch", "speaker", "vice", "chancellor", "justice"}
 
 
-_COURTESY_RX = re.compile(
-    r"(?i)(?<![\w'\u2019])(?:(?:" + "|".join(re.escape(w) for w in sorted(_BEFORE_TITLE, key=len, reverse=True))
-    + r")(?![\w'\u2019])\.?(?:\s+(?:of|the|and))*\s+)+(?=(?-i:" + _HONORIFIC + r")(?![A-Za-z]))")
+# FB14 R2-02 (second form): a designation written after a titled name without a comma ("Smt. Rekha Rani Joint
+# Director and Shri ...") starts at one of these head words. The name is cut there only when it already has two words
+# after the honorific, so a surname such as "Collector" in "Shri Rustom Collector" is kept.
+_DESIGNATION_HEADS = {
+    "director", "directors", "secretary", "officer", "officers", "engineer", "collector", "commissioner",
+    "superintendent", "assistant", "deputy", "joint", "under", "additional", "addl", "addl.", "chief", "senior",
+    "junior", "executive", "principal", "registrar", "inspector", "magistrate", "minister", "chairman",
+    "chairperson", "president", "governor", "tehsildar", "tahsildar", "controller", "manager", "accountant", "clerk",
+    "section", "district", "divisional", "sub-divisional", "block", "regional", "zonal", "special", "general",
+    "advisor", "adviser", "consultant", "sarpanch", "mla", "mp", "mlc", "sdm", "bdo", "dm", "ias", "ips", "vice",
+    "chancellor", "justice", "judge", "speaker", "mayor", "councillor", "ambassador", "consul"}
 
 
-def _courtesy_only(words) -> bool:
-    return all(w.lower().rstrip(".,") in _BEFORE_TITLE or w.lower() in _CONNECTORS for _, w in words)
+def _cut_designation(part, dropped=None):
+    """A titled name followed by designation words without a comma ends where the designation begins."""
+    i0 = 0
+    while i0 < len(part) and _is_hon(part[i0][1]):
+        i0 += 1
+    if not i0:
+        return part
+    for j in range(i0 + 2, len(part)):
+        if part[j][1].lower().rstrip(".,") in _DESIGNATION_HEADS:
+            if dropped is not None:
+                dropped.append((part[j][0], part[-1][0] + len(part[-1][1])))
+            return part[:j]
+    return part
 
 
-def _split_at_honorifics(start, words, dropped=None):
+def _split_at_honorifics(start, words, dropped=None, before_hon=False):
     """FB4 R5-01: every honorific starts a new name ("Shri Ram Kumar and Smt. Sita Devi" is two names).
-    FB13 R2-01: the span of a dropped courtesy or designation run ("Hon'ble Minister" before "Shri ...") is appended
-    to `dropped`, so the caller can claim it and no cue ("to", "from", "of") reads it as a name."""
-    parts, cur = [], []
+    FB14 R2-02: a titled name starts AT its honorific. Words before an honorific that do not start with one
+    ("District Collector", "Hon'ble Minister of State for Finance", "Drawing and Disbursing Officer") are dropped,
+    and so are the words after the last "and" of a titled name before the next honorific ("Ms Anjali Verma and
+    Hon'ble Shri ..."); a titled name followed by designation words ends at the designation (_cut_designation).
+    The spans of the dropped words are appended to `dropped`, so the caller can claim them and no cue ("to", "from",
+    "of") reads them as a name. `before_hon`: the run ends directly before an honorific outside it."""
+    parts = []
+
+    def close(cur):
+        if not _is_hon(cur[0][1]):
+            if cur[-1][1].lower() in _CONNECTORS and not any(
+                    x.lower().rstrip(".,") in _BEFORE_TITLE or x.lower().rstrip(".,") in _DESIGNATION_HEADS
+                    for _, x in cur):
+                parts.append(cur)                 # "Ramesh Kumar and Shri ...": a name, then "and"
+            elif dropped is not None:             # "District Collector Shri ...": not a name
+                dropped.append((cur[0][0], cur[-1][0] + len(cur[-1][1])))
+            return
+        ands = [k for k, (_, x) in enumerate(cur) if x.lower() == "and"]
+        if ands and ands[0] < len(cur) - 1:       # "Ms Anjali Verma and Hon'ble Shri ..."
+            if dropped is not None:
+                dropped.append((cur[ands[0] + 1][0], cur[-1][0] + len(cur[-1][1])))
+            cur = cur[:ands[0] + 1]
+        parts.append(_cut_designation(cur, dropped))
+
+    cur = []
     for i, (a, w) in enumerate(words):
         # a second honorific right after one ("Dr. (Smt.)") belongs to the same person; FB8: an honorific word at the
         # end of a run is a surname ("Anjali Kumari"), not the start of another name
@@ -478,28 +533,25 @@ def _split_at_honorifics(start, words, dropped=None):
         # ("Respected Shri Ramesh Ji", "Dear Shri Anil").
         prev = words[i - 1][1] if i else ""
         # FB12: only honorific words that are also name words can be a middle name ("Kumari", "Shri"); "Smt", "Dr",
-        # "Mr", "Ms", "Prof" ... after a name start the next person ("Shri Ram Kumar Smt Sita Devi")
+        # "Mr", "Ms", "Prof" ... after a name start the next person ("Shri Ram Kumar Smt Sita Devi"). FB14: "Shri"
+        # only inside a titled name ("Shri Ramesh Shri Vastava"), and neither after a courtesy or designation word
+        # ("Executive Engineer Shri ...", "Joint Secretary Kumari ...").
+        pk = prev.lower().rstrip(".,")
         middle = (not w.endswith(".") and not w.startswith("(") and prev and not _is_hon(prev)
                   and w.lower() in ("kumari", "kum", "km", "shri")
-                  and prev.lower() not in _CONNECTORS and prev.lower().rstrip(".,") not in _NOT_NAME
-                  and prev.lower().rstrip(".,") not in _BEFORE_TITLE)
+                  and (w.lower() != "shri" or (cur and _is_hon(cur[0][1])))
+                  and prev.lower() not in _CONNECTORS and pk not in _NOT_NAME
+                  and not any(x.lower().rstrip(".,") in _BEFORE_TITLE or x.lower().rstrip(".,") in _DESIGNATION_HEADS
+                              for _, x in cur))
         if _is_hon(w) and not last and not middle and cur and not all(_is_hon(x) for _, x in cur):
-            # "Hon'ble Minister" before "Shri ..." is dropped, not a name; so is such a tail after another person
-            # ("Ms Anjali Verma and Hon'ble Shri ...": the tail is "and Hon'ble")
-            k = len(cur)
-            while k and (cur[k - 1][1].lower().rstrip(".,") in _BEFORE_TITLE or cur[k - 1][1].lower() in _CONNECTORS):
-                k -= 1
-            if any(x.lower().rstrip(".,") in _BEFORE_TITLE for _, x in cur[k:]):
-                if dropped is not None:
-                    dropped.append((cur[k][0], cur[-1][0] + len(cur[-1][1])))
-                cur = cur[:k]
-            if cur:
-                parts.append(cur)
+            close(cur)
             cur = []
         cur.append((a, w))
-    if cur:
-        parts.append(cur)
-    return [(p[0][0], p) for p in parts]
+    if cur and before_hon and not all(_is_hon(x) for _, x in cur):
+        close(cur)
+    elif cur:
+        parts.append(_cut_designation(cur, dropped) if _is_hon(cur[0][1]) else cur)
+    return [(p[0][0], p) for p in parts if p]
 
 
 def _trim(words):
@@ -535,9 +587,13 @@ def _fact_rx(t: str, slash_after: bool = False, zero_paise: bool = False):
     body = re.escape(t)
     body = re.sub(r"(?i)\b(lakh|crore)s?\b", r"\1s?", body)
     if slash_after:
+        # FB14 R2-06: a section bracket may be written with or without a space ("P&PW (A)" = "P&PW(A)")
+        body = body.replace(r"\ \(", r"\(").replace(r"\(", r"\s?\(")
         after = r"(?:(?![^\W_])|(?=(?:dated|dtd|dt)\b))(?![,.]\d)"
     elif zero_paise:
-        # OD-OD-7: "4,75,000.00" and "4,75,000.0" are the amount "4,75,000"; "4,75,000.50" is not
+        # OD-OD-7: "4,75,000.00" and "4,75,000.0" are the amount "4,75,000", and "2.00 lakh" is "2 lakh" (FB14
+        # R2-04); "4,75,000.50" is not
+        body = re.sub(r"(\d)(?=\\ )", r"\1(?:\\.00?(?!\\d))?", body)
         after = r"(?![^\W_])(?!/(?!-))(?:\.00?(?!\d))?(?![,.]\d)"
     else:
         after = r"(?![^\W_])(?!/(?!-))(?![,.]\d)"
@@ -649,7 +705,8 @@ def _name_hits(name: str, text: str, longer: list, draft_longer=()) -> int:
 # holding an ordinary word ("(copy)", "(PDF)",
 # "(2 pages)"), are not. Only a letter code of at most three capitals or digits before a hyphen is a prefix ("A-",
 # "B-"); a designator or a word joined by a hyphen ("No-", "F.No-", "Ref-", "Letter-", "Memo-") is not.
-_REF_CODE = r"(?:\d|(?!(?i:dated|date|dtd|dt|reg|wef|w\.e\.f|ref|vide)\b)[A-Z][A-Za-z]{0,5}(?![A-Za-z]))"
+_REF_CODE = (r"(?:\d|(?!(?i:dated|date|dtd|dt|reg|wef|w\.e\.f|ref|vide)\b)" + _NOT_CODE_HON  # FB14: "-Shri ..."
+             + r"[A-Z][A-Za-z]{0,5}(?![A-Za-z]))")
 _REF_PART = r"\((?:\d+|[IVX]+|[A-Z]|Pt\.?\s?(?:[IVX]+|\d+)?|Part[-\s]?(?:[IVX]+|\d+)|Vol\.?\s?(?:\d+|[IVX]+))\)"
 _REF_SUFFIX = re.compile(r"\.?(?:[-/]" + _REF_CODE + r"|" + _REF_PART + r")")
 _REF_PREFIX = re.compile(r"(?:^|[^A-Za-z0-9.])(?:[A-Z]{1,3}|\d+)-$")
@@ -671,7 +728,8 @@ def _fact_occurrences(fact: str, draft_text: str, instruction: str | None = None
     if not t:
         return [None]
     if kind == "amount":
-        t = re.sub(r"\.0{1,2}$", "", t)          # OD-OD-7: the instruction's "Rs. 4,75,000.00" is "4,75,000"
+        # OD-OD-7 / FB14 R2-04: the instruction's "Rs. 4,75,000.00" is "4,75,000" and "Rs. 2.00 lakh" is "2 lakh"
+        t = re.sub(r"(\d)\.00?(?![\d])", r"\1", t)
     rx = _fact_rx(t, slash_after=kind == "reference", zero_paise=kind == "amount")
     hay = _norm(draft_text)
     words = t.split()

@@ -339,9 +339,15 @@ at most one warning, with one of two codes:
   is not a different date; a number followed by another number word is a different number (FB4 R5-03); and a name
   inside a longer name that is itself a fact of the instruction does not count ("Shri Anil Kumar" next to "Shri Anil
   Kumar Singh" are two people, FB5 R6-02). A reference may be followed by "/" or by a date word written without a
-  space; an en or em dash reads as "-" (FB13); "&" is part of a reference code ("2(14)/2026-B&A", "P&PW(A)", FB13).
-  An amount followed by ".00" or ".0" is the same amount ("4,75,000.00" is "4,75,000"); non-zero paise ("4,75,000.50")
-  are a different amount (OD-OD-7). No extension rule ever produces FACT_MISSING.
+  space; an en or em dash reads as "-" (FB13). "&" and an en or em dash are part of a reference code only when a
+  section code follows them (digits, a roman numeral or a short capitalised code that is not an honorific:
+  "2(14)/2026-B&A", "P&PW(A)", "17011/1/2026–Estt"); before a lowercase word, a longer word, a title-case phrase or
+  an honorific they are punctuation ("12/3/2026—it", "12/3/2026–Pension case", "12/3/2026—Shri Ram Lal",
+  FB14). A section bracket after a space belongs to a code that ends in letters ("1/2/2026-P&PW (A)"), and the
+  bracket matches with or without the space (FB14 R2-06). An amount followed by ".00" or ".0" is the same amount, also
+  before a unit ("4,75,000.00" is "4,75,000", "Rs. 2.00 lakh" is "Rs. 2 lakh"); non-zero paise ("4,75,000.50",
+  "2.50 lakh") are a different amount (OD-OD-7). A titled name fact starts at its honorific: no word before the
+  honorific is part of it or a name fact of its own (FB14). No extension rule ever produces FACT_MISSING.
 - FACT_CHECK: the fact appears word for word, but every occurrence is inside what the rules read as a longer name or
   reference. The message names both forms: "'Anjali' appears only as 'Anjali Sharma'. Check it is the same
   person." / "'14/2/2026' appears only as '14/2/2026-1'. Check it is the same file." The panel shows it as a quieter
@@ -373,9 +379,20 @@ FACT_CHECK coverage (formerly the "Caught" / "Not caught" lists of "Exception in
     "-Vide", "/Dated", "/dt.", "/Dt."); a date word without a space ("HR/Trg/2026/145dt."); an ordinary bracket
     ("(copy)", "(PDF)", "(2 pages)", "(Annexure ...)"); a designator or word joined by a hyphen before it ("No-",
     "F.No-", "Ref-", "O.M.No-", "D.O.No-", "Letter-", "Memo-");
-  - before a title: a courtesy or designation word ("Hon'ble Shri", "Hon'ble Minister Shri", "Late Shri",
-    "Minister of State Shri", "MLA Shri", "Secretary Shri", "Collector Shri", "Adarniya Shri"): it is not part of
-    the name (FB12 R2-01);
+  - before a title: any capitalised words that do not start with an honorific ("Hon'ble Shri", "Late Shri",
+    "District Collector Shri", "Executive Engineer Shri", "Superintendent of Police Shri", "Hon'ble Minister of
+    State for Finance Shri", "Drawing and Disbursing Officer Shri", also with a bracket such as "(Revenue)" before the
+    title): they are never part of the name and never a name of their own (FB12 R2-01, FB14 R2-02), in the draft and
+    in the instruction; after another titled person, the words after the first "and" belong to the next person ("Ms
+    Anjali Verma and Hon'ble Shri ...");
+  - after a titled name with at least two words after the title, a designation without a comma that starts with a
+    designation head word (Director, Secretary, Officer, Engineer, Collector, Commissioner, Superintendent,
+    Assistant, Deputy, Joint, Under, Additional, Chief, Senior, Junior, Executive, District, Section ...): the name
+    ends there ("Smt. Rekha Rani Joint Director and Shri Mohan Lal Deputy Director", "Shri Rajendra Prasad Meena
+    Deputy Secretary is requested ..."), FB14 R2-02. With one word after the title the word is a surname ("Shri
+    Rustom Collector");
+  - "Ji", "Sahab", "Saheb" or "Sahib" as the last word of a name ("Shri Rajendra Prasad Meena Sahab"); elsewhere
+    they are name words ("Shri Sahab Singh Chauhan", "Shri Saheb Rao Patil", FB14 R2-01);
   - a lowercase titled name followed by a word ending in -ed or -ing at the end of a block it does not start
     ("Subject: Leave of Shri ramesh kumar sanctioned", FB12 R2-03), or inside a sentence ("Shri ramesh kumar
     reported for duty").
@@ -384,9 +401,10 @@ FACT_CHECK coverage (formerly the "Caught" / "Not caught" lists of "Exception in
     "-Urgent", "-Final", "-Draft", "-Annex", "-Sub:") and a hyphenated date after it ("-04.10.2026"), and the bare
     prefixes "OM-" and "DO-" (FB12 R2-04);
   - a designation or another word after the name on the same line without a comma, including after a tab or a
-    no-break space ("Shri Rajendra Prasad Meena Deputy Secretary is requested ...", "... Meena Section Officer"):
-    read as a longer name (FB13 R2-03). "Sahab", "Saheb" and "Sahib" after a name end it, so "Shri Rajendra Prasad
-    Meena Sahab" gives no warning; "Under Secretary" gives none either ("Under" ends a name).
+    no-break space, when it does not start with a designation head word or the name has only one word after the title
+    ("Shri Anil Verma Vice-President", "Shri Rustom Superintendent"): read as a longer name (FB13 R2-03;
+    since FB14 a designation that starts with a head word ends a name with two or more words after the title, see
+    above).
 - No FACT_CHECK, so an extended draft gives no warning:
   - a lowercase name without a title continued with lowercase words ("ramesh kumar" -> "ramesh kumar sharma");
   - a lowercase titled name continued inside a sentence ("Shri ramesh kumar sharma is informed"), so that "Shri
@@ -624,6 +642,38 @@ the designation inside the fact ("Joint Secretary Kumari Priya Nair").
   a person); (g) adds "B&A", "P&PW(A)", en-dash file numbers, ".00" amounts and the instruction-side courtesy forms,
   each with faithful drafts (no warning) and changed drafts (FACT_MISSING).
 
+Repairs after fallback review FB14 of 3db6a663 (REJECT; record
+`D:/uri-dev/lifecycle/OFFICE-DAILY-USE-r15/fallback/FB14_subagent_3db6a663.audit.txt`; every FB13 repair confirmed
+for the cases FB13 reported). The coordinator asked for general rules, not more closed word lists. Correction
+history: the FB13 R2-01 statement that the instruction's facts are only the titled names was true only for the
+listed courtesy words; "District Collector", "Section Officer", "Executive Engineer", "Hon'ble Union Minister" and
+other designations before a title still became name facts. The FB13 "Sahab" rule cut given names, the FB13 dash rule
+read a dash used as punctuation into the code, and OD-OD-7 covered digit-only amounts. Each is replaced below.
+- R2-02: a titled name starts at its honorific. A capitalised run (with "of", "the", "and", "for", hyphenated words
+  or "Hon'ble" in it) that does not start with an honorific and ends directly before one, or before a bracket and
+  then one, is claimed whole: no stage reads it as a name. After a titled person, the words after the first "and"
+  before the next honorific are claimed too. A titled name with two or more words after the title ends where a
+  designation head word begins; with one word, the word is a surname ("Shri Rustom Collector"), which also repairs
+  R2-05. "Kumari" is a middle name only when no designation or courtesy word precedes it in the run, and "Shri" only
+  inside a titled name. The FB13 courtesy pattern and its "and" tail rule are removed; the courtesy list stays only
+  as a hint for "Kumari" after such a word.
+- R2-01: "Sahab", "Saheb" and "Sahib" are trimmed only as the last word of a name, like "Ji".
+- R2-03: "&" and an en or em dash join a reference code only before a section code of the _REF_SUFFIX shape that is
+  not an honorific, not the first part of a hyphenated word and not a title-case word followed by another one; an en or
+  em dash also separates words for the name stages, so "12/3/2026—Shri Ram Lal" keeps "Shri Ram Lal". In the suffix
+  rule an honorific after a dash is not a code either.
+- R2-04 (OD-OD-7): ".00" and ".0" after the number before a unit ("Rs. 2.00 lakh", "1.00 crore", "5.00 thousand")
+  are the same amount, both sides; ".50" and ".05" still give FACT_MISSING.
+- R2-06 (LOW), chosen: the spaced section bracket is accepted as part of the code when the code ends in letters
+  ("1/2/2026-P&PW (A)"), and a reference bracket matches with or without the space; "(B)" for "(A)" gives FACT_MISSING.
+- Corpus (328 instructions): property (h) now puts 41 designations generated from head words, qualifiers and tails
+  ("District", "Divisional", "Block", "Sub-Divisional", "Hon'ble Union", "of Police", "of State for Finance",
+  "General", "(Revenue)" ...) before every titled name of the instruction and requires the same facts and no
+  FACT_MISSING on the faithful draft, and adds "Rs. N.00 lakh/crore/thousand" forms; (g) adds Sahab/Saheb/Sahib names
+  (a replacement gives FACT_MISSING), dashes used as punctuation, ".00 lakh/crore", designation surnames ("Shri
+  Rustom Collector and Smt. Roshan Engineer"), the second form ("Smt. Rekha Rani Joint Director and Shri Mohan Lal
+  Deputy Director") and the spaced bracket.
+
 Fact-check limitations that remain (outside the scope above):
 - a single capitalised word after "of" that is a place or a body but follows a word not in the designation list
   (for example "the residents of Pune" is excluded, but "the visit of Pune officials" reads "Pune") becomes a name
@@ -674,7 +724,7 @@ and the V3.1 fallback applies. No GPU-heavy run overlaps an M95 live run; Brain 
   quieter (section 4, "Two signals").
 - OD-OD-7 (decided by the owner 2026-10-24, MM LDEC-015, after FB13): a trailing ".00" or ".0" after an amount is the
   same amount ("Rs. 4,75,000.00" is "Rs. 4,75,000"); non-zero paise (".50") are a different amount and give
-  FACT_MISSING.
+  FACT_MISSING. Applied since FB14 to the number before a unit as well ("Rs. 2.00 lakh" is "Rs. 2 lakh").
 - OD-WI-2 (preference): default language `en-IN` (Indian English spelling) - chosen by default from the owner's
   context; one line to change.
 
