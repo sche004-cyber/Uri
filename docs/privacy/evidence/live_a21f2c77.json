@@ -1,0 +1,60 @@
+{
+ "schema": "m95-live/1",
+ "code_commit": "a21f2c77dff98c21fd81554b5745e98b879d1071",
+ "code_paths_clean": true,
+ "host_os": "nt",
+ "python": "3.13.15",
+ "at_utc": "2026-10-24T06:04:38Z",
+ "scope": "process-level on the Windows host; full working-system run NOT exercised",
+ "checks": [
+  {
+   "check": "web_search_wire_capture",
+   "result_class": "COMPLETED_WITH_RESULT",
+   "detail": {
+    "requests_on_wire": 2,
+    "refused_before_send": "PRIVACY_REFUSED",
+    "audit_records": 3,
+    "audit_outcomes": [
+     "ALLOWED",
+     "SANITIZED",
+     "REFUSED"
+    ]
+   },
+   "seconds": 1.278
+  },
+  {
+   "check": "d10_restart_persistence",
+   "result_class": "COMPLETED_WITH_RESULT",
+   "detail": {
+    "first_start": "created",
+    "second_start": "same secret (sha256 of secret compared, not printed)",
+    "dpapi_blob_bytes": 262,
+    "corrupt_file": "startup refused, file kept"
+   },
+   "seconds": 0.691
+  },
+  {
+   "check": "brain_client_real_proxy",
+   "result_class": "COMPLETED_WITH_RESULT",
+   "detail": {
+    "brain_hits": 1,
+    "proxy_hits": 0,
+    "non_loopback": "BRAIN_ENDPOINT_NOT_LOOPBACK"
+   },
+   "seconds": 0.767
+  },
+  {
+   "check": "vault_dpapi_cross_process",
+   "result_class": "COMPLETED_WITH_RESULT",
+   "detail": {
+    "restored_in_new_process": true,
+    "files": [
+     "refs\\6c6976652d31.ref",
+     "vault-key.dpapi"
+    ]
+   },
+   "seconds": 0.612
+  }
+ ],
+ "status": "PASS"
+}
