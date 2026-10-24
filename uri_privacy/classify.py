@@ -110,10 +110,12 @@ _LABELLED = re.compile(
     r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
     r"(?:private|master|signing|encryption) key)"
     r"\s*(?:->|=>|→|is\b|was\b|=|:)\s*[\"']?([^\s\"',;]{1,})|"
-    # Semicolon and slash separate a value only when the next token has credential syntax, not ordinary prose.
+    # Semicolon and slash separate a value with credential syntax, or a lone letter-only value at clause end.
+    # A following prose word ("password / reset help") keeps the text readable.
     r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
     r"(?:private|master|signing|encryption) key)\s*[;/]\s*[\"']?"
-    r"(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{1,})|"
+    r"(?:(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{1,})|"
+    r"([A-Za-z]+)(?=\s*(?:[,!?'\")\]]|\.(?=\s|$)|$)))|"
     # A short value after a dash is explicit when the value ends the clause. Keep prose such as
     # "reset your password - see the help page" readable.
     r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"

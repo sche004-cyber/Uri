@@ -88,6 +88,11 @@ def test_r2_01_bare_or_partial_separator_stays_readable(text):
     ("api key; Hunt3r2!xyz", "Hunt3r2!xyz"),
     ("password / Hunt3r2!xyz", "Hunt3r2!xyz"),
     ("api key / x1!", "x1!"),
+    ("password; xy", "xy"),
+    ("password / xy", "xy"),
+    ("api key; xy", "xy"),
+    ("api key / xy", "xy"),
+    ("password; xy.", "xy"),
 ])
 def test_r1_01_semicolon_or_slash_labelled_credential_never_leaves(text, value):
     assert CREDENTIAL in classify(text).categories()
@@ -98,7 +103,9 @@ def test_r1_01_semicolon_or_slash_labelled_credential_never_leaves(text, value):
     assert value not in gateway.prepare(text, requester="t", destination="LOG", purpose="p").text
 
 
-@pytest.mark.parametrize("text", ["password; Hunt3r2!xyz", "api key / x1!"])
+@pytest.mark.parametrize("text", ["password; Hunt3r2!xyz", "api key / x1!",
+                                  "password; xy", "password / xy", "api key; xy", "api key / xy",
+                                  "password; xy."])
 def test_r1_01_semicolon_or_slash_credential_never_reaches_search_transport(text):
     sent = []
 
