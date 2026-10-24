@@ -68,6 +68,8 @@ _MONTH_DAY = re.compile(r"\b(" + _MONTHS + r")\b\.?\s+(\d{1,2})(" + _ORD + r")?\
 _DAY_OF_MONTH = re.compile(r"\b(\d{1,2})(" + _ORD + r")?\s+(?:day\s+)?of\s+(" + _MONTHS + r")\b\.?(" + _YEAR + r")?",
                            re.I)
 # A range of days in one month ("9th-10th November", "3rd to 7th October 2026", "8 and 9 October 2026") is one fact.
+# FB7 (found with the FB5 probes): "5-May-2026", "06/Jun/2026", "5.Nov.26" are one date each.
+_DASH_DATE = re.compile(r"\b(\d{1,2})[-/.](" + _MONTHS + r")\.?[-/.](\d{2}|\d{4})\b", re.I)
 _DAY_RANGE = re.compile(r"\b(\d{1,2})(" + _ORD + r")?\s*(?:-|–|to|and|&)\s*(\d{1,2})(" + _ORD + r")?\s+(" + _MONTHS
                         + r")\b\.?(" + _YEAR + r")?", re.I)
 _MONTH_YEAR = re.compile(r"\b(" + _MONTHS + r")\b\.?,?\s+(\d{4})\b", re.I)
@@ -119,7 +121,8 @@ _OF_NOT_AFTER = {
     "clause", "schedule", "list", "map", "government", "state", "union", "capital", "outskirts", "city", "port",
     "airport", "station", "embassy", "consulate", "mission", "high", "republic", "bureau", "agency", "authority",
     "registrar", "magistrate", "judge", "police", "ambassador", "consul", "chief", "deputy", "joint", "additional",
-    "under", "assistant", "kingdom", "name"}
+    "under", "assistant", "kingdom", "name", "tehsildar", "tahsildar", "sdm", "bdo", "sho", "talathi",
+    "patwari", "collectorate"}
 _OF_CUE_NAME = re.compile(r"\b([A-Za-z-]+)\s+of\s+([A-Z][a-z][A-Za-z'-]*)\b(?!\s+[A-Z])")
 _LETTER_RECIPIENT = re.compile(r"\bletters?\s+to\s+(" + _PERSON_NAME_WORD
                                + r"(?:\s+" + _PERSON_NAME_WORD + r"){1,3})"
@@ -201,6 +204,9 @@ def extract_facts(instruction: str) -> list:
         spans.append((m.start(), m.start(1) + len(code)))
     # 2. dates. FB5 R6-01: "Nth (day) of Month" first, then day-month and month-day, then "Month YYYY" and
     # month-to-month periods, all before the digit stage so their numbers are not read as plain numbers.
+    for m in _DASH_DATE.finditer(text):
+        if not taken(m.start(), m.end()) and 1 <= int(m.group(1)) <= 31:
+            add("date", m.group(0), m.start(), m.end())
     for m in _DAY_RANGE.finditer(text):
         if taken(m.start(), m.end()) or not (1 <= int(m.group(1)) <= 31 and 1 <= int(m.group(3)) <= 31):
             continue
@@ -451,10 +457,34 @@ def _fact_rx(t: str):
     return re.compile(r"(?<![^\W_])(?<![/])(?<!\d[,.])" + body + r"(?![^\W_])(?!/(?!-))(?![,.]\d)", re.I)
 
 
-def _name_hits(name: str, text: str, longer: list) -> int:
-    """Count occurrences outside a longer name found in the instruction or draft."""
+_JUNCTION = re.compile(r"(?i)(?:^|\s)(?:of|for|the|and|to|from|in|on|at|by)\s*$")
+
+
+def _extends(name: str, big: str) -> bool:
+    """FB7 R2-01 / R2-03: does `big` extend the name `name` into a longer name of another person ("Shri Anil Kumar"
+    -> "Shri Anil Kumar Singh")? Not when a connector word joins them ("Deputation of Anjali", "The Tehsildar of
+    Haveli", "Filling Up of the Post of Superintendent"): that is a phrase around the name, not a longer name. Not
+    when only honorifics are added in front ("Ramesh" -> "Shri Ramesh"): that is the same name with a title."""
+    n, b = _norm(name).lower(), _norm(big).lower()
+    for m in _fact_rx(n).finditer(b):
+        before, after = b[:m.start()], b[m.end():]
+        if _JUNCTION.search(before) or re.match(r"\s*(?:of|for|and|to|from|in|on|at|by)\b", after):
+            continue
+        if not after.strip() and all(_HON_RX.match(w) or re.fullmatch(_BRACKET_HON, w)
+                                     for w in _norm(big)[:m.start()].split()):
+            continue
+        return True
+    return False
+
+
+def _name_hits(name: str, text: str, longer: list, draft_longer=()) -> int:
+    """Count occurrences of a name outside a longer name that extends it. Longer names of the instruction cover their
+    occurrences in any case (FB5 R6-02); longer names found only in the draft cover only their own, case-sensitive
+    run positions (FB7 R2-01), so a title-case heading never hides the same words in a lowercase body sentence."""
     hay = _norm(text)
-    covers = [(m.start(), m.end()) for big in longer for m in _fact_rx(_norm(big)).finditer(hay)]
+    covers = [(m.start(), m.end()) for big in longer if _extends(name, big) for m in _fact_rx(_norm(big)).finditer(hay)]
+    covers += [(m.start(), m.end()) for big in draft_longer if _extends(name, big)
+               for m in re.finditer(r"(?<![^\W_])" + re.escape(_norm(big)) + r"(?![^\W_])", hay)]
     return sum(1 for m in _fact_rx(_norm(name)).finditer(hay)
                if not any(a <= m.start() and m.end() <= b and (b - a) > (m.end() - m.start()) for a, b in covers))
 
@@ -504,8 +534,10 @@ def missing_facts(instruction: str, draft_text: str) -> list:
         if f["kind"] == "name":
             # A shorter name inside a longer one is not the same person, whether the longer name was in the
             # instruction or appeared only in the draft. Exact repeats still need just one occurrence.
-            longer = [n for n in names + draft_names if n != f["text"] and _norm(f["text"]).lower() in _norm(n).lower()]
-            present = _name_hits(f["text"], draft_text, longer) >= 1
+            low = _norm(f["text"]).lower()
+            longer = [n for n in names if n != f["text"] and low in _norm(n).lower()]
+            draft_longer = [n for n in draft_names if n not in names and n != f["text"] and low in _norm(n).lower()]
+            present = _name_hits(f["text"], draft_text, longer, draft_longer) >= 1
         else:
             present = fact_present(f["text"], draft_text, instruction)
         if not present:

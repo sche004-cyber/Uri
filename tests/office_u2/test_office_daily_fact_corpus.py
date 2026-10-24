@@ -9,7 +9,12 @@ data/office_fact_corpus.json:
   (d) FB6: a faithful MULTI-BLOCK draft, joined with newlines as the service joins the Brain's blocks, with each fact
       in its own block between realistic neighbour blocks (designation, section, "Sir,", "Guard File", signature),
       never warns; and each one-fact change of (c) made in that draft still warns.
-A new case gets (b), (c) and (d) without writing them."""
+  (e) FB7: each fact inside text, as real drafts write it: a title-case heading ("Subject: <Noun> of <name>", the
+      noun taken from the instruction's own "<noun> of <name>" when it has one and "Deputation" otherwise; other
+      facts get "Subject: <fact>"), a capitalised "To" block ("The Tehsildar of <name>") for names, and a body
+      sentence that repeats the instruction's own wording. The faithful draft never warns; a one-fact change made
+      everywhere the fact appears still warns.
+A new case gets (b), (c), (d) and (e) without writing them."""
 from __future__ import annotations
 
 import json
@@ -183,5 +188,37 @@ def test_d_multi_block_draft(case):
     for i, (kind, text) in enumerate(case["facts"]):
         for what, new in mutations(kind, text):
             if text not in [w["text"] for w in DR.missing_facts(ins, _blocks(case, (i, new)))]:
+                missed.append(f"{kind} '{text}' -> {what} '{new}'")
+    assert not missed, (ins, missed)
+
+
+# (e) FB7 R2-02: facts inside headings, "To" blocks and the instruction's own sentence.
+def _embedded(case, replace=None):
+    ins = case["instruction"]
+    blocks = ["Office Order"]
+    body = ins
+    for i, (kind, text) in enumerate(case["facts"]):
+        t = replace[1] if replace and replace[0] == i else text
+        if kind == "name":
+            # the heading title-cases the instruction's own "<noun> of <name>" when it has one ("the deputation of
+            # Anjali" -> "Subject: Deputation of Anjali"), which is what a drafter writes
+            m = re.search(r"\b([A-Za-z]+)\s+of\s+" + re.escape(text) + r"\b", ins)
+            noun = m.group(1).title() if m and m.group(1).lower() not in ("the", "a", "an") else "Deputation"
+            blocks += [f"Subject: {noun} of {t}", "To", f"The Tehsildar of {t}"]
+        else:
+            blocks.append(f"Subject: {t}")
+    if replace:
+        body = _replace_fact(ins, case["facts"][replace[0]][1], replace[1], [t for _, t in case["facts"]])
+    return "\n".join(blocks + [body, "Under Secretary", "Guard File"])
+
+
+@pytest.mark.parametrize("case", CORPUS, ids=IDS)
+def test_e_facts_inside_headings_and_sentences(case):
+    ins = case["instruction"]
+    assert DR.missing_facts(ins, _embedded(case)) == [], ins
+    missed = []
+    for i, (kind, text) in enumerate(case["facts"]):
+        for what, new in mutations(kind, text):
+            if text not in [w["text"] for w in DR.missing_facts(ins, _embedded(case, (i, new)))]:
                 missed.append(f"{kind} '{text}' -> {what} '{new}'")
     assert not missed, (ins, missed)

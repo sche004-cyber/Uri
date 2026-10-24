@@ -359,10 +359,39 @@ Repairs after fallback review FB6 of 3f445a75 (REJECT; record
   and every one-fact change made in it warns. There are new cases for an honorific with a lowercase name, for "of"
   names, and for the "Ministry of", "Government of India" and "<post> of <place>" negatives.
 
+Repairs after fallback review FB7 of db652f38 (REJECT; record
+`D:/uri-dev/lifecycle/OFFICE-DAILY-USE-r8/fallback/FB7_subagent_db652f38.audit.txt`; every earlier finding,
+including FB6, confirmed fixed):
+- R2-01, a regression from the FB6 R2-03 "of" cue: a faithful draft whose heading title-cases the phrase around a
+  cued name ("Subject: Deputation of Anjali", "The Tehsildar of Haveli", "Filling Up of the Post of Superintendent")
+  got a false FACT_MISSING. Two things caused it. "of" joins capitalised words into one draft name, so the heading
+  became a longer name that seemed to contain the fact. And that longer name was matched in any case, so it also
+  covered the body's "the deputation of Anjali". The FB6 note that such a word "can give a false warning if the
+  draft drops it" did not describe this; here the draft kept it. The rule now:
+  - a longer name hides a shorter one only when it extends the name itself ("Shri Anil Kumar" -> "Shri Anil Kumar
+    Singh", FB5 R6-02 unchanged), not when a connector word (of, for, the, and, to, from, in, on, at, by) joins
+    them;
+  - a longer name found only in the draft covers only its own case-sensitive positions, never a lowercase
+    occurrence in a body sentence;
+  - tehsildar, talathi, patwari, SDM, BDO and SHO were added to the designation words before "of".
+- R2-02: corpus property (e) (corpus now 297 instructions). Each fact is placed in a title-case heading
+  ("Subject: Transfer of <name>" or
+  "Subject: <fact>"), in a capitalised "To" block ("The Tehsildar of <name>") for names, and in a body sentence that
+  is the instruction itself. That faithful draft gives no warning, and every one-fact change made everywhere the
+  fact appears warns.
+- R2-03 (choice: accept). A draft that only adds honorifics in front of a cued name ("to Ramesh" -> "Shri Ramesh")
+  counts as the same name. A draft that adds more words ("Shri Ramesh Kumar") is still another person and is
+  reported.
+- Found while re-running the FB5 probes for this round: a date written with dashes or slashes around a month name
+  ("5-May-2026", "06/Nov/2026") gave only the month as a fact, so a changed day passed silently. That came from the
+  r6 bare-month rule. It is now one date fact, with corpus cases P-0 and P-1.
+
 Fact-check limitations that remain (outside the scope above):
 - a single capitalised word after "of" that is a place or a body but follows a word not in the designation list
   (for example "the residents of Pune" is excluded, but "the visit of Pune officials" reads "Pune") becomes a name
-  fact. That can give a false warning if the draft drops it, never a silent miss;
+  fact. That can give a false warning if the draft drops or rewords it, never a silent miss;
+- a cued single name that the draft extends with more words ("Ramesh" -> "Shri Ramesh Kumar") is reported as
+  missing, because the longer name may be another person;
 - a number followed by a word that is not in the unit list ("3 vehicles") is checked as "3" only, so a changed noun
   is not reported;
 - the same person named twice in the instruction needs to appear only once in the draft;
