@@ -57,9 +57,10 @@ class PrivacyGateway:
         self.grants = grants or GrantStore()
         self.vault = vault or MemoryVaultStore()
         # Trusted identifiers: the registry plus what the wiring code that builds this gateway adds.
-        self.requesters = P.KNOWN_REQUESTERS | frozenset(requesters)
-        self.purposes = P.KNOWN_PURPOSES | frozenset(purposes)
-        self.audit.trust(self.requesters, self.purposes)
+        requesters = P.KNOWN_REQUESTERS | frozenset(requesters)
+        purposes = P.KNOWN_PURPOSES | frozenset(purposes)
+        self.audit.trust(requesters, purposes)
+        self.requesters, self.purposes = requesters, purposes
 
     # -- egress -------------------------------------------------------------------------------------------------------
     def prepare(self, text, *, requester, destination, purpose, task_id=None, scope=None, protected_terms=(),

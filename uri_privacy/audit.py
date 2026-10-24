@@ -14,6 +14,8 @@ import threading
 import time
 from pathlib import Path
 
+from .classify import classify as _classify_identifier
+
 GENESIS = "0" * 64
 FIELDS = ("requester", "task_id", "destination", "purpose", "policy", "decision", "categories", "grant_ids", "outcome",
           "code")
@@ -35,6 +37,19 @@ COUNT_KEYS = frozenset({"CREDENTIAL", "SECRET_LIKE", "GOV_ID", "FINANCIAL", "LON
 TASK_ID = re.compile(r"TASK-\d{8}-[0-9a-f]{8}|job_[0-9a-f]{12}:\d{1,9}:\d{1,9}")
 GRANT_ID = re.compile(r"GR-[0-9a-f]{12}")
 UNTRUSTED = "UNTRUSTED_FIELD"
+# Registered audit identifiers are short code names, not caller data. Require word segments and reject content that
+# happens to fit that syntax (for example a password or a long numeric/hex value).
+IDENTIFIER = re.compile(r"[a-z][a-z0-9]{0,23}(?:[._-][a-z][a-z0-9]{0,23})*")
+
+
+def _registered_identifiers(values):
+    checked = set()
+    for value in values:
+        if (type(value) is not str or len(value) > 64 or not IDENTIFIER.fullmatch(value)
+                or re.search(r"\d{4,}", value) or _classify_identifier(value).categories()):
+            raise ValueError("PRIVACY_IDENTIFIER_INVALID")
+        checked.add(value)
+    return frozenset(checked)
 
 
 def _member(value, allowed):
@@ -90,8 +105,10 @@ class PrivacyAudit:
 
     def trust(self, requesters, purposes):
         """The gateway's registered requesters and purposes (policy.KNOWN_* plus its wiring's own)."""
-        self.requesters = frozenset(requesters)
-        self.purposes = frozenset(purposes)
+        checked_requesters = _registered_identifiers(requesters)
+        checked_purposes = _registered_identifiers(purposes)
+        self.requesters = checked_requesters
+        self.purposes = checked_purposes
 
     def _trusted(self, f) -> dict:
         from . import policy as P
