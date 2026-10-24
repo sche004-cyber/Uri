@@ -245,3 +245,16 @@ written. Every other residual of 6.4-6.7 stands, including OD-7.
 **Residuals added:** a letter-only value in a config notation (`client_secret: changeme`) - the LDEC-007 residual;
 visible symbols inside a label word (`pass\u00a1word:`) - deliberate obfuscation, as the leetspeak residual. Every
 residual of 6.4-6.8 stands, including OD-7.
+
+### 6.10 Changes after fallback review FB9 (2026-10-24; amends 6.8 row 2 and 6.9 row 1; egress map)
+
+| Change | Proof (tests/privacy) |
+|---|---|
+| When the egress form differs from the original, the original is rewritten using its own reading and sent; the text is refused only when the egress reading has a category the original's lacks; a credential in the egress form no longer skips this | `test_pc18.py::test_fb9_r1_01*`, `test_fb9_r1_02*` |
+| The text that leaves is checked in both readings (as written and as its egress form) | `test_pc18.py::test_pc18_output_is_clean_in_both_readings*` |
+| Sanitized text leaves in its original characters with its findings rewritten (PC-9 sent the NFKC form) | `test_c3_repairs.py::test_canonical_is_what_is_sent` |
+| `authorization: basic <base64>`, recovery/backup/2FA codes, defanged dots in an e-mail local part | `test_pc18.py::test_fb9_recall*`, `test_fb9_r1_05*` |
+
+**Egress path added (correction of section 3):** E10 - web-research page and feed fetches (`uri_web/pipeline.py`):
+the URLs and feeds the user named are fetched from the host the user named, with the query string as typed; they do
+not pass the gateway. Owner decision OD-8. Every residual of 6.4-6.9 stands, including OD-7.

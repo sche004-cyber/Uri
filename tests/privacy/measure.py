@@ -182,6 +182,23 @@ def latency_scripts():
             xs.sort()
             out.append({"script": script, "chars": size, "destination": dest, "n": n,
                         "p50_ms": round(statistics.median(xs), 3), "p95_ms": round(xs[int(0.95 * (n - 1))], 3)})
+    # Two-reading path (review FB9 R1-06): one NBSP makes the egress form differ from the original, so the original is
+    # classified and rewritten too and the output is checked in both readings.
+    for script in ["ascii"] + sorted(SCRIPTS):
+        for size, dest, n in ((400, "WEB_SEARCH", 200), (2048, "EXTERNAL_MODEL", 100), (65536, "EXTERNAL_MODEL", 10)):
+            base = doc(size // 1024) if script == "ascii" and size >= 1024 else (doc(1)[:size] if script == "ascii"
+                                                                               else script_doc(script, size))
+            g, text = TGateway(), base.replace(" ", "\u00a0", 1)
+            for _ in range(2):
+                g.prepare(text, requester="m", destination=dest, purpose="m")
+            xs = []
+            for _ in range(n):
+                t = time.perf_counter()
+                g.prepare(text, requester="m", destination=dest, purpose="m")
+                xs.append((time.perf_counter() - t) * 1000)
+            xs.sort()
+            out.append({"script": script + "+nbsp", "chars": size, "destination": dest, "n": n,
+                        "p50_ms": round(statistics.median(xs), 3), "p95_ms": round(xs[int(0.95 * (n - 1))], 3)})
     # Adversarial worst case: refused before any matching (PRIVACY_INPUT_TOO_COMPLEX), and the largest accepted shape.
     g, adv = TGateway(), []
     for text in ("a/" * 32768, "a/" * 1024, "a/" * 200):

@@ -1,0 +1,10 @@
+FAILED tests/privacy/test_pc18.py::test_fb9_r1_01_reviewer_reproductions_never_reach_the_wire
+FAILED tests/privacy/test_pc18.py::test_fb9_r1_02_log_never_keeps_a_value_next_to_a_credential[Authorization: Bearer abcDEF123456ghiJKL789012mnoPQR 41\u06d4111\u06d4111\u06d4111:11111]
+FAILED tests/privacy/test_pc18.py::test_fb9_r1_02_log_never_keeps_a_value_next_to_a_credential[AKIAIOSFODNN7EXAMPLE 41\u06d4111\u06d4111\u06d4111:11111]
+FAILED tests/privacy/test_pc18.py::test_fb9_recall_credentials_are_refused[Authorization: Basic dXNlcjpwYXNz]
+FAILED tests/privacy/test_pc18.py::test_fb9_recall_credentials_are_refused[curl -H 'Authorization: Basic dXNlcjpwYXNz' https://api.example.com]
+FAILED tests/privacy/test_pc18.py::test_fb9_recall_credentials_are_refused[recovery code 12345678]
+FAILED tests/privacy/test_pc18.py::test_fb9_recall_credentials_are_refused[backup code: 4821-9375]
+FAILED tests/privacy/test_pc18.py::test_fb9_recall_credentials_are_refused[2fa codes 123 456 789]
+FAILED tests/privacy/test_pc18.py::test_fb9_r1_05_defanged_local_part_is_redacted_whole
+9 failed, 5 passed in 8.12s

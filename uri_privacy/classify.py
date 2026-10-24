@@ -111,6 +111,10 @@ _LABELLED = re.compile(
     r"\s*(?:is|was|=|:)\s*[\"']?([^\s\"',;]{4,})|"
     # "API key abcdefghijklmnop": a key label followed by one long letter-only token (review r6 R3-01).
     r"\b(?:api[ _-]?key|secret key|access token|auth token)\s+([A-Za-z]{16,})\b|"
+    # An HTTP Basic credential whatever its base64 letters (review FB9 R1-03), and recovery / backup / 2FA codes
+    # of 6-10 digits, separators allowed (FB9 R1-04).
+    r"\bauthorization\W{0,3}basic\s+([A-Za-z0-9+/]{8,}={0,2})|"
+    r"\b(?:recovery|backup|2fa|mfa|two[- ]factor)\s+codes?\b\W{0,3}(?:is\s+)?(\d(?:[ -]?\d){5,9})(?!\d)|"
     # "pass: x" / "pass=x" (never "pass is"), and a code word a few words before its digits ("the PIN for the locker
     # is 4821"). A bare "code" needs exactly 6 digits (OTP length) and no zip/postal/error/status/area word before it.
     r"\b(?:pass|pw)\s*[:=]\s*[\"']?([^\s\"',;]{4,})|"
@@ -198,7 +202,8 @@ _EMAIL = re.compile(r"(?<![\w.+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9
                     # a single space around "@" or "." (or a line break, folded to a space), and the defanged
                     # "(at)" / "[@]" / "(dot)" / "[.]" forms (reviews FB5 R1-03, FB8 R2-03); " at " and " dot " in
                     # prose stay a residual (words)
-                    r"(?<![\w.+-])[A-Za-z0-9._%+-]+(?: ?@ ?| ?[(\[{] ?(?:at|@) ?[)\]}] ?)[A-Za-z0-9-]+"
+                    r"(?<![\w.+-])[A-Za-z0-9_%+-]+(?:(?:\.|[(\[{]\.[)\]}])[A-Za-z0-9_%+-]+)*"
+                    r"(?: ?@ ?| ?[(\[{] ?(?:at|@) ?[)\]}] ?)[A-Za-z0-9-]+"
                     r"(?:(?: ?\. ?| ?[(\[{] ?(?:dot|\.) ?[)\]}] ?)[A-Za-z0-9-]+)*"
                     r"(?: ?\. ?| ?[(\[{] ?(?:dot|\.) ?[)\]}] ?)[A-Za-z]{2,}\b")
 _PHONE = re.compile(r"(?<![\w+])\+\d{1,3}[ -]?\(?\d{1,5}\)?(?:[ -]?\d){5,11}(?![\w])|"
@@ -350,7 +355,8 @@ def _before(text: str, i: int) -> str:
 # contains one of these words cannot match a text without them, so its scan is skipped. Each hint is checked against
 # the alternatives of its pattern above; `test_pc13.py::test_hints_are_necessary` checks it on every positive sample.
 _HINTS = {
-    "labelled": re.compile(r"(?i)p[a@4][s5$]{2}|pw|otp|one[- ]time|code|cv[vc]|pin|api|secret|token|key|credential"),
+    "labelled": re.compile(r"(?i)p[a@4][s5$]{2}|pw|otp|one[- ]time|code|cv[vc]|pin|api|secret|token|key|credential|"
+                           r"authorization"),
     "passport": re.compile(r"(?i)passport"),
     "spaced_code": re.compile(r"(?i)otp|cv[vc]|pin|passcode"),
     "key_split": re.compile(r"AKIA|ASIA|AIza|gh[opsu]_|github_pat_|glpat-|xox[abpr]-|sk-|sk_|rk_live_|tvly-"),

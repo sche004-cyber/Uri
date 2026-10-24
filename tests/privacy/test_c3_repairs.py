@@ -79,10 +79,11 @@ def test_fb2_r1_01_other_values_with_invisibles(q, core):
 
 
 def test_canonical_is_what_is_sent():
-    # Text that needs a rewrite leaves in the egress form; clean text leaves as written (review r6 R5-02, PC-13).
+    # Text that needs a rewrite leaves as written with its findings rewritten, and is checked in both readings
+    # (PC-18, review FB9 R1-01: rewriting the egress form lost positions only the original's reading had).
     q = "caf\u00e9 \uff21\uff22 \u2764\ufe0f x\u2010y 10\u201320 mail a@b.co"
     out = TGateway().prepare(q, requester="t", destination="EXTERNAL_MODEL", purpose="p", reversible=False).text
-    assert out == "caf\u00e9 AB \u2764\ufe0f x-y 10-20 mail [redacted]"
+    assert out == "caf\u00e9 \uff21\uff22 \u2764\ufe0f x\u2010y 10\u201320 mail [redacted]"
     clean = "caf\u00e9 \uff21\uff22 \u2764\ufe0f x\u2010y 10\u201320"
     assert TGateway().prepare(clean, requester="t", destination="EXTERNAL_MODEL", purpose="p").text == clean
     assert C.canonical(clean) == "caf\u00e9 AB \u2764\ufe0f x-y 10-20"

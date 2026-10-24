@@ -116,25 +116,18 @@ class PrivacyGateway:
                 signals.add("ENCODING_UNRESOLVED")                  # deeper than the folding decodes (FB1 R1-04)
             if signals:
                 return self._doubt(meta, dest, cls, signals)
-            # A clean original leaves as written, including decomposed accents. The egress form above and the
-            # original below must both be clean; disguised or sensitive text still uses the checked egress form.
-            # Whenever the original's own reading finds something the egress form's reading does not (review FB7:
-            # a gap short as written but long once normalized; FB8 R2-02: look-alike separators that normalize into
-            # an exempt IPv4:port or clock), the egress form would send it. The original itself is rewritten when the
-            # egress form found nothing; when both found different things, the readings cannot be reconciled and the
-            # text is refused as doubt.
-            if text != original and not cls.credential_kinds:
+            # When the egress form differs from the original, the ORIGINAL is what is rewritten and sent, using its
+            # own reading: its spans are positions in the text that leaves, so nothing it finds can be lost in
+            # translation (reviews FB7, FB8 R2-02, and FB9 R1-01: comparing the two readings by category count let a
+            # decoy number hide a card that only the original's reading placed; FB9 R1-02: an Assist credential in the
+            # egress form skipped the comparison). The egress form's reading may still find a category the original's
+            # does not (a look-alike only NFKC shows): that cannot be placed, so the text is refused as doubt. What is
+            # sent is checked again below in both readings.
+            if text != original:
                 raw = C.classify(original, protected_terms)
-                extra = raw.categories() - cls.categories()
-                if raw.credential_kinds or raw.residual_encoding or raw.decoded_only:
-                    if extra or raw.residual_encoding or raw.decoded_only:
-                        return self._doubt(meta, dest, cls, {C.DOUBT_SEPARATOR})
-                elif not raw.categories() and not cls.categories():
-                    text, cls = original, raw
-                elif extra and not cls.categories():
-                    text, cls = original, raw
-                elif extra:
+                if raw.residual_encoding or raw.decoded_only or (cls.categories() - raw.categories()):
                     return self._doubt(meta, dest, cls, {C.DOUBT_SEPARATOR})
+                text, cls = original, raw
         else:
             cls = C.classify(text, protected_terms)
         counts = cls.categories()
@@ -185,9 +178,16 @@ class PrivacyGateway:
             # groups across a line break, review FB4 R1-02), and its digits read with every placeholder taken out,
             # so "4111 1111 [redacted] 1111 1111" is not sent with the whole card around a redacted value (FB4 R1-06).
             joined = _PLACEHOLDER.sub("", out)
-            doubt = bool(C.egress_form(out)[1]) or (joined != out and any(
+            egress_out, out_signals = C.egress_form(out)
+            doubt = bool(out_signals) or (joined != out and any(
                 actions.get(c, P.action(c, dest)) != P.ALLOW
                 for c in set(C.classify(joined, protected_terms).categories()) - set(left)))
+            # The text that leaves is also read as its egress form, so a value the normalized reading would see in
+            # it is never sent (FB9 R1-01: the original is sent rewritten, and must be clean in both readings).
+            if not doubt and egress_out != out:
+                second = C.classify(egress_out, protected_terms)
+                doubt = second.residual_encoding or any(actions.get(c, P.action(c, dest)) != P.ALLOW
+                                                        for c in second.categories())
             if doubt or residual.residual_encoding or any(actions.get(c, P.action(c, dest)) != P.ALLOW for c in left):
                 if dest == P.Destination.LOG:
                     out = REDACTED
