@@ -394,23 +394,38 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
 
   /// OD-OD-4: what the fact check covers, shown with every URI draft (plan 16 section 4, "Fact-check scope").
   static const draftScopeNote = 'URI checks names with a title (Shri, Smt., Dr ...) or after "to", "from" or "of", '
-      'dates with a day or year, amounts, numbers and file numbers. It does not check anything else: read the whole '
-      'draft before saving.';
+      'dates with a day or year, amounts, numbers and file numbers. "Missing" means the fact is not in the draft as '
+      'you wrote it; "Check" means it is there only inside a longer name or file number. It does not check anything '
+      'else: read the whole draft before saving.';
 
   /// OD-2: facts from the owner's instruction that the drafted document does not contain, in words, and (OD-OD-4)
-  /// the fact-check scope, above the Word editor until the edit closes.
+  /// the fact-check scope, above the Word editor until the edit closes. OD-OD-6: FACT_MISSING lines ("Missing: ...")
+  /// are warning-coloured; FACT_CHECK lines ("Check: ...", the fact only inside a longer name or file number) are
+  /// quieter, and alone they do not colour the panel.
   Widget _withDraftWarnings(BuildContext context, OfficeWorkspaceController c, Widget editor) {
     if (c.draftWarnings.isEmpty && !c.fromDraft) return editor;
     final colors = UriColors.of(context);
+    final missing = [for (final w in c.draftWarnings) if (w['code'] != 'FACT_CHECK') w];
+    final check = [for (final w in c.draftWarnings) if (w['code'] == 'FACT_CHECK') w];
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Container(
         key: ValueKey(c.draftWarnings.isEmpty ? 'office-draft-scope' : 'office-draft-warnings'),
         padding: const EdgeInsets.all(UriSpace.sm),
-        color: c.draftWarnings.isEmpty ? colors.surfaceSunken : colors.warningSoft,
+        color: missing.isEmpty ? colors.surfaceSunken : colors.warningSoft,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('Check before saving', style: TextStyle(fontWeight: FontWeight.w600, color: colors.ink)),
-          for (final w in c.draftWarnings)
-            Text('${w['message']}', style: TextStyle(color: colors.inkSoft)),
+          if (missing.isNotEmpty)
+            Column(key: const ValueKey('office-draft-missing'), crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final w in missing)
+                    Text('Missing: ${w['message']}',
+                        style: TextStyle(color: colors.ink, fontWeight: FontWeight.w500)),
+                ]),
+          if (check.isNotEmpty)
+            Column(key: const ValueKey('office-draft-check'), crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final w in check) Text('Check: ${w['message']}', style: TextStyle(color: colors.inkSoft)),
+                ]),
           Text(draftScopeNote, key: const ValueKey('office-draft-scope-note'),
               style: TextStyle(color: colors.inkSoft)),
         ]),

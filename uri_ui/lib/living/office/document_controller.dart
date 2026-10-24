@@ -618,13 +618,19 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
             if (missing.isNotEmpty) 'Still to fill in: ${missing.join(', ')}.',
           ].join(' '),
           targetLabel);
+      // OD-OD-6: a missing fact is a notice; a fact found only inside a longer name or file number is a quieter
+      // line from URI
       for (final w in draftWarnings) {
-        conversation.say(OfficeSpeaker.notice, '${w['message']}', targetLabel);
+        if (w['code'] == 'FACT_CHECK') {
+          conversation.say(OfficeSpeaker.uri, 'Check: ${w['message']}', targetLabel);
+        } else {
+          conversation.say(OfficeSpeaker.notice, 'Missing: ${w['message']}', targetLabel);
+        }
       }
     });
   }
 
-  /// FACT_MISSING warnings of the last draft (shown above the editor until the edit closes).
+  /// FACT_MISSING and FACT_CHECK warnings of the last draft (shown above the editor until the edit closes).
   List<Map<String, dynamic>> draftWarnings = const [];
 
   /// OD-OD-4: the open edit is a URI draft, so the fact-check scope is shown above the editor (with or without

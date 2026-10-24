@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uri_ui/living/office/document_controller.dart';
 import 'package:uri_ui/living/office/office_bridge.dart';
 import 'package:uri_ui/living/office/office_client.dart';
 import 'package:uri_ui/living/office/office_workspace.dart';
@@ -21,6 +22,8 @@ final _png = base64Decode(
 
 const _aid = '00112233445566778899aabbccddeeff';
 const _fact = "The draft does not contain the amount '25,000' from your instruction. Check it before saving.";
+const _check = "'Anjali' appears only as 'Anjali Sharma'. Check it is the same person.";
+const _checkRef = "'14/2/2026' appears only as '14/2/2026-1'. Check it is the same file.";
 
 Map<String, dynamic> _view(String name) => {
       'authoring_id': _aid, 'kind': 'docx', 'name': name, 'new': true, 'path': null,
@@ -167,8 +170,78 @@ void main() {
     expect(find.byKey(const ValueKey('authoring-block-1')), findsOneWidget);             // the Word editor
     expect(find.text('Editing Note sheet (draft).docx'), findsOneWidget);
     expect(find.byKey(const ValueKey('office-draft-warnings')), findsOneWidget);
-    expect(find.text(_fact), findsOneWidget);
+    // OD-OD-6: a missing fact is a "Missing:" line in the warning-coloured panel
+    expect(find.descendant(of: find.byKey(const ValueKey('office-draft-missing')), matching: find.text('Missing: $_fact')),
+        findsOneWidget);
+    expect(find.byKey(const ValueKey('office-draft-check')), findsNothing);
+    final panel = tester.widget<Container>(find.byKey(const ValueKey('office-draft-warnings')));
+    expect(panel.color, UriColors.graphite.warningSoft);
     expect(find.byKey(const ValueKey('office-draft-scope-note')), findsOneWidget);    // OD-OD-4: scope shown too
+    expect(tester.takeException(), isNull);
+    await _unmount(tester);
+  });
+
+  testWidgets('OD-OD-6: Missing and Check lines are shown apart in the Check before saving panel',
+      (tester) async {
+    final fake = await _pump(tester);
+    fake.draftReply = {..._view('Office order (draft).docx'), 'status': 'propose', 'message': '',
+      'layout': 'office_order', 'layout_title': 'Office order', 'missing': [],
+      'warnings': [
+        {'code': 'FACT_MISSING', 'kind': 'amount', 'text': '25,000', 'message': _fact},
+        {'code': 'FACT_CHECK', 'kind': 'name', 'text': 'Anjali', 'found': 'Anjali Sharma', 'message': _check},
+        {'code': 'FACT_CHECK', 'kind': 'reference', 'text': '14/2/2026', 'found': '14/2/2026-1',
+         'message': _checkRef},
+      ]};
+    await _draft(tester, 'Draft an office order on the deputation of Anjali, file 14/2/2026, Rs. 25,000');
+    expect(find.byKey(const ValueKey('office-draft-warnings')), findsOneWidget);
+    final missing = find.byKey(const ValueKey('office-draft-missing'));
+    final check = find.byKey(const ValueKey('office-draft-check'));
+    expect(find.descendant(of: missing, matching: find.text('Missing: $_fact')), findsOneWidget);
+    expect(find.descendant(of: missing, matching: find.textContaining('Check: ')), findsNothing);
+    expect(find.descendant(of: check, matching: find.text('Check: $_check')), findsOneWidget);
+    expect(find.descendant(of: check, matching: find.text('Check: $_checkRef')), findsOneWidget);
+    expect(find.descendant(of: check, matching: find.textContaining('Missing: ')), findsNothing);
+    // the Check lines are quieter than the Missing line
+    final colors = UriColors.graphite;
+    expect(tester.widget<Text>(find.text('Missing: $_fact').last).style!.color, colors.ink);
+    expect(tester.widget<Text>(find.descendant(of: check, matching: find.text('Check: $_check'))).style!.color,
+        colors.inkSoft);
+    expect(find.byKey(const ValueKey('office-draft-scope-note')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await _unmount(tester);
+  });
+
+  test('OD-OD-6: the conversation says a Missing line as a notice and a Check line as a quieter URI line',
+      () async {
+    SharedPreferences.setMockInitialValues({});
+    final fake = FakeDailyOffice()..docKind = 'docx';
+    fake.draftReply = {..._view('Office order (draft).docx'), 'status': 'propose', 'message': '',
+      'layout': 'office_order', 'layout_title': 'Office order', 'missing': [],
+      'warnings': [
+        {'code': 'FACT_MISSING', 'kind': 'amount', 'text': '25,000', 'message': _fact},
+        {'code': 'FACT_CHECK', 'kind': 'name', 'text': 'Anjali', 'found': 'Anjali Sharma', 'message': _check},
+      ]};
+    final c = OfficeWorkspaceController(client: OfficeClient.forTest(Uri.parse('http://127.0.0.1:1'), 't', fake.client()));
+    await c.draftWordDocument('Draft an office order on the deputation of Anjali, Rs. 25,000');
+    final lines = c.conversation.lines;
+    expect(lines.where((l) => l.text == 'Missing: $_fact').single.speaker, OfficeSpeaker.notice);
+    expect(lines.where((l) => l.text == 'Check: $_check').single.speaker, OfficeSpeaker.uri);
+    expect(c.draftWarnings.map((w) => w['code']).toList(), ['FACT_MISSING', 'FACT_CHECK']);
+  });
+
+  testWidgets('OD-OD-6: Check lines alone do not colour the panel as a warning', (tester) async {
+    final fake = await _pump(tester);
+    fake.draftReply = {..._view('Office order (draft).docx'), 'status': 'propose', 'message': '',
+      'layout': 'office_order', 'layout_title': 'Office order', 'missing': [],
+      'warnings': [{'code': 'FACT_CHECK', 'kind': 'name', 'text': 'Anjali', 'found': 'Anjali Sharma',
+                    'message': _check}]};
+    await _draft(tester, 'Draft an office order on the deputation of Anjali');
+    expect(find.byKey(const ValueKey('office-draft-warnings')), findsOneWidget);     // the key stays the same
+    expect(find.byKey(const ValueKey('office-draft-missing')), findsNothing);
+    expect(find.descendant(of: find.byKey(const ValueKey('office-draft-check')), matching: find.text('Check: $_check')),
+        findsOneWidget);
+    final panel = tester.widget<Container>(find.byKey(const ValueKey('office-draft-warnings')));
+    expect(panel.color, UriColors.graphite.surfaceSunken);
     expect(tester.takeException(), isNull);
     await _unmount(tester);
   });

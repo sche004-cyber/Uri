@@ -131,7 +131,8 @@ Implemented (unit, service and widget tests only; no live run, no real Brain):
   clarify without a Brain call); `OfficeBrain.draft_document` (FAST tier, strict schema, 60 blocks x 1,500 chars,
   20,000 chars total; over-cap answers refused, not truncated); blocks written by a pure function into a new working
   copy in the layout's page setup; FACT_MISSING warnings for numbers, dates, references, amounts and capitalised names
-  not present verbatim; no Brain -> BRAIN_UNAVAILABLE. `write_document` available through this route only;
+  not present verbatim (FB12, OD-OD-6: FACT_CHECK when present only inside a longer name or reference); no Brain ->
+  BRAIN_UNAVAILABLE. `write_document` available through this route only;
   `edit_document` stays planned:O3. Tests use a fake Brain client.
 - OD-3: worker op `text` (page text, 2,000,000-character cap, `truncated`), `POST /document/<id>/text`,
   `POST /document/<id>/to_word` (new working copy, one heading per page, Save as card as usual). OCR on explicit
@@ -326,35 +327,66 @@ check cannot meet "every fact, never silently" for free text, so the owner scope
 - dates with a day or a year (day-month, month-day, numeric dates, "Nth (day) of Month", "Month YYYY", periods);
 - amounts and numbers written in digits, numbers in words, and a number's unit from the unit list;
 - reference numbers with or without a designator (F.No., O.M. No., D.O. No., No.).
-A marked fact that is missing or changed in the draft gives FACT_MISSING; that part stays "never silently". Anything
-outside this list is outside the guarantee, is listed below, and the Office shows the scope with every draft
-("Check before saving": what URI checks, and that the owner reads the whole draft). The Save as card stays the only
-way a draft reaches disk.
+Anything outside this list is outside the guarantee, is listed below, and the Office shows the scope with every
+draft ("Check before saving": what URI checks, what "Missing" and "Check" mean, and that the owner reads the whole
+draft). The Save as card stays the only way a draft reaches disk.
 
-Exception inside the scope (owner decision 2026-10-24, OD-OD-5). A marked fact that the draft keeps word for word
-but extends into a longer name or a longer number is caught only where the rules can see the extension.
-- Caught:
-  - a capitalised continuation of a name ("Anjali Sharma", "Smt. Sunita Kumari Singh");
-  - a hyphenated surname;
-  - a lowercase titled name continued at the end of a block, up to four lowercase words after the title ("To / Shri
-    ramesh kumar sharma", "To / Shri mohammad ahmed", "Pension of Shri ramesh kumar sharma"), or continued before
-    punctuation inside a block when no added word ends in -ed or -ing ("Leave of Shri ramesh kumar sharma.");
-  - a longer name with the same start ("Shri Anil Kumar Singh");
+Two signals (owner decision 2026-10-24, OD-OD-6, MM LDEC-014; replaces the OD-OD-5 exception). Each marked fact gets
+at most one warning, with one of two codes:
+- FACT_MISSING: the fact does not appear in the draft word for word. "Word for word" uses the per-kind token
+  boundaries only: case and spacing are ignored; no letter or digit directly before or after it ("Kumar" is not
+  inside "Kumari", "25,000" is not inside "1,25,000", "3 November" is not inside "13 November", FB1 R2-01); a date
+  is not a different date; a number followed by another number word is a different number (FB4 R5-03); and a name
+  inside a longer name that is itself a fact of the instruction does not count ("Shri Anil Kumar" next to "Shri Anil
+  Kumar Singh" are two people, FB5 R6-02). A reference may be followed by "/" or by a date word written without a
+  space. No extension rule ever produces FACT_MISSING.
+- FACT_CHECK: the fact appears word for word, but every occurrence is inside what the rules read as a longer name or
+  reference. The message names both forms: "'Anjali' appears only as 'Anjali Sharma'. Check it is the same
+  person." / "'14/2/2026' appears only as '14/2/2026-1'. Check it is the same file." The panel shows it as a quieter
+  "Check: ..." line; FACT_MISSING stays a warning-coloured "Missing: ..." line.
+The guarantee: a marked fact that is absent from the draft (dropped, or replaced so that no word-for-word occurrence
+is left: "Shri Ram Ji Gupta" for "Shri Ram Ji Lal", "Sunita" for "Anjali", a different file number) always gives
+FACT_MISSING, and a faithful draft (one that keeps the fact word for word) never gives FACT_MISSING, whatever
+surrounds the fact. Extensions give FACT_CHECK where the rules see them; the coverage list follows.
+
+FACT_CHECK coverage (formerly the "Caught" / "Not caught" lists of "Exception inside the scope (owner decision
+2026-10-24, OD-OD-5)", withdrawn by OD-OD-6):
+- FACT_CHECK is given for:
+  - a capitalised continuation of a name ("Anjali Sharma", "Smt. Sunita Kumari Singh"), including in a heading
+    while the body names someone else ("Subject: Deputation of Anjali Sharma" with "Sunita" in the body, FB8);
+  - an honorific word used as a middle name ("Smt. Sunita Kumari Singh", "Shri Ramesh Shri Vastava");
+  - a hyphenated surname ("Anjali-Sharma");
+  - a lowercase titled name continued at the end of a block when the name starts its block, up to four lowercase
+    words after the title ("To / Shri ramesh kumar sharma", "To / Shri mohammad ahmed"), or continued before
+    punctuation inside a block when no added word ends in -ed or -ing ("Leave of Shri ramesh kumar sharma."); and a
+    capitalised word after a lowercase name ("Shri ramesh kumar Xavier");
+  - a longer name with the same start found only in the draft ("Shri Anil Kumar Singh" for "Shri Anil Kumar");
   - a reference followed directly (or after a dot) by "-" or "/" and digits or a capitalised code of at most six
-    letters ("14/2/2026-1", "...-II", "...-Admn", "...-Estt.-II", "...-Estt./2"), or by a part-file bracket
-    ("(1)", "(II)", "(Pt.)", "(Pt.II)", "(Part-I)", "(Part II)", "(Vol.2)"), or preceded by a code of at most
-    three capitals or by digits and a hyphen ("A-14/2/2026"). These are not extensions and match:
-    - a trailing lowercase word ("-dtd.", "-wef", "-reminder", "-dated", "./dated");
-    - a date or reference word in any case ("-Dated", "-Dt.", "-DT", "-Reg.", "-Wef", "-Ref", "-Vide");
-    - an ordinary bracket ("(copy)", "(PDF)", "(2 pages)", "(Annexure ...)");
-    - a designator or word joined by a hyphen ("No-", "F.No-", "Ref-", "O.M.No-", "D.O.No-", "Letter-",
-      "Memo-").
-- Not caught, so the extended draft gives no warning:
+    letters ("14/2/2026-1", "...-II", "...-Admn", "...-Estt.-II", "...-Estt./2", "14/2/2026/1"), or by a
+    part-file or section bracket ("(1)", "(II)", "(A)", "(Pt.)", "(Pt.II)", "(Part-I)", "(Part II)", "(Vol.2)"), or
+    preceded by a code of at most three capitals or by digits and a hyphen ("A-14/2/2026").
+- These are read as the same fact (no warning):
+  - after a reference: a trailing lowercase word ("-dtd.", "-wef", "-reminder", "-dated", "./dated", "/dated"); a
+    date or reference word in any case ("-Dated", "-Date", "-Dt.", "-DT", "-W.E.F.", "-Reg.", "-Wef", "-Ref",
+    "-Vide", "/Dated", "/dt.", "/Dt."); a date word without a space ("HR/Trg/2026/145dt."); an ordinary bracket
+    ("(copy)", "(PDF)", "(2 pages)", "(Annexure ...)"); a designator or word joined by a hyphen before it ("No-",
+    "F.No-", "Ref-", "O.M.No-", "D.O.No-", "Letter-", "Memo-");
+  - before a title: a courtesy or designation word ("Hon'ble Shri", "Hon'ble Minister Shri", "Late Shri",
+    "Minister of State Shri", "MLA Shri", "Secretary Shri", "Collector Shri", "Adarniya Shri"): it is not part of
+    the name (FB12 R2-01);
+  - a lowercase titled name followed by a word ending in -ed or -ing at the end of a block it does not start
+    ("Subject: Leave of Shri ramesh kumar sanctioned", FB12 R2-03), or inside a sentence ("Shri ramesh kumar
+    reported for duty").
+- Given FACT_CHECK although the draft is faithful (the rules read an extension; the owner checks and saves):
+  - a capitalised ordinary word of up to six letters joined by a hyphen after a reference ("-Copy", "-Encl.",
+    "-Urgent", "-Final", "-Draft", "-Annex", "-Sub:") and a hyphenated date after it ("-04.10.2026"), and the bare
+    prefixes "OM-" and "DO-" (FB12 R2-04).
+- No FACT_CHECK, so an extended draft gives no warning:
   - a lowercase name without a title continued with lowercase words ("ramesh kumar" -> "ramesh kumar sharma");
-  - a lowercase titled name continued inside a sentence ("Shri ramesh kumar sharma is informed"): it is read as
-    sentence text, so that "Shri ramesh kumar reported for duty" is never a false warning (FB10 R2-03); and one
-    continued by a word ending in -ed or -ing before punctuation inside a block ("Shri mohammad ahmed." in a
-    sentence), read as a verb;
+  - a lowercase titled name continued inside a sentence ("Shri ramesh kumar sharma is informed"), so that "Shri
+    ramesh kumar reported for duty" is never a false warning (FB10 R2-03); one continued by a word ending in -ed or
+    -ing before punctuation inside a block ("Shri mohammad ahmed." in a sentence), read as a verb; and one continued
+    by an -ed or -ing word at the end of a block it does not start ("Leave of Shri mohammad ahmed" in a heading);
   - a titled lowercase name continued past four lowercase words;
   - a capitalised name continued in lowercase ("Ramesh iyer");
   - a continuation after a comma, in brackets or after a possessive ("Ramesh Kumar, Yadav", "Shri ramesh kumar
@@ -369,12 +401,13 @@ but extends into a longer name or a longer number is caught only where the rules
     prefix that is not a code of at most three capitals ("Reg-", "ENo-");
   - a name continued after a post-nominal or a heading word ("Shri Anil Verma IAS Kumar", "Shri Anil Retd. Verma",
     "Shri Anil Verma With Kumar") (FB10 R2-05);
-  - two people with titles written next to each other without "and" or a comma ("Shri Ram Kumar Smt Sita Devi"):
-    with a dot after the second title they are two names; without one, the second title is read as a middle name, so
-    the pair is one name fact.
+  - two people written next to each other without "and" or a comma when the second title is "Shri" or "Kumari"
+    without a dot ("Shri Ram Kumar Shri Mohan Lal"): that title is read as a middle name ("Shri Ramesh Shri
+    Vastava", "Smt. Sunita Kumari Singh"), so the pair is one name fact. Any other second title ("Smt", "Dr", "Mr",
+    or any title with a dot) starts a second name (FB12).
 
-A missing or changed marked fact (one not present word for word) always warns. The extension cases above are the
-only exception, and they are not blockers under OD-OD-5.
+An absent marked fact always gives FACT_MISSING. The FACT_CHECK coverage above is the only part that depends on how
+the rules read a longer name or reference, and under OD-OD-6 its gaps are not blockers.
 
 How the code reads the name cues of this scope (stated in FB6):
 - An honorific may be followed by a capitalised or a lowercase full name ("Shri Ram Kumar", "Shri ramesh kumar").
@@ -527,12 +560,41 @@ fixed):
   and "Shri mohammad ahmed" / "khan" at a block end. The R10, R11 and R12 probes and fb1–fb10 were re-run; nothing
   changed for the worse.
 
+Repairs after fallback review FB12 of 644be9b1 (REJECT; record
+`D:/uri-dev/lifecycle/OFFICE-DAILY-USE-r13/fallback/FB12_subagent_644be9b1.audit.txt`; FB11 and earlier confirmed
+fixed). The blockers were false FACT_MISSING warnings from the extension rules, so the owner split the check into
+two signals (OD-OD-6, section 6) instead of another round of rule tuning. Correction history: OD-OD-5 above (from
+FB9 to FB11) treated every extension the rules saw as FACT_MISSING; that is withdrawn, and the "Caught" / "Not
+caught" lists became the FACT_CHECK coverage list. FB5 R6-01 (an added surname found only in the draft) and the FB8
+heading case now give FACT_CHECK, not FACT_MISSING; FB5 R6-02 (two instruction facts with the same start) still
+gives FACT_MISSING.
+- R2-01: "Hon'ble Shri", "Hon'ble Minister Shri", "Late Shri", "Minister Shri", "Minister of State Shri", "MLA
+  Shri", "Secretary Shri", "Collector Shri" before a name made one longer draft name. A courtesy or designation word
+  before a dotless title is no longer a middle name, and a run of such words alone is dropped, so these drafts give
+  no warning (and the instruction's own fact is "Shri Mohan Lal", not "Hon'ble Minister Shri Mohan Lal"). "Kumari"
+  after such a word stays a middle name ("Joint Secretary Kumari Xavier").
+- R2-02: "/dated", "/dt.", "/Dt.", "/Dated", "-W.E.F.", "-Date" and "145dt." after a reference. The token rule now
+  lets "/" and a date word without a space follow a reference, and "date" and "W.E.F." are date words: no warning.
+- R2-03: a subject line ending in a participle ("Subject: Leave of Shri ramesh kumar pending", "... received",
+  "... sanctioned"). At a block end, an -ed or -ing word is a verb unless the name starts its block: no warning.
+- Also found while re-running the R11 probes: "Shri Ram Kumar Smt Sita Devi" in the instruction (no comma) was one
+  name fact, so a faithful draft that wrote the two names on separate lines gave FACT_MISSING (R11 K1, listed before
+  as a limitation). Only "Shri" and "Kumari" (and "Km", "Kum") without a dot can now be a middle name; "Smt", "Dr",
+  "Mr" ... after a name start a second name, so the two people are two facts and the draft gives no warning.
+- R2-04 (LOW): "-Copy", "-Encl.", "-Urgent", "-Final", "-Draft", "-Annex", "-Sub:", "-04.10.2026", "OM-", "DO-"
+  give FACT_CHECK, never FACT_MISSING (listed above).
+- R2-05 (LOW): a single capital section bracket ("...-Estt.(A)", "...-Vig(A)") gives FACT_CHECK.
+- Corpus (309 instructions): property (c), (d) and (e) expect FACT_MISSING for a replaced fact and FACT_CHECK for
+  the reference changes that extend it ("-1", "(Pt.)", "A-"); (f) expects FACT_CHECK; (g) moves the 23 changed
+  drafts that are extensions to a new checked_drafts list (FACT_CHECK, no FACT_MISSING) and adds six FB12 cases;
+  new property (h) wraps every fact in the faithful forms above and asserts no FACT_MISSING.
+
 Fact-check limitations that remain (outside the scope above):
 - a single capitalised word after "of" that is a place or a body but follows a word not in the designation list
   (for example "the residents of Pune" is excluded, but "the visit of Pune officials" reads "Pune") becomes a name
   fact. That can give a false warning if the draft drops or rewords it, never a silent miss;
-- a cued single name that the draft extends with more words ("Ramesh" -> "Shri Ramesh Kumar") is reported as
-  missing, because the longer name may be another person;
+- a cued single name that the draft extends with more words ("Ramesh" -> "Shri Ramesh Kumar") gives FACT_CHECK,
+  because the longer name may be another person;
 - a number followed by a word that is not in the unit list ("3 vehicles") is checked as "3" only, so a changed noun
   is not reported;
 - the same person named twice in the instruction needs to appear only once in the draft;
@@ -547,7 +609,7 @@ Fact-check limitations that remain (outside the scope above):
 - swapped numbers and a fact present but used in the wrong place;
 - words in Indian languages.
 
-A FACT_MISSING list is an aid to the owner's own reading, not a guarantee.
+A FACT_MISSING or FACT_CHECK list is an aid to the owner's own reading, not a guarantee that nothing else changed.
 
 ## 5. Coordination
 
@@ -567,7 +629,13 @@ and the V3.1 fallback applies. No GPU-heavy run overlaps an M95 live run; Brain 
 - OD-OD-5 (decided by the owner 2026-10-24, MM LDEC-013, after FB9): "Fix these, then stop." The FB9 extension
   shapes were repaired. From then on, a marked fact kept word for word but extended into a longer name or number is
   a stated limitation (section 4, the exception in "Fact-check scope"), not a blocker. The guarantee stays: a marked
-  fact missing or changed always warns.
+  fact missing or changed always warns. Superseded by OD-OD-6 for how extensions are signalled.
+- OD-OD-6 (decided by the owner 2026-10-24, MM LDEC-014, after FB12): split the fact check into two signals.
+  FACT_MISSING only when a marked fact does not appear word for word (per-kind token boundaries; no extension rule
+  ever produces it, so a faithful draft never gets it). FACT_CHECK, a softer line, when the fact is there word for
+  word but only inside what the rules read as a longer name or reference; its message names both forms. The service
+  returns both in `warnings` with their codes; the Office shows "Missing: ..." warning-coloured and "Check: ..."
+  quieter (section 4, "Two signals").
 - OD-WI-2 (preference): default language `en-IN` (Indian English spelling) - chosen by default from the owner's
   context; one line to change.
 

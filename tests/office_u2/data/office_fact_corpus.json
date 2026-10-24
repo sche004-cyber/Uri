@@ -1,5 +1,5 @@
 {
- "_about": "OD-2 fact-check corpus (plan 16, FB4). Each case lists the facts expected from its instruction, in order. Built from slot values, not from the extractor.",
+ "_about": "OD-2 fact-check corpus (plan 16, FB4). Each case lists the facts expected from its instruction, in order. Built from slot values, not from the extractor. FB10: optional faithful_drafts (never warn) and changed_drafts (a replaced or dropped fact: FACT_MISSING). FB12 (OD-OD-6): optional checked_drafts (the fact appears only inside a longer name or reference: FACT_CHECK and no FACT_MISSING).",
  "cases": [
   {
    "id": "A1-0-1",
@@ -4724,7 +4724,7 @@
      "Shri Anil Verma"
     ]
    ],
-   "changed_drafts": [
+   "checked_drafts": [
     [
      "No. 14/2/2026-Estt-II",
      "To",
@@ -4843,6 +4843,12 @@
    ],
    "changed_drafts": [
     [
+     "Note",
+     "Shri suresh kumar reported for duty on Monday."
+    ]
+   ],
+   "checked_drafts": [
+    [
      "To",
      "Shri ramesh kumar sharma",
      "Subject: Pension"
@@ -4850,10 +4856,6 @@
     [
      "Subject: Pension of Shri ramesh kumar sharma",
      "Shri suresh kumar is informed."
-    ],
-    [
-     "Note",
-     "Shri suresh kumar reported for duty on Monday."
     ]
    ]
   },
@@ -4970,7 +4972,7 @@
      "Kindly refer to O.M. No. 22011/5/2026-Admn (Annexure enclosed)."
     ]
    ],
-   "changed_drafts": [
+   "checked_drafts": [
     [
      "To",
      "Shri Prakash Rao",
@@ -5079,7 +5081,7 @@
      "Shri mohammad reported for duty on Monday."
     ]
    ],
-   "changed_drafts": [
+   "checked_drafts": [
     [
      "To",
      "Shri mohammad ahmed",
@@ -5089,6 +5091,308 @@
      "To",
      "Shri mohammad khan",
      "Subject: Leave"
+    ]
+   ]
+  },
+  {
+   "id": "S-6",
+   "instruction": "Write a letter to Shri Mohan Lal about the meeting on 12th November 2026.",
+   "facts": [
+    [
+     "name",
+     "Shri Mohan Lal"
+    ],
+    [
+     "date",
+     "12th November 2026"
+    ]
+   ],
+   "faithful_drafts": [
+    [
+     "To",
+     "Hon'ble Shri Mohan Lal,",
+     "The meeting is on 12th November 2026."
+    ],
+    [
+     "The meeting with Hon'ble Minister Shri Mohan Lal is on 12th November 2026."
+    ],
+    [
+     "The meeting with Minister Shri Mohan Lal is on 12th November 2026."
+    ],
+    [
+     "In memory of Late Shri Mohan Lal, the meeting is on 12th November 2026."
+    ],
+    [
+     "To",
+     "MLA Shri Mohan Lal",
+     "The meeting is on 12th November 2026."
+    ],
+    [
+     "To",
+     "Collector Shri Mohan Lal",
+     "The meeting is on 12th November 2026."
+    ],
+    [
+     "To",
+     "Secretary Shri Mohan Lal",
+     "The meeting is on 12th November 2026."
+    ],
+    [
+     "Minister of State Shri Mohan Lal will attend the meeting on 12th November 2026."
+    ],
+    [
+     "Adarniya Shri Mohan Lal Ji,",
+     "The meeting is on 12th November 2026."
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "To",
+     "Hon'ble Shri Sohan Lal,",
+     "The meeting is on 12th November 2026."
+    ],
+    [
+     "To",
+     "Shri Mohan Lal,",
+     "The meeting is on 13th November 2026."
+    ]
+   ],
+   "checked_drafts": [
+    [
+     "To",
+     "Shri Mohan Lal Gupta",
+     "The meeting is on 12th November 2026."
+    ]
+   ]
+  },
+  {
+   "id": "S-7",
+   "instruction": "Send a reminder on letter No. 14/7/2026-Vig dated 3.10.2026 to Shri Anil Verma.",
+   "facts": [
+    [
+     "reference",
+     "14/7/2026-Vig"
+    ],
+    [
+     "date",
+     "3.10.2026"
+    ],
+    [
+     "name",
+     "Shri Anil Verma"
+    ]
+   ],
+   "faithful_drafts": [
+    [
+     "To",
+     "Shri Anil Verma",
+     "Subject: Reminder",
+     "Please refer to letter No. 14/7/2026-Vig/dated 3.10.2026."
+    ],
+    [
+     "To",
+     "Shri Anil Verma",
+     "Subject: Reminder",
+     "Please refer to letter No. 14/7/2026-Vig/dt. 3.10.2026."
+    ],
+    [
+     "To",
+     "Shri Anil Verma",
+     "Subject: Reminder",
+     "Please refer to letter No. 14/7/2026-Vig/Dt. 3.10.2026."
+    ],
+    [
+     "To",
+     "Shri Anil Verma",
+     "Subject: Reminder",
+     "Please refer to letter No. 14/7/2026-Vig/Dated 3.10.2026."
+    ],
+    [
+     "To",
+     "Shri Anil Verma",
+     "Subject: Reminder",
+     "Please refer to letter No. 14/7/2026-Vig-W.E.F. 3.10.2026."
+    ],
+    [
+     "To",
+     "Shri Anil Verma",
+     "Subject: Reminder",
+     "Please refer to letter No. 14/7/2026-Vig-w.e.f. 3.10.2026."
+    ],
+    [
+     "To",
+     "Shri Anil Verma",
+     "Subject: Reminder",
+     "Please refer to letter No. 14/7/2026-Vig-Date 3.10.2026."
+    ],
+    [
+     "To",
+     "Shri Anil Verma",
+     "Subject: Reminder",
+     "Please refer to letter No. 14/7/2026-Vigdt. 3.10.2026."
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "To",
+     "Shri Anil Verma",
+     "Subject: Reminder",
+     "Kindly refer to No. 14/8/2026-Vig dated 3.10.2026."
+    ],
+    [
+     "To",
+     "Shri Anil Verma",
+     "Subject: Reminder",
+     "Kindly refer to No. 14/7/2026-Estt dated 3.10.2026."
+    ]
+   ],
+   "checked_drafts": [
+    [
+     "To",
+     "Shri Anil Verma",
+     "Subject: Reminder",
+     "Kindly refer to No. 14/7/2026-Vig-Copy dated 3.10.2026."
+    ],
+    [
+     "To",
+     "Shri Anil Verma",
+     "Subject: Reminder",
+     "Kindly refer to No. 14/7/2026-Vig(A) dated 3.10.2026."
+    ],
+    [
+     "To",
+     "Shri Anil Verma",
+     "Subject: Reminder",
+     "Kindly refer to OM-14/7/2026-Vig dated 3.10.2026."
+    ],
+    [
+     "To",
+     "Shri Anil Verma",
+     "Subject: Reminder",
+     "Kindly refer to No. 14/7/2026-Vig/1 dated 3.10.2026."
+    ]
+   ]
+  },
+  {
+   "id": "S-8",
+   "instruction": "Put up a note on the leave of Shri ramesh kumar from 5th November 2026.",
+   "facts": [
+    [
+     "name",
+     "Shri ramesh kumar"
+    ],
+    [
+     "date",
+     "5th November 2026"
+    ]
+   ],
+   "faithful_drafts": [
+    [
+     "Note",
+     "Subject: Leave of Shri ramesh kumar pending",
+     "Leave from 5th November 2026."
+    ],
+    [
+     "Note",
+     "Subject: Leave application of Shri ramesh kumar received",
+     "Leave from 5th November 2026."
+    ],
+    [
+     "Note",
+     "Leave of Shri ramesh kumar sanctioned",
+     "w.e.f. 5th November 2026"
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "Note",
+     "To",
+     "Shri suresh kumar",
+     "Leave from 5th November 2026."
+    ],
+    [
+     "Note",
+     "Leave of Shri ramesh from 5th November 2026."
+    ]
+   ],
+   "checked_drafts": [
+    [
+     "Note",
+     "To",
+     "Shri ramesh kumar sharma",
+     "Leave from 5th November 2026."
+    ]
+   ]
+  },
+  {
+   "id": "S-9",
+   "instruction": "Draft an office order sanctioning the deputation of Anjali for training.",
+   "facts": [
+    [
+     "name",
+     "Anjali"
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "Office Order",
+     "Subject: Deputation for training",
+     "Sanction is accorded to the deputation of Sunita for training."
+    ]
+   ],
+   "checked_drafts": [
+    [
+     "Office Order",
+     "Subject: Deputation of Anjali Sharma",
+     "Sanction is accorded to the deputation of Sunita for training."
+    ]
+   ]
+  },
+  {
+   "id": "S-10",
+   "instruction": "Draft a letter to Shri Ram Ji Lal about his pension.",
+   "facts": [
+    [
+     "name",
+     "Shri Ram Ji Lal"
+    ]
+   ],
+   "faithful_drafts": [
+    [
+     "To",
+     "Shri Ram Ji Lal",
+     "Subject: Pension"
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "To",
+     "Shri Ram Ji Gupta",
+     "Subject: Pension"
+    ]
+   ]
+  },
+  {
+   "id": "S-11",
+   "instruction": "Draft an order posting Shri Anil Kumar and Shri Anil Kumar Singh to Nagpur.",
+   "facts": [
+    [
+     "name",
+     "Shri Anil Kumar"
+    ],
+    [
+     "name",
+     "Shri Anil Kumar Singh"
+    ],
+    [
+     "name",
+     "Nagpur"
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "Office Order",
+     "Shri Anil Kumar Singh is posted to Nagpur."
     ]
    ]
   }

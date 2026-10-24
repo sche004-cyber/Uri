@@ -223,7 +223,8 @@ class Office:
         """`POST /authoring/draft {instruction, layout?}`. The layout comes from the request or, deterministically,
         from keywords in the instruction; with neither, URI asks which kind of document (no Brain call). The Brain's
         blocks become a NEW working copy in that layout (nothing on disk until the owner approves Save as); facts
-        from the instruction missing in the draft are named in `warnings` (FACT_MISSING)."""
+        from the instruction are checked in `warnings`, each with its code (plan 16, OD-OD-6): FACT_MISSING when a fact
+        is not in the draft word for word, FACT_CHECK when it is there only inside a longer name or reference."""
         from .authoring import docx_templates as T
         from .authoring import drafting as DR
         instruction = body.get("instruction")

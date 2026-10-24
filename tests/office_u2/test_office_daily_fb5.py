@@ -113,8 +113,10 @@ def test_r6_02_each_person_is_checked(instruction, old, new):
 ])
 def test_r5_01_added_surname_does_not_satisfy_shorter_name(instruction, draft, name):
     assert DR.missing_facts(instruction, instruction) == []
+    # FB12 (OD-OD-6): the name is in the draft word for word, inside a longer name found only in the draft, so the
+    # signal is the softer FACT_CHECK (FACT_MISSING was the code before FB12)
     assert [(w["code"], w["kind"], w["text"]) for w in DR.missing_facts(instruction, draft)] == [
-        ("FACT_MISSING", "name", name)]
+        ("FACT_CHECK", "name", name)]
     assert DR.missing_facts(instruction, draft + f" {name} will report separately.") == []
 
 

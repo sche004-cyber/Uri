@@ -431,6 +431,21 @@ def _cap_runs(text: str, taken):
     return [(r[0][0], r) for r in runs]
 
 
+# FB12 R2-01: courtesy and designation words written before a title ("Hon'ble Shri", "Late Shri", "Minister Shri",
+# "Minister of State Shri", "MLA Shri", "Collector Shri") are not a middle name and not part of the name. "Kumari"
+# after such a word stays a middle name, as FB9 R2-01 reads it ("Joint Secretary Kumari Xavier" is one longer run).
+_BEFORE_TITLE = {"hon'ble", "hon’ble", "honble", "hon", "honourable", "honorable", "late", "esteemed",
+                 "adarniya", "aadarniya", "mla", "mp", "mlc", "minister", "ministers", "secretary", "collector",
+                 "commissioner", "director", "chairman", "chairperson", "president", "governor", "mayor", "member",
+                 "state", "deputy", "joint", "additional", "chief", "magistrate", "judge", "officer", "inspector",
+                 "registrar", "superintendent", "principal", "ambassador", "consul", "tehsildar", "tahsildar", "sdm",
+                 "bdo", "councillor", "sarpanch", "speaker"}
+
+
+def _courtesy_only(words) -> bool:
+    return all(w.lower().rstrip(".,") in _BEFORE_TITLE or w.lower() in _CONNECTORS for _, w in words)
+
+
 def _split_at_honorifics(start, words):
     """FB4 R5-01: every honorific starts a new name ("Shri Ram Kumar and Smt. Sita Devi" is two names)."""
     parts, cur = [], []
@@ -443,10 +458,15 @@ def _split_at_honorifics(start, words):
         # (a comma ends the run anyway). FB10: not after a salutation or another word that is not a name word
         # ("Respected Shri Ramesh Ji", "Dear Shri Anil").
         prev = words[i - 1][1] if i else ""
+        # FB12: only honorific words that are also name words can be a middle name ("Kumari", "Shri"); "Smt", "Dr",
+        # "Mr", "Ms", "Prof" ... after a name start the next person ("Shri Ram Kumar Smt Sita Devi")
         middle = (not w.endswith(".") and not w.startswith("(") and prev and not _is_hon(prev)
-                  and prev.lower() not in _CONNECTORS and prev.lower().rstrip(".,") not in _NOT_NAME)
+                  and w.lower() in ("kumari", "kum", "km", "shri")
+                  and prev.lower() not in _CONNECTORS and prev.lower().rstrip(".,") not in _NOT_NAME
+                  and (prev.lower().rstrip(".,") not in _BEFORE_TITLE or w.lower() in ("kumari", "km", "kum")))
         if _is_hon(w) and not last and not middle and cur and not all(_is_hon(x) for _, x in cur):
-            parts.append(cur)
+            if not _courtesy_only(cur):          # "Hon'ble Minister" before "Shri ..." is dropped, not a name
+                parts.append(cur)
             cur = []
         cur.append((a, w))
     if cur:
@@ -476,10 +496,17 @@ def _after_word(hay: str, end: int) -> str:
     return m.group(0).lower() if m else ""
 
 
-def _fact_rx(t: str):
+def _fact_rx(t: str, slash_after: bool = False):
+    """The word-for-word token rule. FB12: for a reference a "/" may follow ("14/7/2026-Vig/dated"), and so may a
+    date word written without a space ("HR/Trg/2026/145dt. 3.10.2026"); whether what follows makes another file is
+    then a FACT_CHECK question (_REF_SUFFIX), never a FACT_MISSING one."""
     body = re.escape(t)
     body = re.sub(r"(?i)\b(lakh|crore)s?\b", r"\1s?", body)
-    return re.compile(r"(?<![^\W_])(?<![/])(?<!\d[,.])" + body + r"(?![^\W_])(?!/(?!-))(?![,.]\d)", re.I)
+    if slash_after:
+        after = r"(?:(?![^\W_])|(?=(?:dated|dtd|dt)\b))(?![,.]\d)"
+    else:
+        after = r"(?![^\W_])(?!/(?!-))(?![,.]\d)"
+    return re.compile(r"(?<![^\W_])(?<![/])(?<!\d[,.])" + body + after, re.I)
 
 
 _CONNECTOR_WORD = re.compile(r"(?i)\b(?:of|for|the|and|to|from|in|on|at|by)\b")
@@ -507,47 +534,76 @@ def _extends(name: str, big: str) -> bool:
     return False
 
 
-def _sentence_continuation(name: str, big: str, rest: str) -> bool:
+def _sentence_continuation(name: str, big: str, rest: str, lead: str = "") -> bool:
     """FB10 R2-03 / FB11 R2-02: a longer draft name whose extra words are all lowercase is an extension when it
     reaches a block end (a newline or the end: "To / Shri ramesh kumar sharma", "To / Shri mohammad ahmed"). Before
     punctuation inside a block it is an extension unless an extra word looks like a verb ("Shri ramesh kumar
-    retired."). Followed by more words, it is sentence text ("Shri ramesh kumar reported for duty")."""
+    retired."). Followed by more words, it is sentence text ("Shri ramesh kumar reported for duty").
+    FB12 R2-03: at a block end an -ed/-ing word is a verb ending a subject line ("Subject: Leave of Shri ramesh
+    kumar sanctioned") unless the name starts its block (an address line); `lead` is the text before it on its line."""
     extra = _norm(big)[len(_norm(name)):].split() if _norm(big).lower().startswith(_norm(name).lower()) else []
     if not extra or not all(w[:1].islower() for w in extra):
         return False
     if re.match(r"[ \t]*(?:\n|$)", rest):
-        return False
+        return bool(lead.strip()) and any(re.search(r"(?:ed|ing)$", w) for w in extra)
     if re.match(r"[ \t]*[.,;:()!?]", rest):
         return any(re.search(r"(?:ed|ing)$", w) for w in extra)
     return True
 
 
-def _name_hits(name: str, text: str, longer: list, draft_longer=()) -> int:
-    """Count occurrences of a name outside a longer name that extends it. Longer names of the instruction cover their
-    occurrences in any case (FB5 R6-02); longer names found only in the draft cover only their own, case-sensitive
-    run positions (FB7 R2-01), so a title-case heading never hides the same words in a lowercase body sentence."""
+def _name_occurrences(name: str, text: str, longer: list, draft_longer=()) -> list:
+    """FB12 (OD-OD-6): every word-for-word occurrence of a name, each paired with the longer name the rules read it
+    as part of (None when it stands on its own). Occurrences inside a longer name of the INSTRUCTION are not listed
+    at all (FB5 R6-02: "Shri Anil Kumar" next to "Shri Anil Kumar Singh" is two people, in any case), so a draft
+    with only the longer one has no occurrence of the shorter: FACT_MISSING. Longer names found only in the draft
+    cover only their own, case-sensitive run positions (FB7 R2-01); they, a hyphen ("Anjali-Sharma", FB8) and a
+    capitalised word after a lowercase name ("Shri ramesh kumar Xavier", FB8) make an occurrence a longer name:
+    FACT_CHECK when every occurrence is one."""
     # spacing is normalised within each line; a newline (a block boundary) is kept
     hay = "\n".join(" ".join(line.split()) for line in _clean(text or "").splitlines())
     covers = [(m.start(), m.end()) for big in longer if _extends(name, big) for m in _fact_rx(_norm(big)).finditer(hay)]
-    covers += [(m.start(), m.end()) for big in draft_longer if _extends(name, big)
-               for m in re.finditer(r"(?<![^\W_])" + re.escape(_norm(big)) + r"(?![^\W_])", hay)
-               if not _sentence_continuation(name, big, hay[m.end():])]
-    # FB8: a name with a lowercase word ("Shri ramesh kumar") is not seen by the capitalised-run stage, so in the
-    # draft an occurrence followed directly on the same line by a capitalised name word ("Shri ramesh kumar Xavier")
-    # is a longer name, not this one. A lowercase word after it is read as prose (plan 16 limitation).
+    draft_covers = [(m.start(), m.end()) for big in draft_longer if _extends(name, big)
+                    for m in re.finditer(r"(?<![^\W_])" + re.escape(_norm(big)) + r"(?![^\W_])", hay)
+                    if not _sentence_continuation(name, big, hay[m.end():],
+                                                  hay[hay.rfind("\n", 0, m.start()) + 1:m.start()])]
     lower = any(w[:1].islower() and w.lower() not in _CONNECTORS for w in _norm(name).split())
 
     def continued(end):
         # only a capitalised word on the same line ("Shri ramesh kumar Xavier"); a lowercase word after a lowercase
         # name ("asha devi requests ...") is ordinary prose, and a newline is a block boundary
         nxt = re.match(r" ([A-Z][A-Za-z'-]*)", hay[end:])
-        return bool(lower and nxt and nxt.group(1).lower() not in _NOT_NAME and not _is_hon(nxt.group(1))
-                    and nxt.group(1).lower().rstrip(".") not in _NAME_END and nxt.group(1) != "MD")
-    # FB8: a name joined to another word by a hyphen ("Anjali-Sharma") is part of a longer name, not the name itself
-    return sum(1 for m in _fact_rx(_norm(name)).finditer(hay)
-               if not re.match(r"-[^\W\d_]", hay[m.end():m.end() + 2]) and not re.search(r"[^\W\d_]-$", hay[:m.start()])
-               and not continued(m.end())
-               and not any(a <= m.start() and m.end() <= b and (b - a) > (m.end() - m.start()) for a, b in covers))
+        ok = bool(lower and nxt and nxt.group(1).lower() not in _NOT_NAME and not _is_hon(nxt.group(1))
+                  and nxt.group(1).lower().rstrip(".") not in _NAME_END and nxt.group(1) != "MD")
+        return nxt.group(1) if ok else None
+
+    def inside(a, b, spans):
+        return next(((x, y) for x, y in spans if x <= a and b <= y and (y - x) > (b - a)), None)
+
+    out = []
+    for m in _fact_rx(_norm(name)).finditer(hay):
+        a, b = m.start(), m.end()
+        if inside(a, b, covers):
+            continue
+        cover = inside(a, b, draft_covers)
+        if cover:
+            # the longer name as the owner would read it: from the last connector before the name ("Deputation of
+            # Anjali Sharma" -> "Anjali Sharma")
+            cuts = list(_CONNECTOR_WORD.finditer(hay, cover[0], a))
+            out.append(hay[cuts[-1].end() if cuts else cover[0]:cover[1]].strip())
+        elif re.match(r"-[^\W\d_]", hay[b:b + 2]):              # FB8: "Anjali-Sharma"
+            out.append(hay[a:b] + re.match(r"-[^\W\d_][\w'-]*", hay[b:]).group(0))
+        elif re.search(r"[^\W\d_]-$", hay[:a]):
+            out.append(re.search(r"[\w'-]*[^\W\d_]-$", hay[:a]).group(0) + hay[a:b])
+        elif continued(b):
+            out.append(hay[a:b] + " " + continued(b))
+        else:
+            out.append(None)
+    return out
+
+
+def _name_hits(name: str, text: str, longer: list, draft_longer=()) -> int:
+    """Occurrences of a name that stand on their own (not read as part of a longer name)."""
+    return sum(1 for o in _name_occurrences(name, text, longer, draft_longer) if o is None)
 
 
 # FB11 R2-01: a positive, code-shaped rule. A reference is another file only when it is followed directly (or
@@ -558,24 +614,28 @@ def _name_hits(name: str, text: str, longer: list, draft_longer=()) -> int:
 # holding an ordinary word ("(copy)", "(PDF)",
 # "(2 pages)"), are not. Only a letter code of at most three capitals or digits before a hyphen is a prefix ("A-",
 # "B-"); a designator or a word joined by a hyphen ("No-", "F.No-", "Ref-", "Letter-", "Memo-") is not.
-_REF_CODE = r"(?:\d|(?!(?i:dated|dtd|dt|reg|wef|ref|vide)\b)[A-Z][A-Za-z]{0,5}(?![A-Za-z]))"
-_REF_PART = r"\((?:\d+|[IVX]+|Pt\.?\s?(?:[IVX]+|\d+)?|Part[-\s]?(?:[IVX]+|\d+)|Vol\.?\s?(?:\d+|[IVX]+))\)"
+_REF_CODE = r"(?:\d|(?!(?i:dated|date|dtd|dt|reg|wef|w\.e\.f|ref|vide)\b)[A-Z][A-Za-z]{0,5}(?![A-Za-z]))"
+_REF_PART = r"\((?:\d+|[IVX]+|[A-Z]|Pt\.?\s?(?:[IVX]+|\d+)?|Part[-\s]?(?:[IVX]+|\d+)|Vol\.?\s?(?:\d+|[IVX]+))\)"
 _REF_SUFFIX = re.compile(r"\.?(?:[-/]" + _REF_CODE + r"|" + _REF_PART + r")")
 _REF_PREFIX = re.compile(r"(?:^|[^A-Za-z0-9.])(?:[A-Z]{1,3}|\d+)-$")
 _REF_DESIGNATOR_HYPHEN = re.compile(r"(?i)(?:\bno|\bref|\bf\.?\s?no|\bo\.?\s?m\.?\s?no|\bd\.?\s?o\.?\s?no)\.?-$")
 
 
-def fact_present(fact: str, draft_text: str, instruction: str | None = None, kind: str | None = None) -> bool:
-    """A fact counts as present only as a whole token run: no letter or digit or '/' directly before or after it, and
-    no digit group continuing it ("25,000" is not inside "1,25,000"; "Kumar" is not inside "Kumari"). Spacing and
-    case are ignored; "lakh" also matches "lakhs"; an amount may end in "/-".
-    FB4 R5-03: a number-word fact ("two lakh") or a digit fact ("12") followed in the draft by another number
-    word ("two lakh fifty thousand", "12 thousand") is a changed number, unless the instruction has the same
-    following word (an identical draft never warns)."""
+def _fact_occurrences(fact: str, draft_text: str, instruction: str | None = None, kind: str | None = None) -> list:
+    """FB12 (OD-OD-6): every word-for-word occurrence of a non-name fact, each paired with the longer reference the
+    rules read it as part of (None when it stands on its own). A word-for-word occurrence is a whole token run: no
+    letter or digit or '/' directly before or after it (a reference may be followed by '/'), and no digit group
+    continuing it ("25,000" is not inside "1,25,000"; "3 November" is not inside "13 November"). Spacing and case
+    are ignored; "lakh" also matches "lakhs"; an amount may end in "/-".
+    FB4 R5-03: a number-word fact ("two lakh") or a digit fact ("12") followed in the draft by another number word
+    ("two lakh fifty thousand", "12 thousand") is a different number, not an occurrence, unless the instruction has
+    the same following word (an identical draft never warns).
+    FB9 R2-03 / FB11 R2-01: a reference followed by a section code, a part file or a further number ("-1", "-II",
+    "(Pt.)", "(A)", "/2") or preceded by a letter code ("A-") is read as another file: FACT_CHECK, not absence."""
     t = _norm(fact)
     if not t:
-        return True
-    rx = _fact_rx(t)
+        return [None]
+    rx = _fact_rx(t, slash_after=kind == "reference")
     hay = _norm(draft_text)
     words = t.split()
     ends_num_word = bool(_NUM_WORD_RX.match(words[-1]))
@@ -586,11 +646,8 @@ def fact_present(fact: str, draft_text: str, instruction: str | None = None, kin
         src = _norm(instruction)
         for m in rx.finditer(src):
             same_after.add(_after_word(src, m.end()))
+    out = []
     for m in rx.finditer(hay):
-        # FB9 R2-03: "14/2/2026-1", "...-Estt.-II", "...-Estt.(Pt.)", "...-Estt./1" and "A-14/2/2026" are other files
-        if kind == "reference" and (_REF_SUFFIX.match(hay[m.end():]) or (
-                _REF_PREFIX.search(hay[:m.start()]) and not _REF_DESIGNATOR_HYPHEN.search(hay[:m.start()]))):
-            continue
         if ends_num_word or ends_plain_digit:
             after = hay[m.end():]
             cont = re.match(r"[\s-]+" + _NUM_WORD + r"\b", after, re.I) or \
@@ -599,13 +656,34 @@ def fact_present(fact: str, draft_text: str, instruction: str | None = None, kin
                 continue
         if starts_num_word and re.search(r"\b" + _NUM_WORD + r"[\s-]+$", hay[:m.start()], re.I):
             continue
-        return True
-    return False
+        if kind == "reference":
+            suffix = _REF_SUFFIX.match(hay[m.end():])
+            before = hay[:m.start()]
+            if suffix:
+                tail = re.match(r"[A-Za-z0-9]*\)?", hay[m.end() + suffix.end():]).group(0)
+                out.append(hay[m.start():m.end() + suffix.end()] + tail)
+                continue
+            if _REF_PREFIX.search(before) and not _REF_DESIGNATOR_HYPHEN.search(before):
+                out.append(re.search(r"(?:[A-Z]{1,3}|\d+)-$", before).group(0) + hay[m.start():m.end()])
+                continue
+        out.append(None)
+    return out
+
+
+def fact_present(fact: str, draft_text: str, instruction: str | None = None, kind: str | None = None) -> bool:
+    """A fact is present when it occurs word for word and at least one occurrence stands on its own (see
+    _fact_occurrences)."""
+    return any(o is None for o in _fact_occurrences(fact, draft_text, instruction, kind))
 
 
 def missing_facts(instruction: str, draft_text: str) -> list:
-    """Facts from the instruction that the draft does not contain as whole tokens (case and spacing ignored).
-    Returns warnings {code: FACT_MISSING, kind, text, message}."""
+    """FB12 (OD-OD-6): two signals per marked fact of the instruction.
+    - FACT_MISSING: the fact does not appear word for word (per-kind token boundaries; a name inside a longer
+      name of the instruction does not count). No extension rule ever produces it, so a faithful draft never
+      gets it, whatever surrounds the fact.
+    - FACT_CHECK: the fact appears word for word, but every occurrence is inside what the rules read as a longer
+      name or reference ("Anjali" only as "Anjali Sharma"; "14/2/2026" only as "14/2/2026-1").
+    Returns warnings {code, kind, text, message} (FACT_CHECK also has `found`: the longer form)."""
     out = []
     facts = extract_facts(instruction)
     names = [f["text"] for f in facts if f["kind"] == "name"]
@@ -617,11 +695,17 @@ def missing_facts(instruction: str, draft_text: str) -> list:
             low = _norm(f["text"]).lower()
             longer = [n for n in names if n != f["text"] and low in _norm(n).lower()]
             draft_longer = [n for n in draft_names if n not in names and n != f["text"] and low in _norm(n).lower()]
-            present = _name_hits(f["text"], draft_text, longer, draft_longer) >= 1
+            occ = _name_occurrences(f["text"], draft_text, longer, draft_longer)
         else:
-            present = fact_present(f["text"], draft_text, instruction, f["kind"])
-        if not present:
+            occ = _fact_occurrences(f["text"], draft_text, instruction, f["kind"])
+        if any(o is None for o in occ):
+            continue
+        if not occ:
             out.append({"code": "FACT_MISSING", "kind": f["kind"], "text": f["text"],
                         "message": f"The draft does not contain the {f['kind']} '{f['text']}' from your instruction. "
                                    "Check it before saving."})
+        else:
+            what = "file" if f["kind"] == "reference" else "person"
+            out.append({"code": "FACT_CHECK", "kind": f["kind"], "text": f["text"], "found": occ[0],
+                        "message": f"'{f['text']}' appears only as '{occ[0]}'. Check it is the same {what}."})
     return out

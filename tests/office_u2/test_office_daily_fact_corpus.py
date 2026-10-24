@@ -6,6 +6,8 @@ data/office_fact_corpus.json:
       a name's surname or first name, a date's day or month, an amount's or number's digits, a number's unit or
       number word, a reference's last digit; and a digit put in front of a day, number or reference ("3" -> "13",
       "7 days" -> "17 days", "12/2026" -> "112/2026") so a fact found inside a longer token is caught.
+      FB12 (OD-OD-6): each of these replaces the fact, so the warning is FACT_MISSING. The reference changes that
+      keep the fact word for word and extend it ("-1", "(Pt.)", "A-") give FACT_CHECK.
   (d) FB6: a faithful MULTI-BLOCK draft, joined with newlines as the service joins the Brain's blocks, with each fact
       in its own block between realistic neighbour blocks (designation, section, "Sir,", "Guard File", signature),
       never warns; and each one-fact change of (c) made in that draft still warns.
@@ -16,13 +18,19 @@ data/office_fact_corpus.json:
       everywhere the fact appears still warns.
   (f) FB8: for every name, a draft that extends it into a longer name ("Subject: Deputation of <name> Xavier", or a
       "To" block "<name> Xavier") while the body changes or drops the name must warn: the longer name is another
-      person, so it never stands in for the fact. FB9 adds "<name> Kumari Xavier" (an honorific word as a middle
+      person, so it never stands in for the fact. FB12 (OD-OD-6): the name is still there word for word, so the
+      warning is FACT_CHECK ("'<name>' appears only as '<name> Xavier'"). FB9 adds "<name> Kumari Xavier" (an honorific word as a middle
       name) and "<name> xavier" for a lowercase titled name at the end of a block; (e) adds a faithful draft with
       "<name> IAS" and "Subject: Deputation of <name> Under Rule 12"; references get "-1", "(Pt.)" and "A-" changes.
   (g) FB10: a case may list explicit faithful drafts (never warn) and changed drafts (must warn), for forms the
       generated drafts cannot express ("No-<file>", "<file>-dated", "(2 pages)", "Shri Ram Ji Lal", a lowercase titled
-      name followed by a verb).
-A new case gets (b) to (f) without writing them."""
+      name followed by a verb). FB12: a changed draft must give FACT_MISSING; checked drafts (the fact only inside a
+      longer name or reference) give FACT_CHECK and no FACT_MISSING.
+  (h) FB12 (OD-OD-6): every fact wrapped in the forms a faithful draft writes around it ("Hon'ble", "Late",
+      "Minister", "Minister of State" before a title; a subject line ending in a participle; "/dated", "/dt.",
+      "-W.E.F.", "-Date", "-Copy", "(A)" after a reference) never gives FACT_MISSING.
+A new case gets (b) to (f) and (h) without writing them.
+Commits before FB12 have no FACT_CHECK: a warning without a code is read as FACT_MISSING."""
 from __future__ import annotations
 
 import json
@@ -143,6 +151,19 @@ def _replace_fact(instruction: str, fact: str, new: str, others=()) -> str:
     raise AssertionError((fact, instruction))
 
 
+def _codes(instruction: str, draft: str) -> dict:
+    """fact text -> warning code (FACT_MISSING when a commit before FB12 gives no code)."""
+    return {w["text"]: w.get("code", "FACT_MISSING") for w in DR.missing_facts(instruction, draft)}
+
+
+# FB12: the mutations that keep the fact word for word and extend it (another file), not replace it
+_EXTENDING = {"suffix", "part file", "prefix"}
+
+
+def _expected(what: str) -> str:
+    return "FACT_CHECK" if what in _EXTENDING else "FACT_MISSING"
+
+
 def test_corpus_is_large_and_varied():
     assert len(CORPUS) >= 150
     names = " ".join(f[1] for c in CORPUS for f in c["facts"] if f[0] == "name")
@@ -169,8 +190,9 @@ def test_c_changing_one_fact_warns_about_it(case):
         for what, new in mutations(kind, text):
             assert new != text
             draft = _replace_fact(ins, text, new, [t for _, t in case["facts"]])
-            if text not in [w["text"] for w in DR.missing_facts(ins, draft)]:
-                missed.append(f"{kind} '{text}' -> {what} '{new}'")
+            got = _codes(ins, draft).get(text)
+            if got != _expected(what):
+                missed.append(f"{kind} '{text}' -> {what} '{new}': {got}")
     assert not missed, (ins, missed)
 
 
@@ -198,8 +220,9 @@ def test_d_multi_block_draft(case):
     missed = []
     for i, (kind, text) in enumerate(case["facts"]):
         for what, new in mutations(kind, text):
-            if text not in [w["text"] for w in DR.missing_facts(ins, _blocks(case, (i, new)))]:
-                missed.append(f"{kind} '{text}' -> {what} '{new}'")
+            got = _codes(ins, _blocks(case, (i, new))).get(text)
+            if got != _expected(what):
+                missed.append(f"{kind} '{text}' -> {what} '{new}': {got}")
     assert not missed, (ins, missed)
 
 
@@ -241,8 +264,9 @@ def test_e_facts_inside_headings_and_sentences(case):
     missed = []
     for i, (kind, text) in enumerate(case["facts"]):
         for what, new in mutations(kind, text):
-            if text not in [w["text"] for w in DR.missing_facts(ins, _embedded(case, (i, new)))]:
-                missed.append(f"{kind} '{text}' -> {what} '{new}'")
+            got = _codes(ins, _embedded(case, (i, new))).get(text)
+            if got != _expected(what):
+                missed.append(f"{kind} '{text}' -> {what} '{new}': {got}")
     assert not missed, (ins, missed)
 
 
@@ -274,13 +298,14 @@ def test_f_a_longer_name_never_stands_in_for_the_fact(case):
             for where in ("heading", "to"):
                 for body_new in (changed, "the officer"):
                     draft = _extended(case, i, body_new, where, extra)
-                    if text not in [w["text"] for w in DR.missing_facts(ins, draft)]:
-                        missed.append(f"'{text}' + '{extra}' in the {where}, body -> '{body_new}'")
+                    got = _codes(ins, draft).get(text)
+                    if got != "FACT_CHECK":            # FB12: still there word for word, inside a longer name
+                        missed.append(f"'{text}' + '{extra}' in the {where}, body -> '{body_new}': {got}")
     assert not missed, (ins, missed)
 
 
 # (g) FB10: explicit faithful and changed drafts listed in the corpus
-G_CASES = [c for c in CORPUS if c.get("faithful_drafts") or c.get("changed_drafts")]
+G_CASES = [c for c in CORPUS if c.get("faithful_drafts") or c.get("changed_drafts") or c.get("checked_drafts")]
 
 
 @pytest.mark.parametrize("case", G_CASES, ids=[c["id"] for c in G_CASES])
@@ -289,4 +314,38 @@ def test_g_listed_faithful_and_changed_drafts(case):
     for blocks in case.get("faithful_drafts", []):
         assert DR.missing_facts(ins, "\n".join(blocks)) == [], (ins, blocks)
     for blocks in case.get("changed_drafts", []):
-        assert DR.missing_facts(ins, "\n".join(blocks)), (ins, blocks)
+        assert "FACT_MISSING" in _codes(ins, "\n".join(blocks)).values(), (ins, blocks)
+    for blocks in case.get("checked_drafts", []):
+        codes = _codes(ins, "\n".join(blocks))
+        assert codes and set(codes.values()) == {"FACT_CHECK"}, (ins, blocks, codes)
+
+
+# (h) FB12 (OD-OD-6): what a faithful draft writes around a fact never makes it FACT_MISSING
+def _faithful_forms(kind: str, text: str) -> list:
+    forms = []
+    if kind == "name":
+        if _HON.match(text.split()[0]):
+            forms += [f"Hon'ble {text},", f"Late {text}", f"Minister {text}", f"Hon'ble Minister {text}",
+                      f"Minister of State {text} will attend.", f"MLA {text}", f"Collector {text}"]
+        forms += [f"Subject: Leave of {text} sanctioned", f"Subject: Leave application of {text} received",
+                  f"Leave of {text} pending"]
+    elif kind == "reference":
+        forms += [f"Please refer to No. {text}/dated 3.10.2026.", f"No. {text}/dt. 3.10.2026", f"No. {text}/Dt. 3.10.2026",
+                  f"No. {text}/Dated 3.10.2026", f"No. {text}-W.E.F. 3.10.2026", f"No. {text}-w.e.f. 3.10.2026",
+                  f"No. {text}-Date 3.10.2026", f"No. {text}dt. 3.10.2026", f"No. {text}-Copy enclosed.",
+                  f"No. {text}(A)"]
+    else:
+        forms += [f"Subject: {text} sanctioned", f"Subject: Note on {text} received"]
+    return forms
+
+
+@pytest.mark.parametrize("case", CORPUS, ids=IDS)
+def test_h_faithful_surroundings_never_give_fact_missing(case):
+    ins = case["instruction"]
+    wrong = []
+    for i, (kind, text) in enumerate(case["facts"]):
+        for form in _faithful_forms(kind, text):
+            got = _codes(ins, _blocks(case, (i, form)))
+            if "FACT_MISSING" in got.values():
+                wrong.append(f"{kind} '{text}' as '{form}'")
+    assert not wrong, (ins, wrong)
