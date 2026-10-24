@@ -156,9 +156,9 @@ def latency(kb, dest, n):
 
 
 SCRIPTS = {   # ordinary prose in three scripts with the same synthetic values as doc() (review FB5 R1-02)
-    "hindi": "यह एक साधारण वाक्य है। ",
-    "japanese": "今日はとても良い天気ですね。東京の駅。",
-    "arabic": "هذه جملة عادية لا تحتوي. ",
+    "hindi": "\u092f\u0939 \u090f\u0915 \u0938\u093e\u0927\u093e\u0930\u0923 \u0935\u093e\u0915\u094d\u092f \u0939\u0948\u0964 ",
+    "japanese": "\u4eca\u65e5\u306f\u3068\u3066\u3082\u826f\u3044\u5929\u6c17\u3067\u3059\u306d\u3002\u6771\u4eac\u306e\u99c5\u3002",
+    "arabic": "\u0647\u0630\u0647 \u062c\u0645\u0644\u0629 \u0639\u0627\u062f\u064a\u0629 \u0644\u0627 \u062a\u062d\u062a\u0648\u064a. ",
 }
 
 
@@ -198,6 +198,23 @@ def latency_scripts():
                 xs.append((time.perf_counter() - t) * 1000)
             xs.sort()
             out.append({"script": script + "+nbsp", "chars": size, "destination": dest, "n": n,
+                        "p50_ms": round(statistics.median(xs), 3), "p95_ms": round(xs[int(0.95 * (n - 1))], 3)})
+    # Multi-reading path from invisible shaping characters (review FB11 R1-07): ZWJ in emoji sequences, ZWNJ in Persian.
+    extra = {"emoji+zwj": "family \U0001f468\u200d\U0001f469\u200d\U0001f467 photos and plans for the weekend trip. ",
+             "persian+zwnj": "\u0645\u06cc\u200c\u062e\u0648\u0627\u0647\u0645 \u06a9\u062a\u0627\u0628 \u0628\u062e\u0648\u0627\u0646\u0645. "}
+    for name, prose in sorted(extra.items()):
+        for size, dest, n in ((400, "WEB_SEARCH", 200), (2048, "EXTERNAL_MODEL", 100), (65536, "EXTERNAL_MODEL", 8)):
+            base = prose * 6 + "mail asha.rao7@example.in card 4111 1111 1111 1111. "
+            g, text = TGateway(), (base * (size // len(base) + 1))[:size]
+            for _ in range(2):
+                g.prepare(text, requester="m", destination=dest, purpose="m")
+            xs = []
+            for _ in range(n):
+                t = time.perf_counter()
+                g.prepare(text, requester="m", destination=dest, purpose="m")
+                xs.append((time.perf_counter() - t) * 1000)
+            xs.sort()
+            out.append({"script": name, "chars": size, "destination": dest, "n": n,
                         "p50_ms": round(statistics.median(xs), 3), "p95_ms": round(xs[int(0.95 * (n - 1))], 3)})
     # Adversarial worst case: refused before any matching (PRIVACY_INPUT_TOO_COMPLEX), and the largest accepted shape.
     g, adv = TGateway(), []

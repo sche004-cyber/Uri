@@ -93,7 +93,7 @@ class PrivacyGateway:
             log.warning("privacy audit write failed for a refusal")
 
     def _decide(self, text, meta, scope, protected_terms, reversible, ttl_s) -> Egress:
-        if not isinstance(text, str):
+        if type(text) is not str:                       # a str subclass can override isascii() (FB11 R1-02)
             raise PrivacyRefused("PRIVACY_INPUT_NOT_TEXT")
         try:
             dest = P.Destination(meta["destination"])
@@ -159,8 +159,10 @@ class PrivacyGateway:
             raise e
         out, scope_id = self._rewrite(text, cls, actions, dest, scope, ttl_s, meta["requester"])
         if dest == P.Destination.LOG and cls.credential_kinds:
-            from uri_assist.redact import redact_text
-            out = redact_text(out, Counter())
+            # A credential only the reused Assist rules detect has no span, so a span rewritten inside it can stop
+            # the Assist pattern from matching the rest (review FB11 R1-01: "Bearer ddae376bcb[redacted]"). Such a
+            # log line is written fully redacted, as any log line that cannot be cleaned.
+            out = REDACTED
         # Search providers already normalize their queries before prepare(). Preserve clean direct callers' spacing;
         # keep collapse and its re-check for classified or rewritten output.
         if dest == P.Destination.WEB_SEARCH and (counts or cls.credential_kinds or out != text):
@@ -246,7 +248,7 @@ class PrivacyGateway:
                 "destination": str(getattr(destination, "value", destination)), "policy": P.POLICY_ID}
         try:
             self._check_identity(meta)
-            if not isinstance(text, str):
+            if type(text) is not str:
                 raise PrivacyRefused("PRIVACY_INPUT_NOT_TEXT")
             if P.Destination(meta["destination"]) not in P.LOCAL:
                 raise PrivacyRefused("PRIVACY_RESTORE_NOT_LOCAL")

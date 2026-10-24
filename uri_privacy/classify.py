@@ -300,7 +300,7 @@ def scan_cost(text: str) -> int:
 # Replaces LDEC-005's identifier shapes, which five reviews showed could be regrouped around (FB4 R1-01, R1-02).
 DIGIT_BUDGET = 9
 _DATE = (r"(?<![\d\-/.])(?:(?:19|20)\d{2}([-/.])(?:0?[1-9]|1[0-2])\1(?:0?[1-9]|[12]\d|3[01])|"
-         r"(?:0?[1-9]|[12]\d|3[01])([-/.])(?:0?[1-9]|1[0-2])\2(?:19|20)\d{2}|(?:19|20)\d{6}(?=T))(?!\d|[-/.]\d)")
+         r"(?:0?[1-9]|[12]\d|3[01])([-/.])(?:0?[1-9]|1[0-2])\2(?:19|20)\d{2}|(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])(?=T))(?!\d|[-/.]\d)")
 _TZ = r"(?:Z|[+-](?:0\d|1[0-4]):?[0-5]\d)?"
 _CLOCK = r"(?<![\d:.])(?:[01]?\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:[.,]\d{1,9})?)?" + _TZ + r"(?!\d|[:.]\d)"
 _CLOCK_COMPACT = r"(?<=\dT)(?:[01]\d|2[0-3])[0-5]\d(?:[0-5]\d)?" + _TZ + r"(?!\d)"
@@ -647,8 +647,8 @@ def _punct_ascii(ch: str):
 # Digit groups joined by anything other than one standard separator (space, -, ., /, ',', ':', optionally padded by one
 # space each side), or by single letters, that hold 10 or more digits: "4111****1111", "2345__6789__0124",
 # "4111;1111", "4111%1111", "2345 - - 6789", "2345x6789x0124" (reviews R3..R8, FB3 R1-02).
-_SEP_RUN = re.compile(r"\d+(?:(?:[^\w\n]|_){1,6}\d+)+")            # separators: punctuation, spaces, underscores
-_LETTER_RUN = re.compile(r"(?<![^\W\d_])\d{2,}(?:[^\W\d_]{1,4}\d{2,}){2,}")      # 2345x6789x0124, any script
+_SEP_RUN = re.compile(r"(?<!\d)\d+(?:(?:[^\w\n]|_){1,6}\d+)+")            # separators: punctuation, spaces, underscores
+_LETTER_RUN = re.compile(r"(?<![^\W\d_])(?<!\d)\d{2,}(?:[^\W\d_]{1,4}\d{2,}){2,}")      # 2345x6789x0124, any script
 _STD_SEP = re.compile(_STD_SEP_PAT)
 
 

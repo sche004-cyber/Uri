@@ -271,3 +271,19 @@ not pass the gateway. Owner decision OD-8. Every residual of 6.4-6.9 stands, inc
 parenthesis or comma (the same value with ":", "=" or "is" is caught). **Latency correction:** Japanese prose takes the
 two-reading path (U+3002 becomes "."); the AC-14c owner decision covers every script whose egress form differs (plan
 PC-15, PC-18, PC-19). Every residual of 6.4-6.10 stands, including OD-7 and OD-8.
+
+### 6.12 Changes after fallback review FB11 (2026-10-24)
+
+| Change | Proof (tests/privacy) |
+|---|---|
+| A log line holding a credential that only the reused Assist rules detect (bearer tokens and similar, no span) is written fully redacted | `test_pc20.py::test_fb11_r1_01*` |
+| Only a plain `str` is text: subclasses are refused by prepare() and restore() | `test_pc20.py::test_fb11_r1_02*` |
+| The compact date form (`YYYYMMDDThhmmss`) is exempt only with a valid month and day | `test_pc20.py::test_fb11_r1_03*` |
+| The disguise-signal patterns are linear on long digit runs | `test_pc20.py::test_fb11_r1_06*` |
+
+**Residuals added (not protected):** numbers written with Han numerals (一二三, 〇九〇); unlabelled secrets without a
+known prefix shorter than 40 characters (32 for hex); seconds of matching on some 64 KB shapes in the reused Assist
+URL rules and in the config-notation rule (only the future 64 KB hooks, OD-1, reach that size). **Latency scope
+corrected:** the AC-14c owner decision covers every text that takes more than one reading - an egress form that
+differs from the original, or any invisible shaping character (ZWJ, ZWNJ: emoji sequences, Persian). Every residual of
+6.4-6.11 stands, including OD-7 and OD-8.
