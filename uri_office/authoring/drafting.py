@@ -103,8 +103,10 @@ _PERSON_NAME = re.compile(r"\b(?:staff\s+member|employee\s+named|officer\s+named
 _LETTER_RECIPIENT = re.compile(r"\bletters?\s+to\s+(" + _PERSON_NAME_WORD
                                + r"(?:\s+" + _PERSON_NAME_WORD + r"){1,3})"
                                + r"(?=\s*(?:[.,;:]|$|\b" + _PERSON_CLAUSE_START + r"\b))", re.I)
-# A lone capitalised appointee is a person when the appointment verb and "as" bound the name.
-_SINGLE_APPOINTEE = re.compile(r"\b(?i:appoint(?:ing|ed|s)?)\s+([A-Z][a-z][A-Za-z'-]*)\s+as\b")
+# A lone capitalised appointee is a person when the appointment verb and "as" bound the name,
+# including when a comma-delimited designation intervenes.
+_SINGLE_APPOINTEE = re.compile(r"\b(?i:appoint(?:ing|ed|s)?)\s+([A-Z][a-z][A-Za-z'-]*)"
+                                 r"(?:\s+|,\s+[A-Z][A-Za-z'-]*(?:\s+[A-Z][A-Za-z'-]*)+,\s*)as\b")
 _CONNECTORS = {"of", "and", "for", "the"}
 # Words that start or end a capitalised run without being part of a name (verbs, document words, designators).
 _NOT_NAME = {"write", "draft", "prepare", "compose", "please", "kindly", "issue", "make", "create", "send", "the", "a",
@@ -300,7 +302,7 @@ def extract_facts(instruction: str) -> list:
         start, end = name[0][0], name[-1][0] + len(name[-1][1])
         if any(re.fullmatch(r"\s+as\s+(?:the\s+)?", text[person_end:start], re.I)
                 or (confident_person and re.fullmatch(r",\s+", text[person_end:start])
-                    and text[end:].startswith(","))
+                    and (text[end:].startswith(",") or re.match(r"\s+as\b", text[end:], re.I)))
                for _, person_end, confident_person in person_spans if person_end < start):
             designation_spans.append((start, end))
     spans.extend(designation_spans)

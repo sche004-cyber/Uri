@@ -282,3 +282,23 @@ def test_r9_02_single_appointee_is_checked(instruction, draft, person, replaceme
     assert DR.missing_facts(instruction, draft) == []
     assert [(w["code"], w["kind"], w["text"]) for w in DR.missing_facts(
         instruction, draft.replace(person, replacement))] == [("FACT_MISSING", "name", person)]
+
+
+def test_r10_01_designation_without_trailing_comma_is_not_a_name():
+    instruction = "Draft a circular appointing staff member ramesh kumar, Section Officer as liaison."
+    draft = "Circular: ramesh kumar will serve as liaison."
+    assert [f for f in DR.extract_facts(instruction) if f["kind"] == "name"] == [
+        {"kind": "name", "text": "ramesh kumar"}]
+    assert DR.missing_facts(instruction, draft) == []
+    assert [(w["kind"], w["text"]) for w in DR.missing_facts(
+        instruction, draft.replace("ramesh kumar", "suresh kumar"))] == [("name", "ramesh kumar")]
+
+
+def test_r10_02_single_appointee_before_designation_is_checked():
+    instruction = "Draft a notice appointing Anil, Section Officer, as liaison."
+    draft = "Notice: Anil, Section Officer, will serve as liaison."
+    assert [f for f in DR.extract_facts(instruction) if f["kind"] == "name"] == [
+        {"kind": "name", "text": "Anil"}]
+    assert DR.missing_facts(instruction, draft) == []
+    assert [(w["code"], w["kind"], w["text"]) for w in DR.missing_facts(
+        instruction, draft.replace("Anil", "Sunil"))] == [("FACT_MISSING", "name", "Anil")]
