@@ -109,7 +109,7 @@ _LABELLED = re.compile(
     r"(\d{3,8})\b|"
     r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
     r"(?:private|master|signing|encryption) key)"
-    r"\s*(?:is|was|=|:)\s*[\"']?([^\s\"',;]{4,})|"
+    r"\s*(?:is|was|=|:)\s*[\"']?([^\s\"',;]{4,}|(?=[^\s\"',;]{0,2}[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])[^\s\"',;]{1,3})|"
     # "API key abcdefghijklmnop": a key label followed by one long letter-only token (review r6 R3-01).
     r"\b(?:api[ _-]?key|secret key|access token|auth token)\s+([A-Za-z]{16,})\b|"
     # An HTTP Basic credential whatever its base64 letters (review FB9 R1-03), and recovery / backup / 2FA codes
@@ -231,12 +231,12 @@ _AADHAAR_CTX_AFTER = re.compile(r"(?i)^[^\n]{0,25}\b(?:aadhaa?r|uid|uidai)\b")
 # Spaced one-time and card codes: "OTP is 4 8 2 9 1 3", "cvv: 1 2 3".
 # Credentials in config notations (review FB8 R2-01): a key whose name contains a credential word - compound
 # ("client_secret", "DB_PASSWORD", "AWS_SECRET_ACCESS_KEY", "clientSecret"), quoted ('"password": "x"') - before ":"
-# or "=", and XML elements ("<password>x</password>"). The value must hold a digit, so API documentation searches
+# or "=", and XML elements ("<password>x</password>"). The value must hold a digit or symbol, so API documentation searches
 # ("client_secret: required", "refresh_token: string") stay readable; a letter-only value is the LDEC-007 residual.
 _KEYWORD = r"(?:pass(?:word|wd|phrase|code)?|pwd|(?:secret|signing|encryption|master|private)[ _-]?key|secret|token|api[_-]?key|private[_-]?key|access[_-]?key|credentials?)"
 _KEYVAL = re.compile(
     r"(?i)(?<![A-Za-z0-9])[\"']?(?:[A-Za-z0-9]{1,24}[_.-]){0,3}[A-Za-z0-9]{0,24}?" + _KEYWORD + r"[\"']?\s*[:=]\s*"
-    r"[\"']?(?=[^\s\"',;{}<>]*\d)([^\s\"',;{}<>]{4,})|"
+    r"[\"']?(?=[^\s\"',;{}<>]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;{}<>]{1,})|"
     # the same keys with the separator forms of the plain labels ("DB_PASSWORD is X", "client_secret - X",
     # "export DB_PASSWORD X"; review FB12 R1-01): the value holds a letter and a digit or symbol and is 8+ characters
     r"(?<![A-Za-z0-9])[\"']?(?:[A-Za-z0-9]{1,24}[_.-]){0,3}[A-Za-z0-9]{0,24}?" + _KEYWORD + r"[\"']?"
