@@ -112,7 +112,7 @@ The engine extends URI Assist (owner: "extend the existing URI Assist") and is r
 | WI-7 | Word and PowerPoint editors show suggestions without changing the document until Apply; Accept/Dismiss/Undo work; Flutter tests | widget tests + live journey |
 | WI-8 | Dictation: verbatim default unchanged; "Polish" sends scope rewrite; tests | Flutter + OI tests |
 | OD-1 | Notesheet and Circular layouts open, render, save; no pre-filled facts | tests + real engine |
-| OD-2 | Brain draft: instruction -> correct layout chosen -> blocks written through docx ops -> preview -> Save as card; clarify honoured; every number/date/name/reference in the instruction present or warned; original files untouched | service tests (fake Brain) + live Brain corpus of 10 real-shaped tasks |
+| OD-2 | Brain draft: instruction -> correct layout chosen -> blocks written through docx ops -> preview -> Save as card; clarify honoured; every marked fact in the instruction (section 4, "Fact-check scope") present or warned, and the scope shown to the owner with every draft; original files untouched | service tests (fake Brain) + live Brain corpus of 10 real-shaped tasks |
 | OD-3 | PDF text: page-labelled text, size cap, copy and to-Word; OCR only on request, Tesseract in a Job Object, refusal named when absent | tests + real engine |
 | G-1 | Gates: office, office_u2, a2ui, assist, ws (TI), Flutter: no new failure against 277e81f9; frozen check ok | driver gates |
 | G-2 | Independent review ACCEPT / AwF on the exact commit (V3.1: driver primary; fallback only after driver NO_INDEPENDENT_REVIEWER) | driver receipt / fallback record |
@@ -317,7 +317,21 @@ OFFICE-DAILY-USE-r6 R9 repair:
 - A single capitalised name between an appointment verb and "as" is a name fact. Changing that appointee in the
   draft produces FACT_MISSING.
 
-Fact-check limitations that remain:
+Fact-check scope (owner decision 2026-10-24, OD-OD-4). Driver r6 ran 11 Codex review and repair rounds on
+c2d0786a..41eb14b4 and every round found another phrasing that a rule-based check misses or misreads (lowercase or
+unmarked names, a month on its own, designations after names); it stopped at its 12-round budget. A deterministic
+check cannot meet "every fact, never silently" for free text, so the owner scoped the guarantee to marked facts:
+- names with an honorific (Shri, Smt., Kum., Sushri, Dr, Mr, Ms ...) or an explicit cue ("to", "from", "of",
+  "appoint ... as", a letter recipient);
+- dates with a day or a year (day-month, month-day, numeric dates, "Nth (day) of Month", "Month YYYY", periods);
+- amounts and numbers written in digits, numbers in words, and a number's unit from the unit list;
+- reference numbers with or without a designator (F.No., O.M. No., D.O. No., No.).
+A marked fact that is missing or changed in the draft gives FACT_MISSING; that part stays "never silently". Anything
+outside this list is outside the guarantee, is listed below, and the Office shows the scope with every draft
+("Check before saving": what URI checks, and that the owner reads the whole draft). The Save as card stays the only
+way a draft reaches disk.
+
+Fact-check limitations that remain (outside the scope above):
 - a number followed by a word that is not in the unit list ("3 vehicles") is checked as "3" only, so a changed noun
   is not reported;
 - the same person named twice in the instruction needs to appear only once in the draft;
@@ -346,6 +360,9 @@ and the V3.1 fallback applies. No GPU-heavy run overlaps an M95 live run; Brain 
 - OD-WI-1: writing suggestions in external apps need (a) a working Assist perception adapter (P9) and (b) granting
   `INSERT` for an "apply suggestion" button, which is a permission-boundary change. Until decided, external use is
   read-only and copy-based.
+- OD-OD-4 (decided by the owner 2026-10-24): the OD-2 fact check guarantees marked facts only (section 4,
+  "Fact-check scope"), and the scope is shown with every draft. Raising the driver budget to chase every phrasing and
+  dropping FACT_MISSING were the alternatives offered.
 - OD-WI-2 (preference): default language `en-IN` (Indian English spelling) - chosen by default from the owner's
   context; one line to change.
 

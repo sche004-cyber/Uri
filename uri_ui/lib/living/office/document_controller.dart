@@ -608,6 +608,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
       }
       _startEditor(r);
       draftWarnings = [for (final w in (r['warnings'] as List? ?? const [])) (w as Map).cast<String, dynamic>()];
+      fromDraft = true;
       conversation.say(
           OfficeSpeaker.uri,
           [
@@ -625,6 +626,10 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
 
   /// FACT_MISSING warnings of the last draft (shown above the editor until the edit closes).
   List<Map<String, dynamic>> draftWarnings = const [];
+
+  /// OD-OD-4: the open edit is a URI draft, so the fact-check scope is shown above the editor (with or without
+  /// warnings) until the edit closes.
+  bool fromDraft = false;
 
   /// OD-3: the open PDF's text to the clipboard. With [ocr], pages without a text layer are read with OCR first.
   Future<void> copyPdfText({bool ocr = false}) => _guard(() async {
@@ -721,6 +726,7 @@ class OfficeWorkspaceController extends ChangeNotifier implements OfficeRequestT
     final saved = _editSaved;
     editor = null;
     draftWarnings = const [];
+    fromDraft = false;
     _clearCards(e.id);
     await e.close();
     e.dispose();

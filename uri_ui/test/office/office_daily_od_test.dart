@@ -168,6 +168,7 @@ void main() {
     expect(find.text('Editing Note sheet (draft).docx'), findsOneWidget);
     expect(find.byKey(const ValueKey('office-draft-warnings')), findsOneWidget);
     expect(find.text(_fact), findsOneWidget);
+    expect(find.byKey(const ValueKey('office-draft-scope-note')), findsOneWidget);    // OD-OD-4: scope shown too
     expect(tester.takeException(), isNull);
     await _unmount(tester);
   });
@@ -224,6 +225,9 @@ void main() {
     expect(fake.bodies['/authoring/draft']!.single, {'instruction': 'write an office order for the transfer'});
     expect(find.text('Editing Office order (draft).docx'), findsOneWidget);
     expect(find.byKey(const ValueKey('office-draft-warnings')), findsNothing);
+    // OD-OD-4: a draft with no warnings still says what URI checked and that the owner reads the whole draft
+    expect(find.byKey(const ValueKey('office-draft-scope')), findsOneWidget);
+    expect(find.textContaining('read the whole draft before saving'), findsOneWidget);
     await _unmount(tester);
   });
 

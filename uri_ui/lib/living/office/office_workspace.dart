@@ -392,20 +392,27 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
     );
   }
 
-  /// OD-2: facts from the owner's instruction that the drafted document does not contain, in words, above the
-  /// Word editor until the edit closes.
+  /// OD-OD-4: what the fact check covers, shown with every URI draft (plan 16 section 4, "Fact-check scope").
+  static const draftScopeNote = 'URI checks names with a title (Shri, Smt., Dr ...) or after "to" or "from", dates '
+      'with a day or year, amounts, numbers and file numbers. It does not check anything else: read the whole draft '
+      'before saving.';
+
+  /// OD-2: facts from the owner's instruction that the drafted document does not contain, in words, and (OD-OD-4)
+  /// the fact-check scope, above the Word editor until the edit closes.
   Widget _withDraftWarnings(BuildContext context, OfficeWorkspaceController c, Widget editor) {
-    if (c.draftWarnings.isEmpty) return editor;
+    if (c.draftWarnings.isEmpty && !c.fromDraft) return editor;
     final colors = UriColors.of(context);
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Container(
-        key: const ValueKey('office-draft-warnings'),
+        key: ValueKey(c.draftWarnings.isEmpty ? 'office-draft-scope' : 'office-draft-warnings'),
         padding: const EdgeInsets.all(UriSpace.sm),
-        color: colors.warningSoft,
+        color: c.draftWarnings.isEmpty ? colors.surfaceSunken : colors.warningSoft,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('Check before saving', style: TextStyle(fontWeight: FontWeight.w600, color: colors.ink)),
           for (final w in c.draftWarnings)
             Text('${w['message']}', style: TextStyle(color: colors.inkSoft)),
+          Text(draftScopeNote, key: const ValueKey('office-draft-scope-note'),
+              style: TextStyle(color: colors.inkSoft)),
         ]),
       ),
       Expanded(child: editor),
