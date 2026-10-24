@@ -318,8 +318,9 @@ def scan_cost(text: str) -> int:
 # LONG_NUMBER: the digit budget, owner decision LDEC-006 (2026-10-23). Text bound for a non-local destination may not
 # carry 9 or more digits in one run, whatever the grouping, separators or line breaks. A run is digit groups joined by
 # punctuation/whitespace gaps of any length, or gaps of 1-3 characters holding at most 2 letters. Digits that
-# are part of a date, a clock time, an ISO-8601 timestamp or an IPv4 address (with port) do not count; they are written
-# as such tokens, bounded so that a chain of colon or dot groups is exempt only when the whole chain is one token.
+# are part of a date, a standalone clock time, an ISO-8601 timestamp or an IPv4 address (with port) do not count;
+# a clock-shaped prefix joined to unexempt digits is counted. A chain of colon or dot groups is exempt only when the
+# whole chain is one token.
 # Replaces LDEC-005's identifier shapes, which five reviews showed could be regrouped around (FB4 R1-01, R1-02).
 DIGIT_BUDGET = 9
 _DATE = (r"(?<![\d\-/.])(?:(?:19|20)\d{2}([-/.])(?:0?[1-9]|1[0-2])\1(?:0?[1-9]|[12]\d|3[01])|"
@@ -332,6 +333,8 @@ _IPV4 = r"(?<![\d.])" + _OCTET + r"(?:\." + _OCTET + r"){3}(?::\d{1,5})?(?!\d|[:
 _ISO_DAY = r"(?:19|20)\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])"
 _DATE_RANGE = r"(?<![\d\-/.])" + _ISO_DAY + r"(?:/|--)" + _ISO_DAY + r"(?!\d|[-/.]\d)"    # ISO 8601 interval
 _EXEMPT = re.compile("|".join((_DATE_RANGE, _DATE, _CLOCK, _CLOCK_COMPACT, _IPV4)))
+_CLOCK_TOKEN = re.compile(_CLOCK)
+_CLOCK_COMPACT_TOKEN = re.compile(_CLOCK_COMPACT)
 _DIGITS = re.compile(r"\d+")
 
 
@@ -343,8 +346,37 @@ def _exempt_tokens(text: str):
 
 def _exempt_mask(text: str) -> bytearray:
     exempt = bytearray(len(text))
+    clock = None
     for m in _exempt_tokens(text):
         exempt[m.start():m.end()] = b"\x01" * (m.end() - m.start())
+        compact = _CLOCK_COMPACT_TOKEN.match(text, m.start())
+        if _CLOCK_TOKEN.fullmatch(m.group(0)) or (compact is not None and compact.end() == m.end()):
+            if clock is None:
+                clock = bytearray(len(text))
+            clock[m.start():m.end()] = b"\x01" * (m.end() - m.start())
+    if clock is None:
+        return exempt
+
+    # A clock-shaped prefix of a longer number is not a standalone clock. Count its digits when its digit run also
+    # contains a non-exempt group; runs made entirely of dates, clocks or addresses remain exempt (FB10 R1-02).
+    run, prev_end = [], -1
+
+    def close():
+        if any(not exempt[s] for s, _ in run):
+            for s, e in run:
+                if clock[s]:
+                    exempt[s:e] = b"\x00" * (e - s)
+
+    for m in _DIGITS.finditer(text):
+        gap = text[prev_end:m.start()] if run else ""
+        if run and not (all(not c.isalnum() for c in gap) or
+                        (len(gap) <= 3 and sum(c.isalpha() for c in gap) <= 2)):
+            close()
+            run = []
+        run.append((m.start(), m.end()))
+        prev_end = m.end()
+    if run:
+        close()
     return exempt
 
 
