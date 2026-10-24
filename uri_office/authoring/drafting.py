@@ -508,15 +508,18 @@ def _extends(name: str, big: str) -> bool:
 
 
 def _sentence_continuation(name: str, big: str, rest: str) -> bool:
-    """FB10 R2-03: a longer draft name whose extra words are all lowercase ("Shri ramesh kumar reported") is ordinary
-    sentence text unless it reaches a block end or punctuation ("To / Shri ramesh kumar sharma", "Pension of Shri
-    ramesh kumar sharma"); an extra word that looks like a verb ("reported", "joined", "applying") never counts."""
+    """FB10 R2-03 / FB11 R2-02: a longer draft name whose extra words are all lowercase is an extension when it
+    reaches a block end (a newline or the end: "To / Shri ramesh kumar sharma", "To / Shri mohammad ahmed"). Before
+    punctuation inside a block it is an extension unless an extra word looks like a verb ("Shri ramesh kumar
+    retired."). Followed by more words, it is sentence text ("Shri ramesh kumar reported for duty")."""
     extra = _norm(big)[len(_norm(name)):].split() if _norm(big).lower().startswith(_norm(name).lower()) else []
     if not extra or not all(w[:1].islower() for w in extra):
         return False
-    if any(re.search(r"(?:ed|ing)$", w) for w in extra):
-        return True
-    return not re.match(r"[ \t]*(?:\n|$|[.,;:()!?])", rest)
+    if re.match(r"[ \t]*(?:\n|$)", rest):
+        return False
+    if re.match(r"[ \t]*[.,;:()!?]", rest):
+        return any(re.search(r"(?:ed|ing)$", w) for w in extra)
+    return True
 
 
 def _name_hits(name: str, text: str, longer: list, draft_longer=()) -> int:
@@ -547,12 +550,18 @@ def _name_hits(name: str, text: str, longer: list, draft_longer=()) -> int:
                and not any(a <= m.start() and m.end() <= b and (b - a) > (m.end() - m.start()) for a, b in covers))
 
 
-# FB10 R2-01: "-dated", "-dt", "-reg", "-regarding" and a bracket longer than a part-file marker ("(2 pages)",
-# "(Annexure ...)") are not suffixes; a designator joined by a hyphen ("No-", "F.No-", "Ref-", "O.M.No-", "D.O.No-")
-# is not a prefix. "-1", "-II", "-Admn", "(1)", "(Pt.)" and "A-" still are.
-_REF_SUFFIX = re.compile(r"(?:-(?!(?:dated|dt|reg|regarding)\b)[A-Za-z0-9]|\([A-Za-z0-9.]{1,4}\)|\.[-/(]|"
-                         r"/[A-Za-z0-9])", re.I)
-_REF_PREFIX = re.compile(r"[A-Za-z0-9]-$")
+# FB11 R2-01: a positive, code-shaped rule. A reference is another file only when it is followed directly (or
+# after a dot) by "-" or "/" plus digits or a capitalised section code of at most six letters ("-1", "-II", "-Admn",
+# "-ESTT", "/2"), or by a part-file bracket ("(1)", "(II)", "(Pt.)", "(Pt.II)", "(Part-I)", "(Part II)",
+# "(Vol.2)"). A hyphen or slash followed by a lowercase word ("-dtd.", "-wef", "-reminder", "./dated") or by a
+# date or reference word in any case ("-Dated", "-Dt.", "-DT", "-Reg.", "-Wef", "-Ref", "-Vide"), and a bracket
+# holding an ordinary word ("(copy)", "(PDF)",
+# "(2 pages)"), are not. Only a letter code of at most three capitals or digits before a hyphen is a prefix ("A-",
+# "B-"); a designator or a word joined by a hyphen ("No-", "F.No-", "Ref-", "Letter-", "Memo-") is not.
+_REF_CODE = r"(?:\d|(?!(?i:dated|dtd|dt|reg|wef|ref|vide)\b)[A-Z][A-Za-z]{0,5}(?![A-Za-z]))"
+_REF_PART = r"\((?:\d+|[IVX]+|Pt\.?\s?(?:[IVX]+|\d+)?|Part[-\s]?(?:[IVX]+|\d+)|Vol\.?\s?(?:\d+|[IVX]+))\)"
+_REF_SUFFIX = re.compile(r"\.?(?:[-/]" + _REF_CODE + r"|" + _REF_PART + r")")
+_REF_PREFIX = re.compile(r"(?:^|[^A-Za-z0-9.])(?:[A-Z]{1,3}|\d+)-$")
 _REF_DESIGNATOR_HYPHEN = re.compile(r"(?i)(?:\bno|\bref|\bf\.?\s?no|\bo\.?\s?m\.?\s?no|\bd\.?\s?o\.?\s?no)\.?-$")
 
 

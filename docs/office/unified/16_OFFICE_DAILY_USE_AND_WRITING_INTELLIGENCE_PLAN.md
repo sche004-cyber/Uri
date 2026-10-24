@@ -336,17 +336,25 @@ but extends into a longer name or a longer number is caught only where the rules
 - Caught:
   - a capitalised continuation of a name ("Anjali Sharma", "Smt. Sunita Kumari Singh");
   - a hyphenated surname;
-  - a lowercase titled name continued at the end of a block or before punctuation, up to four lowercase words
-    after the title ("To / Shri ramesh kumar sharma", "Pension of Shri ramesh kumar sharma");
+  - a lowercase titled name continued at the end of a block, up to four lowercase words after the title ("To / Shri
+    ramesh kumar sharma", "To / Shri mohammad ahmed", "Pension of Shri ramesh kumar sharma"), or continued before
+    punctuation inside a block when no added word ends in -ed or -ing ("Leave of Shri ramesh kumar sharma.");
   - a longer name with the same start ("Shri Anil Kumar Singh");
-  - a reference with a suffix, a part file or a prefix ("14/2/2026-1", "...-Estt.-II", "...(Pt.)", "...-Estt./1",
-    "A-14/2/2026"). A designator joined by a hyphen ("No-", "F.No-", "Ref-", "O.M.No-", "D.O.No-"), a trailing
-    "-dated", "-dt", "-reg" or "-regarding", and a bracket longer than four characters ("(2 pages)") are not
-    extensions.
+  - a reference followed directly (or after a dot) by "-" or "/" and digits or a capitalised code of at most six
+    letters ("14/2/2026-1", "...-II", "...-Admn", "...-Estt.-II", "...-Estt./2"), or by a part-file bracket
+    ("(1)", "(II)", "(Pt.)", "(Pt.II)", "(Part-I)", "(Part II)", "(Vol.2)"), or preceded by a code of at most
+    three capitals or by digits and a hyphen ("A-14/2/2026"). These are not extensions and match:
+    - a trailing lowercase word ("-dtd.", "-wef", "-reminder", "-dated", "./dated");
+    - a date or reference word in any case ("-Dated", "-Dt.", "-DT", "-Reg.", "-Wef", "-Ref", "-Vide");
+    - an ordinary bracket ("(copy)", "(PDF)", "(2 pages)", "(Annexure ...)");
+    - a designator or word joined by a hyphen ("No-", "F.No-", "Ref-", "O.M.No-", "D.O.No-", "Letter-",
+      "Memo-").
 - Not caught, so the extended draft gives no warning:
   - a lowercase name without a title continued with lowercase words ("ramesh kumar" -> "ramesh kumar sharma");
   - a lowercase titled name continued inside a sentence ("Shri ramesh kumar sharma is informed"): it is read as
-    sentence text, so that "Shri ramesh kumar reported for duty" is never a false warning (FB10 R2-03);
+    sentence text, so that "Shri ramesh kumar reported for duty" is never a false warning (FB10 R2-03); and one
+    continued by a word ending in -ed or -ing before punctuation inside a block ("Shri mohammad ahmed." in a
+    sentence), read as a verb;
   - a titled lowercase name continued past four lowercase words;
   - a capitalised name continued in lowercase ("Ramesh iyer");
   - a continuation after a comma, in brackets or after a possessive ("Ramesh Kumar, Yadav", "Shri ramesh kumar
@@ -355,8 +363,10 @@ but extends into a longer name or a longer number is caught only where the rules
   - a capitalised connector ("Anjali Of Delhi");
   - a date, amount or number followed by more digits or words ("3rd October 2026-27", "15 days and 2",
     "Rs. 2,45,000/- lakh");
-  - a reference extended in these forms (FB10 R2-04): "...-Estt.I" / "...-Estt.II", "..._1", an "A." prefix, an en
-    dash ("...-Estt–1"), and a part-file marker after a space (". (Pt.)");
+  - a reference extended in these forms (FB10 R2-04, FB11): "...-Estt.I" / "...-Estt.II", "..._1", an "A." prefix,
+    an en dash ("...-Estt–1"), a part-file marker after a space (". (Pt.)"), a capitalised code longer than six
+    letters, a lowercase code ("-admn"), a date or reference word used as a code ("-Reg.", "-DT."), and a word
+    prefix that is not a code of at most three capitals ("Reg-", "ENo-");
   - a name continued after a post-nominal or a heading word ("Shri Anil Verma IAS Kumar", "Shri Anil Retd. Verma",
     "Shri Anil Verma With Kumar") (FB10 R2-05);
   - two people with titles written next to each other without "and" or a comma ("Shri Ram Kumar Smt Sita Devi"):
@@ -496,6 +506,26 @@ extensions, so they were blocking:
   that must warn: "No-"/"F.No-"/"Ref-"/"O.M.No-"/"D.O.No-", "-dated", "-reg.", "(2 pages)", "Shri Ram Ji Lal",
   "Shri Ramesh Ji", and a lowercase titled name followed by a verb. Every FB9 case, test and probe result still
   holds.
+
+Repairs after fallback review FB11 of 2641b828 (REJECT; record
+`D:/uri-dev/lifecycle/OFFICE-DAILY-USE-r12/fallback/FB11_subagent_2641b828.audit.txt`; FB10 and earlier confirmed
+fixed):
+- R2-01, the FB9 reference-suffix class again. Faithful "...-Admn-dtd. 4.9.2026", "-wef", "-reminder",
+  ".-dated", "./dated", "(copy)", "(PDF)" and "Letter-<ref>" gave a false FACT_MISSING. The FB10 list of excluded
+  words could not cover the class, so the rule was replaced with a positive, code-shaped rule (stated under
+  "Caught" above): only digits, a capitalised code of at most six letters or a part-file bracket after the
+  reference, and only a code of at most three capitals or digits before it, make another file.
+- R2-02: the FB10 -ed/-ing rule silenced a lowercase titled name extended at a block end ("To / Shri mohammad
+  ahmed", "Shri ramesh kumar harding"). At a block end, any lowercase continuation is now an extension. The -ed/-ing
+  rule applies only before punctuation inside a block, and "reported for duty" is still read as sentence text.
+- R2-03: "(Pt.II)", "(Part-I)", "(Part II)" and "(Vol.2)" are caught again, because part-file brackets are now
+  recognised by pattern.
+- Where the reviewer's probes expected a warning and this rule gives none, the plan lists the form under "Not
+  caught": "-Reg.", "-DT.", "-Dtd." read as date words; "Reg-", "ENo-" are not three-capital codes. These are
+  reviewer expectations this rule does not adopt, because "-Dated" and "-reg." are faithful forms (FB10).
+- Corpus (303 instructions): property (g) adds every reviewer faithful form, the part-file forms in both directions,
+  and "Shri mohammad ahmed" / "khan" at a block end. The R10, R11 and R12 probes and fb1–fb10 were re-run; nothing
+  changed for the worse.
 
 Fact-check limitations that remain (outside the scope above):
 - a single capitalised word after "of" that is a place or a body but follows a word not in the designation list
