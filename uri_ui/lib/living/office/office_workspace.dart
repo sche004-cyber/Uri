@@ -393,9 +393,9 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
   }
 
   /// OD-OD-4: what the fact check covers, shown with every URI draft (plan 16 section 4, "Fact-check scope").
-  static const draftScopeNote = 'URI checks names with a title (Shri, Smt., Dr ...) or after "to" or "from", dates '
-      'with a day or year, amounts, numbers and file numbers. It does not check anything else: read the whole draft '
-      'before saving.';
+  static const draftScopeNote = 'URI checks names with a title (Shri, Smt., Dr ...) or after "to", "from" or "of", '
+      'dates with a day or year, amounts, numbers and file numbers. It does not check anything else: read the whole '
+      'draft before saving.';
 
   /// OD-2: facts from the owner's instruction that the drafted document does not contain, in words, and (OD-OD-4)
   /// the fact-check scope, above the Word editor until the edit closes.

@@ -331,7 +331,38 @@ outside this list is outside the guarantee, is listed below, and the Office show
 ("Check before saving": what URI checks, and that the owner reads the whole draft). The Save as card stays the only
 way a draft reaches disk.
 
+How the code reads the name cues of this scope (stated in FB6):
+- An honorific may be followed by a capitalised or a lowercase full name ("Shri Ram Kumar", "Shri ramesh kumar").
+  An honorific on its own is never a name.
+- "to" and "from" mark one capitalised word ("to Ramesh").
+- "of" marks one capitalised word ("the transfer of Ramesh", "the deputation of Anjali"). The exception is a
+  designation or an institution before it ("the collector of Pune", "the director of Kolkata office", "copy of
+  Annexure"): there the next word is a place, a body or a document, not a person.
+- Multi-word capitalised names ("Ministry of Finance", "Government of India") are names in their own right.
+
+Repairs after fallback review FB6 of 3f445a75 (REJECT; record
+`D:/uri-dev/lifecycle/OFFICE-DAILY-USE-r7/fallback/FB6_subagent_3f445a75.audit.txt`):
+- R2-01, a regression from r6 e1135343: the service checks the Brain's blocks joined by newlines, but a capitalised
+  run did not stop at a newline. So "Shri Venkatesh Iyer" followed by an "Assistant Section Officer" block became one
+  longer draft name, and a faithful draft got a false FACT_MISSING. A newline (block boundary) now ends a run.
+- R2-02: in "letter to Shri ramesh kumar" the only fact was the honorific "Shri", so a changed name passed
+  silently. An honorific followed by a lowercase full name is now one name ("Shri ramesh kumar", "Smt. anita
+  sharma"), and an honorific alone is never a name.
+- R2-03: the scope above names "of" as a cue, but the code had none. It is implemented as described above.
+- R2-04: page images rendered for OCR are deleted when the document is closed, unless another open document shares
+  the same preview cache. Ordinary preview page images are a cache and stay until the cache limit prunes them, as
+  before.
+- R2-05: the returned PDF text, page labels included, never exceeds the cap; when the labels would push it over,
+  the text is cut and `truncated` is set.
+- Corpus (295 instructions) has a new property (d). For every case a faithful multi-block draft (each fact in its
+  own block between capitalised neighbour blocks, joined as the service joins the Brain's blocks) gives no warning,
+  and every one-fact change made in it warns. There are new cases for an honorific with a lowercase name, for "of"
+  names, and for the "Ministry of", "Government of India" and "<post> of <place>" negatives.
+
 Fact-check limitations that remain (outside the scope above):
+- a single capitalised word after "of" that is a place or a body but follows a word not in the designation list
+  (for example "the residents of Pune" is excluded, but "the visit of Pune officials" reads "Pune") becomes a name
+  fact. That can give a false warning if the draft drops it, never a silent miss;
 - a number followed by a word that is not in the unit list ("3 vehicles") is checked as "3" only, so a changed noun
   is not reported;
 - the same person named twice in the instruction needs to appear only once in the draft;

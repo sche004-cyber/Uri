@@ -62,6 +62,7 @@ class DocSession:
     opened_at: float = field(default_factory=time.time)
     lock: threading.RLock = field(default_factory=threading.RLock)
     ready: threading.Event = field(default_factory=threading.Event)
+    ocr_images: set = field(default_factory=set)       # FB6 R2-04: removed on close
 
     def view(self) -> dict:
         return {"document_id": self.document_id, "kind": self.kind, "name": self.name, "pages": self.pages,
@@ -276,6 +277,7 @@ class Documents:
                 render = min(RASTER_TIMEOUT_S, left)
                 try:
                     png = self.hub.page_png(s.preview_pdf, s.cache, n, OCR.OCR_WIDTH, timeout=render)
+                    s.ocr_images.add(Path(png))
                 except OfficeError as e:
                     # FB4 R5-05: only the deadline (the worker's TIMEOUT, or BUSY waiting for it) is a time limit;
                     # any other render failure is raised as before.
@@ -303,6 +305,8 @@ class Documents:
                 by_page[n].update(text=t, source="ocr" if t.strip() else "none")
         skipped = sorted(x for v in reasons.values() for x in v)
         joined = "\n\n".join(f"--- Page {p['page']} ---\n{p['text'].strip()}" for p in pages)
+        if len(joined) > max_chars:                # FB6 R2-05: the cap covers the returned text, labels included
+            joined, truncated = joined[:max_chars], True
         no_text = [p["page"] for p in pages if p["source"] == "none"]
         self.audit("office.document_text", {"document_id": did, "pages": len(pages), "ocr_pages":
                                             sum(p["source"] == "ocr" for p in pages)})
@@ -332,5 +336,15 @@ class Documents:
             self.grants.revoke(s.grant_id)
         s.ready.wait(5)
         shutil.rmtree(s.folder, ignore_errors=True)
+        # FB6 R2-04: page images made for OCR are removed with the document, unless another open document shares
+        # the same preview cache (the same file opened twice)
+        with self._lock:
+            shared = any(o.cache == s.cache for o in self.sessions.values())
+        if not shared:
+            for png in list(getattr(s, "ocr_images", ())):
+                try:
+                    png.unlink()
+                except OSError:
+                    pass
         self.audit("office.document_closed", {"document_id": did})
         return {"closed": True}

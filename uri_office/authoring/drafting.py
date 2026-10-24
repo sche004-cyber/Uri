@@ -100,6 +100,27 @@ _PERSON_NAME = re.compile(r"\b(?:staff\s+member|employee\s+named|officer\s+named
                           + _PERSON_NAME_WORD + r"(?:\s+" + _PERSON_NAME_WORD + r"){1,3})"
                           + r"(?=\s*(?:[.,;:(]|$|\b" + _PERSON_CLAUSE_START + r"\b))",
                           re.I)
+# FB6 R2-02: an honorific followed by a lowercase full name ("Shri ramesh kumar", "Smt. anita sharma").
+_HON_LOWER_NAME = re.compile(r"\b(" + _HONORIFIC + r")\s+([a-z][a-z'-]+(?:\s+(?!(?:" + _PERSON_CLAUSE_START
+                             + r")\b)[a-z][a-z'-]+){0,2})(?=\s*(?:[.,;:()]|$|\b" + _PERSON_CLAUSE_START + r"\b))")
+# FB6 R2-03: "of" is a name cue ("the transfer of Ramesh", "the deputation of Anjali"), except after a designation or
+# an institution ("the collector of Pune", "the director of Kolkata office"), where the next word is a place or a
+# body, not a person. Multi-word capitalised names ("Ministry of Finance", "Government of India", "Shri Ram Kumar")
+# are claimed by the name stage first, so this cue only reads a single capitalised word.
+_OF_NOT_AFTER = {
+    "collector", "collectors", "director", "directors", "secretary", "secretaries", "commissioner", "commissioners",
+    "ministry", "ministries", "government", "governments", "department", "departments", "office", "offices",
+    "state", "states", "university", "bank", "district", "districts", "city", "board", "member", "members",
+    "chairman", "chairperson", "head", "heads", "officer", "officers", "inspector", "registrar", "controller",
+    "superintendent", "principal", "president", "minister", "governor", "mayor", "municipality", "corporation",
+    "council", "court", "college", "school", "institute", "directorate", "division", "section", "branch", "unit",
+    "zone", "region", "circle", "village", "town", "block", "tehsil", "taluka", "province", "people", "citizens",
+    "residents", "rest", "part", "parts", "copy", "copies", "annexure", "chapter", "rule", "rules", "act", "article",
+    "clause", "schedule", "list", "map", "government", "state", "union", "capital", "outskirts", "city", "port",
+    "airport", "station", "embassy", "consulate", "mission", "high", "republic", "bureau", "agency", "authority",
+    "registrar", "magistrate", "judge", "police", "ambassador", "consul", "chief", "deputy", "joint", "additional",
+    "under", "assistant", "kingdom", "name"}
+_OF_CUE_NAME = re.compile(r"\b([A-Za-z-]+)\s+of\s+([A-Z][a-z][A-Za-z'-]*)\b(?!\s+[A-Z])")
 _LETTER_RECIPIENT = re.compile(r"\bletters?\s+to\s+(" + _PERSON_NAME_WORD
                                + r"(?:\s+" + _PERSON_NAME_WORD + r"){1,3})"
                                + r"(?=\s*(?:[.,;:]|$|\b" + _PERSON_CLAUSE_START + r"\b))", re.I)
@@ -320,13 +341,21 @@ def extract_facts(instruction: str) -> list:
                 # FB5 R6-02: only an exact repeat is a duplicate ("Shri Anil Kumar" next to "Shri Anil Kumar
                 # Singh" is a second person)
                 add("name", value, name[0][0], name[-1][0] + len(name[-1][1]))
-    # 6. one capitalised word after a cue
-    for m in _CUE_NAME.finditer(text):
-        w = m.group(1).rstrip(_TRAIL)
-        # FB5 R6-02: only a word inside a claimed span (a name, date, number or reference) is skipped
-        if taken(m.start(1), m.end(1)) or w.lower() in _NOT_NAME or w.lower() in _MONTH_SET or len(w) < 2:
+    # 6. an honorific with a lowercase full name (FB6 R2-02), then one capitalised word after a cue
+    for m in _HON_LOWER_NAME.finditer(text):
+        if not taken(m.start(), m.end()) and m.group(2).split()[0] not in _NOT_NAME:
+            add("name", m.group(0).rstrip(".,;:"), m.start(), m.end())
+    cues = list(_CUE_NAME.finditer(text))
+    cues += [m for m in _OF_CUE_NAME.finditer(text) if m.group(1).lower() not in _OF_NOT_AFTER]
+    for m in sorted(cues, key=lambda x: x.start()):
+        g = m.lastindex                       # the name word is the last group of either pattern
+        w = m.group(g).rstrip(_TRAIL)
+        # FB5 R6-02: only a word inside a claimed span (a name, date, number or reference) is skipped.
+        # FB6 R2-02: an honorific alone ("to Shri ramesh") is never a name.
+        if taken(m.start(g), m.end(g)) or w.lower() in _NOT_NAME or w.lower() in _MONTH_SET or len(w) < 2 \
+                or _is_hon(w):
             continue
-        add("name", w, m.start(1), m.end(1))
+        add("name", w, m.start(g), m.end(g))
     for m in _LETTER_RECIPIENT.finditer(text):
         # "letter to request transfer" is a purpose, not a recipient.
         if not taken(m.start(1), m.end(1)) and m.group(1).split()[0].lower() not in _NOT_NAME:
@@ -357,7 +386,8 @@ def _cap_runs(text: str, taken):
     for m in _WORD.finditer(text):
         w, a, b = m.group(0), m.start(), m.end()
         gap = text[prev_end:a] if prev_end is not None else ""
-        breaks = bool(re.search(r"[,;:()\[\]\"]", gap)) or taken(a, b)
+        # FB6 R2-01: a newline is a block boundary in a draft ("Shri Venkatesh Iyer" / "Assistant Section Officer")
+        breaks = bool(re.search(r"[,;:()\[\]\"\n]", gap)) or taken(a, b)
         if run and not breaks and prev_end is not None:
             last = run[-1][1]
             # a word ending in "." ends the sentence unless it is an honorific, an initial ("A.", "O.M.") or a

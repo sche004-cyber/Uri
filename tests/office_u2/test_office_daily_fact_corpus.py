@@ -6,7 +6,10 @@ data/office_fact_corpus.json:
       a name's surname or first name, a date's day or month, an amount's or number's digits, a number's unit or
       number word, a reference's last digit; and a digit put in front of a day, number or reference ("3" -> "13",
       "7 days" -> "17 days", "12/2026" -> "112/2026") so a fact found inside a longer token is caught.
-A new case gets (b) and (c) without writing them."""
+  (d) FB6: a faithful MULTI-BLOCK draft, joined with newlines as the service joins the Brain's blocks, with each fact
+      in its own block between realistic neighbour blocks (designation, section, "Sir,", "Guard File", signature),
+      never warns; and each one-fact change of (c) made in that draft still warns.
+A new case gets (b), (c) and (d) without writing them."""
 from __future__ import annotations
 
 import json
@@ -151,5 +154,34 @@ def test_c_changing_one_fact_warns_about_it(case):
             assert new != text
             draft = _replace_fact(ins, text, new, [t for _, t in case["facts"]])
             if text not in [w["text"] for w in DR.missing_facts(ins, draft)]:
+                missed.append(f"{kind} '{text}' -> {what} '{new}'")
+    assert not missed, (ins, missed)
+
+
+# (d) FB6 R2-01: the neighbour blocks a real draft has around a name, a date or a number (none repeats a corpus fact,
+# so a changed fact cannot be found again in a neighbour). Each starts with capitals,
+# which is what made a name and the next block one long "draft name" before the repair.
+_HEAD = ["Office Memorandum", "Subject: Draft for approval", "To"]
+_NEIGHBOURS = ["Assistant Section Officer", "Pension Cell", "Deputy Secretary", "Guard File", "Joint Secretary",
+               "Sir,", "Copy to:", "Establishment Section"]
+_TAIL = ["Yours faithfully,", "Under Secretary", "Copy to: Guard File"]
+
+
+def _blocks(case, replace=None):
+    blocks = list(_HEAD)
+    for i, (kind, text) in enumerate(case["facts"]):
+        blocks.append(replace[1] if replace and replace[0] == i else text)
+        blocks.append(_NEIGHBOURS[i % len(_NEIGHBOURS)])
+    return "\n".join(blocks + _TAIL)
+
+
+@pytest.mark.parametrize("case", CORPUS, ids=IDS)
+def test_d_multi_block_draft(case):
+    ins = case["instruction"]
+    assert DR.missing_facts(ins, _blocks(case)) == [], ins
+    missed = []
+    for i, (kind, text) in enumerate(case["facts"]):
+        for what, new in mutations(kind, text):
+            if text not in [w["text"] for w in DR.missing_facts(ins, _blocks(case, (i, new)))]:
                 missed.append(f"{kind} '{text}' -> {what} '{new}'")
     assert not missed, (ins, missed)
