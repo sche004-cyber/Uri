@@ -35,6 +35,8 @@ data/office_fact_corpus.json:
       the designations before the title are generated from head words, qualifiers and tails (41 forms), so the rule
       "a titled name starts at its honorific" is tested generically.
 A new case gets (b) to (f) and (h) without writing them.
+OD-OD-8 (FB15): a changed or dropped name without a title gives FACT_CHECK, not FACT_MISSING, in (c) to (e) and
+(g); every titled name, date, amount, number and reference keeps FACT_MISSING.
 Commits before FB12 have no FACT_CHECK: a warning without a code is read as FACT_MISSING."""
 from __future__ import annotations
 
@@ -165,7 +167,11 @@ def _codes(instruction: str, draft: str) -> dict:
 _EXTENDING = {"suffix", "part file", "prefix"}
 
 
-def _expected(what: str) -> str:
+def _expected(what: str, kind: str = "", text: str = "") -> str:
+    """FB12: an extension gives FACT_CHECK. OD-OD-8 (FB15): a name without a title gives FACT_CHECK when it is
+    changed or dropped; titled names, dates, amounts, numbers and references keep FACT_MISSING."""
+    if kind == "name" and not _HON.match(text.split()[0]):
+        return "FACT_CHECK"
     return "FACT_CHECK" if what in _EXTENDING else "FACT_MISSING"
 
 
@@ -196,7 +202,7 @@ def test_c_changing_one_fact_warns_about_it(case):
             assert new != text
             draft = _replace_fact(ins, text, new, [t for _, t in case["facts"]])
             got = _codes(ins, draft).get(text)
-            if got != _expected(what):
+            if got != _expected(what, kind, text):
                 missed.append(f"{kind} '{text}' -> {what} '{new}': {got}")
     assert not missed, (ins, missed)
 
@@ -226,7 +232,7 @@ def test_d_multi_block_draft(case):
     for i, (kind, text) in enumerate(case["facts"]):
         for what, new in mutations(kind, text):
             got = _codes(ins, _blocks(case, (i, new))).get(text)
-            if got != _expected(what):
+            if got != _expected(what, kind, text):
                 missed.append(f"{kind} '{text}' -> {what} '{new}': {got}")
     assert not missed, (ins, missed)
 
@@ -270,7 +276,7 @@ def test_e_facts_inside_headings_and_sentences(case):
     for i, (kind, text) in enumerate(case["facts"]):
         for what, new in mutations(kind, text):
             got = _codes(ins, _embedded(case, (i, new))).get(text)
-            if got != _expected(what):
+            if got != _expected(what, kind, text):
                 missed.append(f"{kind} '{text}' -> {what} '{new}': {got}")
     assert not missed, (ins, missed)
 

@@ -330,6 +330,10 @@ check cannot meet "every fact, never silently" for free text, so the owner scope
 Anything outside this list is outside the guarantee, is listed below, and the Office shows the scope with every
 draft ("Check before saving": what URI checks, what "Missing" and "Check" mean, and that the owner reads the whole
 draft). The Save as card stays the only way a draft reaches disk.
+OD-OD-8 (FB15) narrows the firm part: FACT_MISSING is guaranteed for titled names (a name fact that starts with an
+honorific), dates, amounts, numbers and references. A name without a title (found through a cue, a person label, a
+letter recipient or a capitalised run) never gives FACT_MISSING: when it is not in the draft word for word it gives
+FACT_CHECK ("'Ramesh Kumar' (from your instruction) was not found in the draft. Check the name.").
 
 Two signals (owner decision 2026-10-24, OD-OD-6, MM LDEC-014; replaces the OD-OD-5 exception). Each marked fact gets
 at most one warning, with one of two codes:
@@ -352,10 +356,11 @@ at most one warning, with one of two codes:
   reference. The message names both forms: "'Anjali' appears only as 'Anjali Sharma'. Check it is the same
   person." / "'14/2/2026' appears only as '14/2/2026-1'. Check it is the same file." The panel shows it as a quieter
   "Check: ..." line; FACT_MISSING stays a warning-coloured "Missing: ..." line.
-The guarantee: a marked fact that is absent from the draft (dropped, or replaced so that no word-for-word occurrence
-is left: "Shri Ram Ji Gupta" for "Shri Ram Ji Lal", "Sunita" for "Anjali", a different file number) always gives
-FACT_MISSING, and a faithful draft (one that keeps the fact word for word) never gives FACT_MISSING, whatever
-surrounds the fact. Extensions give FACT_CHECK where the rules see them; the coverage list follows.
+The guarantee: a titled name, date, amount, number or reference that is absent from the draft (dropped, or replaced
+so that no word-for-word occurrence is left: "Shri Ram Ji Gupta" for "Shri Ram Ji Lal", a different file number)
+always gives FACT_MISSING, and a faithful draft (one that keeps the fact word for word) never gives FACT_MISSING,
+whatever surrounds the fact. An absent name without a title ("Sunita" for "Anjali") gives FACT_CHECK (OD-OD-8).
+Extensions give FACT_CHECK where the rules see them; the coverage list follows.
 
 FACT_CHECK coverage (formerly the "Caught" / "Not caught" lists of "Exception inside the scope (owner decision
 2026-10-24, OD-OD-5)", withdrawn by OD-OD-6):
@@ -387,10 +392,14 @@ FACT_CHECK coverage (formerly the "Caught" / "Not caught" lists of "Exception in
     Anjali Verma and Hon'ble Shri ...");
   - after a titled name with at least two words after the title, a designation without a comma that starts with a
     designation head word (Director, Secretary, Officer, Engineer, Collector, Commissioner, Superintendent,
-    Assistant, Deputy, Joint, Under, Additional, Chief, Senior, Junior, Executive, District, Section ...): the name
-    ends there ("Smt. Rekha Rani Joint Director and Shri Mohan Lal Deputy Director", "Shri Rajendra Prasad Meena
-    Deputy Secretary is requested ..."), FB14 R2-02. With one word after the title the word is a surname ("Shri
-    Rustom Collector");
+    Assistant, Deputy, Joint, Under, Additional, Chief, Senior, Junior, Executive, District, Section ...) and has
+    another designation word after it: the name ends there ("Smt. Rekha Rani Joint Director and Shri Mohan Lal
+    Deputy Director", "Shri Rajendra Prasad Meena Deputy Secretary is requested ..."), FB14 R2-02 / FB15 R2-03. A
+    single trailing head word is a surname ("Shri Asghar Ali Engineer", "Shri Ram Prakash Senior"), and so is the
+    word after a one-word name ("Shri Rustom Collector");
+  - before an untitled name: designation and courtesy words ("Deputy Secretary Ramesh Kumar" is "Ramesh Kumar"),
+    when at least two other words remain; an untitled run "<designation> X and <designation> Y" is two names
+    ("Section Officer Kavita Sharma and Executive Engineer Anil Rao"), FB15 R2-02;
   - "Ji", "Sahab", "Saheb" or "Sahib" as the last word of a name ("Shri Rajendra Prasad Meena Sahab"); elsewhere
     they are name words ("Shri Sahab Singh Chauhan", "Shri Saheb Rao Patil", FB14 R2-01);
   - a lowercase titled name followed by a word ending in -ed or -ing at the end of a block it does not start
@@ -674,6 +683,38 @@ read a dash used as punctuation into the code, and OD-OD-7 covered digit-only am
   Rustom Collector and Smt. Roshan Engineer"), the second form ("Smt. Rekha Rani Joint Director and Shri Mohan Lal
   Deputy Director") and the spaced bracket.
 
+Repairs after fallback review FB15 of df14bba1 (REJECT; record
+`D:/uri-dev/lifecycle/OFFICE-DAILY-USE-r16/fallback/FB15_subagent_df14bba1.audit.txt`; every FB14 finding confirmed
+fixed). Both blockers involved names without a title, so the owner decided OD-OD-8 (section 6): such names get a
+soft FACT_CHECK only. Correction history: the guarantee above ("a marked fact that is absent ... always gives
+FACT_MISSING") covered untitled cued names from OD-OD-4 to FB14; since FB15 it covers titled names, dates, amounts,
+numbers and references, and untitled names give FACT_CHECK. The FB14 rule that dropped a whole untitled run before a
+title when it held a courtesy or designation word also dropped the untitled person before "and" ("Ramesh Kumar and
+Hon'ble Shri ..."); that is corrected below. The FB14 designation-head cut took a single trailing head word that
+was a surname ("Shri Asghar Ali Engineer"); corrected below.
+- R2-01: an untitled run before an honorific is split at its first "and": the part before it stays a name when it
+  holds no courtesy or designation word and the part after it starts with one ("Ramesh Kumar and Hon'ble Shri ...",
+  "Ramesh Chandra and Late Smt. ..."); the part after it is claimed. Dropping that person gives FACT_CHECK.
+  "Drawing and Disbursing Officer Shri ..." and "the Hon'ble Minister and Shri ..." stay designations.
+- R2-02: leading designation and courtesy words are stripped from an untitled name when two other words remain
+  ("Write to Deputy Secretary Ramesh Kumar" gives "Ramesh Kumar"; the faithful "Ramesh Kumar, Deputy Secretary"
+  gives no warning), and an untitled run "<designation> X and <designation> Y" is two names. A changed untitled name
+  gives FACT_CHECK.
+- R2-03 (LOW): the designation-head cut applies only when another designation word follows the head word; a single
+  trailing head word stays in the titled name ("Shri Asghar Ali Engineer": a dropped or replaced surname gives
+  FACT_MISSING).
+- R2-04 (LOW): a short title-case code after an en/em dash or "&" is a code when the next word is an honorific, a
+  section noun (Section, Cell, Branch, Division, Unit, Wing) or a courtesy or designation word, or when a
+  capitalised designation phrase leads to an honorific ("12/3/2026–Estt Shri Ram Lal's case",
+  "7/2/2026–RTI Cell"); it is not a code when it is itself a courtesy or designation word ("–Late Shri",
+  "–Deputy Commissioner Shri").
+- Office UI: the scope note now says that "Missing" covers titled names, dates, amounts, numbers and file numbers and
+  that a name without a title only gets "Check".
+- Corpus (335 instructions): properties (c) to (e) expect FACT_CHECK for a changed untitled name and FACT_MISSING for
+  everything else; one changed draft (S-9, "Anjali") moved to checked_drafts; seven FB15 cases (S-31 to S-37) cover
+  R2-01 to R2-04 in both directions. fb5 and fb12 expectations for untitled names changed to FACT_CHECK, each with a
+  note.
+
 Fact-check limitations that remain (outside the scope above):
 - a single capitalised word after "of" that is a place or a body but follows a word not in the designation list
   (for example "the residents of Pune" is excluded, but "the visit of Pune officials" reads "Pune") becomes a name
@@ -686,7 +727,8 @@ Fact-check limitations that remain (outside the scope above):
 - lowercase names outside an explicit person label or letter-recipient phrase, and a single name without a cue word;
 - a single all-capitals word such as a cadre ("LDC" against "UDC") is not a fact;
 - several people without honorifics joined by "and" form one name fact ("Ram Kumar and Sita Devi"): a change to
-  either still warns, but the warning names the pair;
+  either still gives FACT_CHECK (OD-OD-8), but the warning names the pair. Since FB15 the run is split when a
+  designation or courtesy word follows the "and";
 - ordinal and fraction words ("first", "half");
 - "and <number word>" followed by a noun ("Rs. 25,000 and fifty rupees more") is not read as part of the number;
 - "May 3" without a preposition, ordinal or year before it (for example at the start of a sentence) is not a date;
@@ -725,6 +767,11 @@ and the V3.1 fallback applies. No GPU-heavy run overlaps an M95 live run; Brain 
 - OD-OD-7 (decided by the owner 2026-10-24, MM LDEC-015, after FB13): a trailing ".00" or ".0" after an amount is the
   same amount ("Rs. 4,75,000.00" is "Rs. 4,75,000"); non-zero paise (".50") are a different amount and give
   FACT_MISSING. Applied since FB14 to the number before a unit as well ("Rs. 2.00 lakh" is "Rs. 2 lakh").
+- OD-OD-8 (decided by the owner 2026-10-24, MM LDEC-017, after FB15): untitled names get a soft check only. A name
+  fact without an honorific never gives FACT_MISSING; when it is not in the draft word for word it gives FACT_CHECK
+  ("'Ramesh Kumar' (from your instruction) was not found in the draft. Check the name."), and inside a longer name it
+  gives FACT_CHECK as before. Titled names, dates, amounts, numbers and references keep the firm FACT_MISSING
+  guarantee. The Office scope note says so.
 - OD-WI-2 (preference): default language `en-IN` (Indian English spelling) - chosen by default from the owner's
   context; one line to change.
 

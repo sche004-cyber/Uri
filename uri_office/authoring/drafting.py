@@ -90,13 +90,28 @@ _DATE_NUM = re.compile(r"^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$|^\d{4}-\d{2}-\d{2}$")
 # honorific they are punctuation ("12/3/2026—it", "12/3/2026–Pension case", "12/3/2026—Shri Ram Lal").
 _NOT_CODE_HON = r"(?!(?:Shri|Smt|Sh|Km|Kum|Kumari|Sushri|Dr|Mr|Mrs|Ms|Prof)(?![A-Za-z]))"
 # a code is not the first part of a hyphenated word ("12/3/2026–Sub-Divisional"), and a title-case word followed by
-# another title-case word is prose ("12/3/2026–Deputy Commissioner Shri ..."); capitals ("–PMS", "–ESTT") are codes
-_REF_JOIN_CODE = (r"(?=\d|" + _NOT_CODE_HON + r"(?:[A-Z]{1,6}(?![A-Za-z'’]|-[A-Za-z]{3,}|\s+"
-                  r"(?:Shri|Smt|Sh|Km|Kum|Kumari|Sushri|Dr|Mr|Mrs|Ms|Prof)\.?(?![A-Za-z]))"
-                  r"|[A-Z][A-Za-z]{0,5}(?![A-Za-z'’]|-[A-Za-z]{3,}|\s+[A-Z][a-z])))")
-_REF_CODE_CHAR = r"(?:[\w./()-]|[&\u2013\u2014]" + _REF_JOIN_CODE + r")"
-_REF = re.compile(r"\b(?i:F\.\s?No\.?|O\.\s?M\.\s?No\.?|D\.\s?O\.\s?No\.?|No\.)\s*"
-                  r"([A-Za-z0-9]" + _REF_CODE_CHAR + r"*\d" + _REF_CODE_CHAR + r"*)")
+# another title-case word is prose ("12/3/2026–Deputy Commissioner Shri ..."); capitals ("–PMS", "–ESTT") are
+# codes. FB15 R2-04: a short title-case code before an honorific, a section noun or a courtesy/designation word is a
+# code ("12/3/2026–Estt Shri Ram Lal", "7/2/2026–RTI Cell"), unless it is itself such a word ("–Late Shri").
+_HON_WORDS = r"(?:Shri|Smt|Sh|Km|Kum|Kumari|Sushri|Dr|Mr|Mrs|Ms|Prof)"
+
+
+def _ref_regex(courtesy=()):
+    words = "|".join(re.escape(w) for w in sorted(courtesy, key=len, reverse=True)) or "(?!)"
+    not_courtesy = r"(?!(?i:" + words + r")(?![A-Za-z'’]))"
+    join = (r"(?=\d|" + _NOT_CODE_HON + r"(?:[A-Z]{1,6}(?![A-Za-z'’]|-[A-Za-z]{3,}|\s+" + _HON_WORDS
+            + r"\.?(?![A-Za-z]))"
+            r"|" + not_courtesy + r"[A-Z][A-Za-z]{0,5}(?![A-Za-z'’]|-[A-Za-z]{3,}|\s+(?!(?:" + _HON_WORDS[3:-1]
+            + r"|Section|Cell|Branch|Division|Unit|Wing|(?i:" + words + r"))(?![A-Za-z])"
+            # or a capitalised designation phrase that ends at an honorific ("–Estt Drawing and Disbursing Officer
+            # Shri ...")
+            r"|(?:[A-Z][\w'’-]*\s+(?:(?:of|and|for|the)\s+)?){1,6}" + _HON_WORDS + r"(?![A-Za-z]))[A-Z][a-z])))")
+    char = r"(?:[\w./()-]|[&\u2013\u2014]" + join + r")"
+    return re.compile(r"\b(?i:F\.\s?No\.?|O\.\s?M\.\s?No\.?|D\.\s?O\.\s?No\.?|No\.)\s*"
+                      r"([A-Za-z0-9]" + char + r"*\d" + char + r"*)")
+
+
+_REF = _ref_regex()            # rebuilt with the courtesy and designation words below (_DESIGNATION_HEADS)
 # FB14 R2-06: a section bracket after a space belongs to a code that ends in letters ("1/2/2026-P&PW (A)")
 _REF_SPACED_PART = re.compile(r" \((?:[A-Z]{1,3}|[IVX]+|\d+)\)")
 _AMOUNT_PREFIX = re.compile(r"(?:rs\.?|inr|₹)\s*$", re.I)
@@ -479,20 +494,48 @@ _DESIGNATION_HEADS = {
     "section", "district", "divisional", "sub-divisional", "block", "regional", "zonal", "special", "general",
     "advisor", "adviser", "consultant", "sarpanch", "mla", "mp", "mlc", "sdm", "bdo", "dm", "ias", "ips", "vice",
     "chancellor", "justice", "judge", "speaker", "mayor", "councillor", "ambassador", "consul"}
+_REF = _ref_regex(_BEFORE_TITLE | _DESIGNATION_HEADS)
+
+
+def _is_head(w: str) -> bool:
+    return w.lower().rstrip(".,") in _DESIGNATION_HEADS
+
+
+def _is_courtesy(w: str) -> bool:
+    k = w.lower().rstrip(".,")
+    return k in _BEFORE_TITLE or k in _DESIGNATION_HEADS
 
 
 def _cut_designation(part, dropped=None):
-    """A titled name followed by designation words without a comma ends where the designation begins."""
+    """A titled name followed by designation words without a comma ends where the designation begins. FB15 R2-03:
+    only when another designation word follows the head word ("Joint Director", "Deputy Secretary", "Senior
+    Superintendent of Police"); a single trailing head word is a surname ("Shri Asghar Ali Engineer", "Shri Ram
+    Prakash Senior")."""
     i0 = 0
     while i0 < len(part) and _is_hon(part[i0][1]):
         i0 += 1
     if not i0:
         return part
     for j in range(i0 + 2, len(part)):
-        if part[j][1].lower().rstrip(".,") in _DESIGNATION_HEADS:
+        if _is_head(part[j][1]) and any(_is_head(w) for _, w in part[j + 1:]):
             if dropped is not None:
                 dropped.append((part[j][0], part[-1][0] + len(part[-1][1])))
             return part[:j]
+    return part
+
+
+def _strip_leading_designation(part, dropped=None):
+    """FB15 R2-02: designation or courtesy words before an untitled name ("Deputy Secretary Ramesh Kumar") are not
+    part of it, when at least two other words remain; a run made only of such words ("Joint Secretary") stays."""
+    k = 0
+    while k < len(part) and (_is_courtesy(part[k][1]) or (k and part[k][1].lower() in _CONNECTORS)):
+        k += 1
+    while k and part[k - 1][1].lower() in _CONNECTORS:
+        k -= 1
+    if k and len(part) - k >= 2 and not any(_is_courtesy(w) for _, w in part[k:]):
+        if dropped is not None:
+            dropped.append((part[0][0], part[k - 1][0] + len(part[k - 1][1])))
+        return part[k:]
     return part
 
 
@@ -508,10 +551,18 @@ def _split_at_honorifics(start, words, dropped=None, before_hon=False):
 
     def close(cur):
         if not _is_hon(cur[0][1]):
-            if cur[-1][1].lower() in _CONNECTORS and not any(
-                    x.lower().rstrip(".,") in _BEFORE_TITLE or x.lower().rstrip(".,") in _DESIGNATION_HEADS
-                    for _, x in cur):
-                parts.append(cur)                 # "Ramesh Kumar and Shri ...": a name, then "and"
+            ands = [k for k, (_, x) in enumerate(cur) if x.lower() == "and"]
+            head, tail = (cur[:ands[0] + 1], cur[ands[0] + 1:]) if ands else (cur, [])
+            # FB15 R2-01: "Ramesh Kumar and Shri ...", "Ramesh Kumar and Hon'ble Shri ...", "Ramesh Chandra and Late
+            # Smt. ...": the untitled person before "and" stays a name; the courtesy or designation words after it
+            # belong to the next person. "Drawing and Disbursing Officer Shri ...", "the Hon'ble Minister and Shri
+            # ...": a designation, not a name.
+            keep = (ands and len(head) > 1 and not any(_is_courtesy(x) for _, x in head)
+                    and (not tail or _is_courtesy(tail[0][1])))
+            if keep:
+                parts.append(head)
+                if tail and dropped is not None:
+                    dropped.append((tail[0][0], tail[-1][0] + len(tail[-1][1])))
             elif dropped is not None:             # "District Collector Shri ...": not a name
                 dropped.append((cur[0][0], cur[-1][0] + len(cur[-1][1])))
             return
@@ -549,8 +600,14 @@ def _split_at_honorifics(start, words, dropped=None, before_hon=False):
         cur.append((a, w))
     if cur and before_hon and not all(_is_hon(x) for _, x in cur):
         close(cur)
+    elif cur and _is_hon(cur[0][1]):
+        parts.append(_cut_designation(cur, dropped))
     elif cur:
-        parts.append(_cut_designation(cur, dropped) if _is_hon(cur[0][1]) else cur)
+        # FB15 R2-02: an untitled run "<designation> X and <designation> Y" is two people; each loses its designation
+        cuts = [k for k, (_, x) in enumerate(cur) if x.lower() == "and" and k + 1 < len(cur) and _is_courtesy(cur[k + 1][1])
+                and any(not _is_courtesy(y) and y.lower() not in _CONNECTORS for _, y in cur[:k])]
+        for a, b in zip([0] + [k + 1 for k in cuts], [k for k in cuts] + [len(cur)]):
+            parts.append(_strip_leading_designation(cur[a:b], dropped))
     return [(p[0][0], p) for p in parts if p]
 
 
@@ -771,6 +828,12 @@ def fact_present(fact: str, draft_text: str, instruction: str | None = None, kin
     return any(o is None for o in _fact_occurrences(fact, draft_text, instruction, kind))
 
 
+def is_titled(name: str) -> bool:
+    """OD-OD-8: a titled name fact starts with an honorific ("Shri Ramesh Kumar", "Dr. (Smt.) Meena Iyer")."""
+    words = _norm(name).split()
+    return bool(words) and _is_hon(words[0])
+
+
 def missing_facts(instruction: str, draft_text: str) -> list:
     """FB12 (OD-OD-6): two signals per marked fact of the instruction.
     - FACT_MISSING: the fact does not appear word for word (per-kind token boundaries; a name inside a longer
@@ -778,7 +841,11 @@ def missing_facts(instruction: str, draft_text: str) -> list:
       gets it, whatever surrounds the fact.
     - FACT_CHECK: the fact appears word for word, but every occurrence is inside what the rules read as a longer
       name or reference ("Anjali" only as "Anjali Sharma"; "14/2/2026" only as "14/2/2026-1").
-    Returns warnings {code, kind, text, message} (FACT_CHECK also has `found`: the longer form)."""
+    OD-OD-8 (FB15): a name fact without an honorific (found through a cue or a capitalised run) never gives
+    FACT_MISSING. When it is not in the draft word for word it gives FACT_CHECK ("'Ramesh Kumar' (from your
+    instruction) was not found in the draft. Check the name."). Titled names, dates, amounts, numbers and references
+    keep FACT_MISSING.
+    Returns warnings {code, kind, text, message} (FACT_CHECK for a longer form also has `found`)."""
     out = []
     facts = extract_facts(instruction)
     names = [f["text"] for f in facts if f["kind"] == "name"]
@@ -795,7 +862,10 @@ def missing_facts(instruction: str, draft_text: str) -> list:
             occ = _fact_occurrences(f["text"], draft_text, instruction, f["kind"])
         if any(o is None for o in occ):
             continue
-        if not occ:
+        if not occ and f["kind"] == "name" and not is_titled(f["text"]):
+            out.append({"code": "FACT_CHECK", "kind": "name", "text": f["text"],
+                        "message": f"'{f['text']}' (from your instruction) was not found in the draft. Check the name."})
+        elif not occ:
             out.append({"code": "FACT_MISSING", "kind": f["kind"], "text": f["text"],
                         "message": f"The draft does not contain the {f['kind']} '{f['text']}' from your instruction. "
                                    "Check it before saving."})

@@ -1,5 +1,7 @@
 """FB5 fallback review of dbde00f6 (OFFICE-DAILY-USE-r5): regression tests for R6-01..R6-04 (the reviewer's cases).
-Tests named r6_* fail on dbde00f6 and pass after the repair; the corpus test covers the same forms by template."""
+Tests named r6_* fail on dbde00f6 and pass after the repair; the corpus test covers the same forms by template.
+OD-OD-8 (FB15): a changed name without a title gives FACT_CHECK, not FACT_MISSING; the untitled-name expectations below
+were changed from FACT_MISSING to FACT_CHECK in FB15 (titled names, dates, numbers and references are unchanged)."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -28,7 +30,7 @@ def test_r7_01_labelled_name_ends_before_as_role(instruction, name, replacement,
     assert [f for f in DR.extract_facts(instruction) if f["kind"] == "name"] == [
         {"kind": "name", "text": name}]
     assert [(w["code"], w["kind"], w["text"]) for w in warns(instruction, name, replacement)] == [
-        ("FACT_MISSING", "name", name)]
+        ("FACT_CHECK", "name", name)]
     assert DR.missing_facts(instruction, rephrased) == []
 
 
@@ -168,7 +170,7 @@ def test_r2_03_lowercase_name_in_person_context_warns():
     assert DR.extract_facts(instruction) == [{"kind": "name", "text": "ramesh kumar"}]
     assert DR.missing_facts(instruction, instruction) == []
     assert [(w["code"], w["kind"], w["text"]) for w in warns(instruction, "ramesh kumar", "suresh kumar")] == [
-        ("FACT_MISSING", "name", "ramesh kumar")]
+        ("FACT_CHECK", "name", "ramesh kumar")]
 
 
 def test_r6_01_lowercase_letter_recipient_warns_outside_corpus():
@@ -177,7 +179,7 @@ def test_r6_01_lowercase_letter_recipient_warns_outside_corpus():
     assert DR.missing_facts(instruction, instruction) == []
     assert [(w["code"], w["kind"], w["text"]) for w in DR.missing_facts(
         instruction, "Dear suresh kumar, your transfer is approved."
-    )] == [("FACT_MISSING", "name", "ramesh kumar")]
+    )] == [("FACT_CHECK", "name", "ramesh kumar")]
     assert DR.missing_facts(instruction, "Dear ramesh kumar, your transfer is approved.") == []
     assert DR.extract_facts("Draft a letter to request transfer.") == []
 
@@ -267,7 +269,8 @@ def test_r9_01_comma_designation_after_person_is_not_a_name(instruction, draft, 
         {"kind": "name", "text": person}]
     assert DR.missing_facts(instruction, draft) == []
     assert [(w["code"], w["kind"], w["text"]) for w in DR.missing_facts(
-        instruction, draft.replace(person, replacement))] == [("FACT_MISSING", "name", person)]
+        instruction, draft.replace(person, replacement))] == [(
+        "FACT_MISSING" if person.startswith(("Shri", "Smt", "Dr")) else "FACT_CHECK", "name", person)]
 
 
 @pytest.mark.parametrize("instruction,draft,person,replacement", [
@@ -283,7 +286,8 @@ def test_r9_02_single_appointee_is_checked(instruction, draft, person, replaceme
         {"kind": "name", "text": person}]
     assert DR.missing_facts(instruction, draft) == []
     assert [(w["code"], w["kind"], w["text"]) for w in DR.missing_facts(
-        instruction, draft.replace(person, replacement))] == [("FACT_MISSING", "name", person)]
+        instruction, draft.replace(person, replacement))] == [(
+        "FACT_MISSING" if person.startswith(("Shri", "Smt", "Dr")) else "FACT_CHECK", "name", person)]
 
 
 def test_r10_01_designation_without_trailing_comma_is_not_a_name():
@@ -303,7 +307,7 @@ def test_r10_02_single_appointee_before_designation_is_checked():
         {"kind": "name", "text": "Anil"}]
     assert DR.missing_facts(instruction, draft) == []
     assert [(w["code"], w["kind"], w["text"]) for w in DR.missing_facts(
-        instruction, draft.replace("Anil", "Sunil"))] == [("FACT_MISSING", "name", "Anil")]
+        instruction, draft.replace("Anil", "Sunil"))] == [("FACT_CHECK", "name", "Anil")]
 
 
 @pytest.mark.parametrize("instruction,draft,person,replacement", [
@@ -317,4 +321,5 @@ def test_r11_01_parenthesized_designation_keeps_labelled_person(instruction, dra
         {"kind": "name", "text": person}]
     assert DR.missing_facts(instruction, draft) == []
     assert [(w["code"], w["kind"], w["text"]) for w in DR.missing_facts(
-        instruction, draft.replace(person, replacement))] == [("FACT_MISSING", "name", person)]
+        instruction, draft.replace(person, replacement))] == [(
+        "FACT_MISSING" if person.startswith(("Shri", "Smt", "Dr")) else "FACT_CHECK", "name", person)]

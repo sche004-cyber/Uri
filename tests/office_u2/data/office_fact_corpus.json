@@ -5333,17 +5333,15 @@
      "Anjali"
     ]
    ],
-   "changed_drafts": [
-    [
-     "Office Order",
-     "Subject: Deputation for training",
-     "Sanction is accorded to the deputation of Sunita for training."
-    ]
-   ],
    "checked_drafts": [
     [
      "Office Order",
      "Subject: Deputation of Anjali Sharma",
+     "Sanction is accorded to the deputation of Sunita for training."
+    ],
+    [
+     "Office Order",
+     "Subject: Deputation for training",
      "Sanction is accorded to the deputation of Sunita for training."
     ]
    ]
@@ -6051,6 +6049,264 @@
      "To",
      "Shri Anil Verma",
      "Reference No. 1/2/2026-P&PW (B)."
+    ]
+   ]
+  },
+  {
+   "id": "S-31",
+   "instruction": "Write a letter to Ramesh Kumar and Hon'ble Shri Anil Verma about the visit on 5th December 2026.",
+   "facts": [
+    [
+     "name",
+     "Ramesh Kumar"
+    ],
+    [
+     "name",
+     "Shri Anil Verma"
+    ],
+    [
+     "date",
+     "5th December 2026"
+    ]
+   ],
+   "faithful_drafts": [
+    [
+     "To",
+     "Ramesh Kumar",
+     "Shri Anil Verma",
+     "The visit is on 5th December 2026."
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "To",
+     "Ramesh Kumar",
+     "Shri Anil Sharma",
+     "The visit is on 5th December 2026."
+    ]
+   ],
+   "checked_drafts": [
+    [
+     "To",
+     "Shri Anil Verma",
+     "The visit is on 5th December 2026."
+    ]
+   ]
+  },
+  {
+   "id": "S-32",
+   "instruction": "Settle the family pension of Ramesh Chandra and Late Smt. Kamla Devi from 1st January 2027.",
+   "facts": [
+    [
+     "name",
+     "Ramesh Chandra"
+    ],
+    [
+     "name",
+     "Smt. Kamla Devi"
+    ],
+    [
+     "date",
+     "1st January 2027"
+    ]
+   ],
+   "faithful_drafts": [
+    [
+     "Order",
+     "Family pension of Ramesh Chandra and Smt. Kamla Devi from 1st January 2027."
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "Order",
+     "Family pension of Ramesh Chandra and Smt. Kamla Rani from 1st January 2027."
+    ]
+   ],
+   "checked_drafts": [
+    [
+     "Order",
+     "Family pension of Smt. Kamla Devi from 1st January 2027."
+    ]
+   ]
+  },
+  {
+   "id": "S-33",
+   "instruction": "Write to Deputy Secretary Ramesh Kumar about the meeting on 5th December 2026.",
+   "facts": [
+    [
+     "name",
+     "Ramesh Kumar"
+    ],
+    [
+     "date",
+     "5th December 2026"
+    ]
+   ],
+   "faithful_drafts": [
+    [
+     "To",
+     "Ramesh Kumar, Deputy Secretary",
+     "The meeting is on 5th December 2026."
+    ],
+    [
+     "To",
+     "Deputy Secretary Ramesh Kumar",
+     "The meeting is on 5th December 2026."
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "To",
+     "Ramesh Kumar, Deputy Secretary",
+     "The meeting is on 6th December 2026."
+    ]
+   ],
+   "checked_drafts": [
+    [
+     "To",
+     "Suresh Kumar, Deputy Secretary",
+     "The meeting is on 5th December 2026."
+    ]
+   ]
+  },
+  {
+   "id": "S-34",
+   "instruction": "Write to Section Officer Kavita Sharma and Executive Engineer Anil Rao about the audit on 3rd March 2027.",
+   "facts": [
+    [
+     "name",
+     "Kavita Sharma"
+    ],
+    [
+     "name",
+     "Anil Rao"
+    ],
+    [
+     "date",
+     "3rd March 2027"
+    ]
+   ],
+   "faithful_drafts": [
+    [
+     "To",
+     "Kavita Sharma, Section Officer",
+     "Anil Rao, Executive Engineer",
+     "The audit is on 3rd March 2027."
+    ]
+   ],
+   "checked_drafts": [
+    [
+     "To",
+     "Kavita Sharma, Section Officer",
+     "The audit is on 3rd March 2027."
+    ]
+   ]
+  },
+  {
+   "id": "S-35",
+   "instruction": "Invite Shri Asghar Ali Engineer and Dr. Jamshed Rustom Collector to the meeting on 9th November 2026.",
+   "facts": [
+    [
+     "name",
+     "Shri Asghar Ali Engineer"
+    ],
+    [
+     "name",
+     "Dr. Jamshed Rustom Collector"
+    ],
+    [
+     "date",
+     "9th November 2026"
+    ]
+   ],
+   "faithful_drafts": [
+    [
+     "Invitation",
+     "Shri Asghar Ali Engineer",
+     "Dr. Jamshed Rustom Collector",
+     "The meeting is on 9th November 2026."
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "Invitation",
+     "Shri Asghar Ali",
+     "Dr. Jamshed Rustom Collector",
+     "The meeting is on 9th November 2026."
+    ],
+    [
+     "Invitation",
+     "Shri Asghar Ali Engineer",
+     "Dr. Jamshed Rustom Contractor",
+     "The meeting is on 9th November 2026."
+    ]
+   ]
+  },
+  {
+   "id": "S-36",
+   "instruction": "Reply on F.No. 12/3/2026–Estt Shri Ram Lal's case dated 5th November 2026.",
+   "facts": [
+    [
+     "reference",
+     "12/3/2026–Estt"
+    ],
+    [
+     "name",
+     "Shri Ram Lal"
+    ],
+    [
+     "date",
+     "5th November 2026"
+    ]
+   ],
+   "faithful_drafts": [
+    [
+     "Reply",
+     "F.No. 12/3/2026-Estt",
+     "Shri Ram Lal",
+     "5th November 2026"
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "Reply",
+     "F.No. 12/3/2026-Admn",
+     "Shri Ram Lal",
+     "5th November 2026"
+    ],
+    [
+     "Reply",
+     "F.No. 12/3/2026",
+     "Shri Ram Lal",
+     "5th November 2026"
+    ]
+   ]
+  },
+  {
+   "id": "S-37",
+   "instruction": "Forward the file No. 7/2/2026–RTI Cell to Shri Anil Verma.",
+   "facts": [
+    [
+     "reference",
+     "7/2/2026–RTI"
+    ],
+    [
+     "name",
+     "Shri Anil Verma"
+    ]
+   ],
+   "faithful_drafts": [
+    [
+     "To",
+     "Shri Anil Verma",
+     "File No. 7/2/2026-RTI Cell"
+    ]
+   ],
+   "changed_drafts": [
+    [
+     "To",
+     "Shri Anil Verma",
+     "File No. 7/2/2026-Vig Cell"
     ]
    ]
   }

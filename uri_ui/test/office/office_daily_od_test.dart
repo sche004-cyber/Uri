@@ -301,6 +301,8 @@ void main() {
     // OD-OD-4: a draft with no warnings still says what URI checked and that the owner reads the whole draft
     expect(find.byKey(const ValueKey('office-draft-scope')), findsOneWidget);
     expect(find.textContaining('read the whole draft before saving'), findsOneWidget);
+    // OD-OD-8: the note says that a name without a title only gets "Check"
+    expect(find.textContaining('"Check" means a name without a title was not found'), findsOneWidget);
     await _unmount(tester);
   });
 

@@ -161,7 +161,9 @@ def test_fb12_extensions_give_fact_check_not_fact_missing(instruction, blocks, f
     ("Sanction Rs. 25,000 for repairs.", ["Rs. 1,25,000 is sanctioned for repairs."], "25,000"),
 ])
 def test_guard_a_replaced_fact_gives_fact_missing(instruction, blocks, fact):
-    assert ("FACT_MISSING", fact) in codes(instruction, blocks)
+    # OD-OD-8 (FB15): a replaced name without a title ("Anjali") gives FACT_CHECK; everything else keeps FACT_MISSING
+    titled = fact.split()[0].rstrip(".") in ("Shri", "Smt", "Dr", "Ms", "Mr") or any(c.isdigit() for c in fact)
+    assert ("FACT_MISSING" if titled else "FACT_CHECK", fact) in codes(instruction, blocks)
 
 
 def test_fb12_service_passes_both_codes(tmp_path):

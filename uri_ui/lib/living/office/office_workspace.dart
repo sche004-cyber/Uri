@@ -393,10 +393,12 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
   }
 
   /// OD-OD-4: what the fact check covers, shown with every URI draft (plan 16 section 4, "Fact-check scope").
-  static const draftScopeNote = 'URI checks names with a title (Shri, Smt., Dr ...) or after "to", "from" or "of", '
-      'dates with a day or year, amounts, numbers and file numbers. "Missing" means the fact is not in the draft as '
-      'you wrote it; "Check" means it is there only inside a longer name or file number. It does not check anything '
-      'else: read the whole draft before saving.';
+  // OD-OD-8 (plan 16): "Missing" is firm for titled names, dates, amounts, numbers and file numbers; a name without a
+  // title only ever gets "Check".
+  static const draftScopeNote = 'URI checks names with a title (Shri, Smt., Dr ...), dates, amounts, numbers and file '
+      'numbers: "Missing" means one is not in the draft as you wrote it. "Check" means a name without a title was not '
+      'found, or a fact is there only inside a longer name or file number. Nothing else is checked: read the whole '
+      'draft before saving.';
 
   /// OD-2: facts from the owner's instruction that the drafted document does not contain, in words, and (OD-OD-4)
   /// the fact-check scope, above the Word editor until the edit closes. OD-OD-6: FACT_MISSING lines ("Missing: ...")
