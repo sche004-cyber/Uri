@@ -109,7 +109,12 @@ _LABELLED = re.compile(
     r"(\d{3,8})\b|"
     r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
     r"(?:private|master|signing|encryption) key)"
-    r"\s*(?:->|=>|→|is\b|was\b|=|:)\s*[\"']?([^\s\"',;]{1,})|"
+    # ":" or "=" take any value; "is"/"was" a value with a digit or symbol, or a 4+ letter word (LDEC-007); an arrow
+    # a value with a digit or symbol - "token -> refresh flow", "password is ok" stay readable (coordinator review of
+    # the r15 repairs, which made "forgot password - help" and "token is a JWT" refused).
+    r"(?:\s*(?:=|:)\s*[\"']?([^\s\"',;]{1,})|"
+    r"\s*(?:is|was)\b\s*[\"']?((?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])[^\s\"',;]{1,}|[^\s\"',;]{4,})|"
+    r"\s*(?:->|=>|→)\s*[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{1,}))|"
     # Semicolon and slash separate a value with credential syntax, or a lone letter-only value at clause end.
     # A following prose word ("password / reset help") keeps the text readable.
     r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
@@ -119,7 +124,8 @@ _LABELLED = re.compile(
     # A short value after a dash is explicit when the value ends the clause. Keep prose such as
     # "reset your password - see the help page" readable.
     r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
-    r"(?:private|master|signing|encryption) key)\s*[-–]\s*[\"']?([^\s\"',;]{1,})(?=\s*(?:[,!?'\")\]]|$))|"
+    r"(?:private|master|signing|encryption) key)\s*[-–]\s*[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])"
+    r"([^\s\"',;]{1,})(?=\s*(?:[,!?'\")\]]|$))|"
     # "API key abcdefghijklmnop": a key label followed by one long letter-only token (review r6 R3-01).
     r"\b(?:api[ _-]?key|secret key|access token|auth token)\s+([A-Za-z]{16,})\b|"
     # An HTTP Basic credential whatever its base64 letters (review FB9 R1-03), and recovery / backup / 2FA codes

@@ -47,7 +47,7 @@ def test_r1_01_short_labelled_credentials_never_reach_search_transport(text):
 
 SHORT_CREDENTIALS = (
     "password: abc",
-    "password is ab",
+    "password is a1",                               # letter-only 1-3 after "is": LDEC-007 residual (PC-22)
     "api key: xy",
     "password: a-",
     "password: a.",

@@ -176,7 +176,7 @@ decision **OD-7** (follow-up). Section 6.3 called it OD-6, which the plan alread
 | Change to 6.4 | Proof (tests/privacy) |
 |---|---|
 | Digit runs bridge punctuation and whitespace gaps of any length (r6 R2-01); gaps holding letters still break a run after 3 characters | `test_ldec006.py::test_ldec006_long_punctuation_gaps*` |
-| Labelled credentials: letter-only values of any length, including one to three letters or short values ending in `-` or `.`, are refused when a separator joins label and value ("password: x", "password is x"), after a key label as one 16+ letter token, and before a possessive label that ends the sentence ("x is my password."; a quoted value always) | `test_r6_review_repairs.py::test_r3_01*`, `test_r4_01*`; `test_r15_short_credentials.py::test_r2_01_*` |
+| Labelled credentials: letter-only values of any length, including one to three letters or short values ending in `-` or `.`, are refused when ":" or "=" joins label and value ("password: x"); after "is" / "was" a letter-only value needs 4+ letters (corrected in 6.14), after a key label as one 16+ letter token, and before a possessive label that ends the sentence ("x is my password."; a quoted value always) | `test_r6_review_repairs.py::test_r3_01*`, `test_r4_01*`; `test_r15_short_credentials.py::test_r2_01_*` |
 | Split keys after a fixed-length prefix (AKIA/ASIA 16, AIza 35, ghp_/gho_/ghs_/ghu_ 36, glpat- 20) are refused when the groups add up to the body length, with or without digits | `test_pc13.py::test_r5_01*` |
 | Text with nothing to rewrite is sent byte-identical (no NFKC change to half-width katakana, Arabic presentation forms, ligatures, NBSP, URL paths); text that needs a rewrite is sent in the egress form and re-checked | `test_pc13.py::test_r5_02*`, `test_c3_repairs.py::test_canonical_is_what_is_sent` |
 | Pseudonym tokens carry a keyed, non-reversible scope tag; a token never restores in another scope | `test_pc13.py::test_scope_tag*`, `test_r6_review_repairs.py::test_r3_02*` |
@@ -301,3 +301,19 @@ differs from the original, or any invisible shaping character (ZWJ, ZWNJ: emoji 
 **Residual added:** a secret right after a commit / sha / md5 / digest / hash / checksum / revision / rev / build word
 (within 12 characters) is not treated as a secret, whatever its alphabet (the exemption exists for digests). Every
 residual of 6.4-6.12 stands, including OD-7 and OD-8.
+
+### 6.14 Changes after driver run M95-PRIVACY-r15 (2026-10-24; Codex R1-R7)
+
+| Change | Proof (tests/privacy) |
+|---|---|
+| Short credentials after a label: any value after ":" or "="; after "is" / "was" a value with a digit or symbol, or 4+ letters; after a dash or an arrow a value with a digit or symbol; after ";" or "/" a value with credential syntax, or a lone value that ends the clause | `test_r15_short_credentials.py`, `test_r15_separator_repair.py` |
+| Registered audit identifiers must be code names (no 4+ digit runs, nothing the classifier finds) | `test_r6_identifier_registration.py` |
+| A clock is exempt only as a standalone token; its digits count when it is joined to other digits | `test_r7_clock_prefix.py` |
+
+**Correction:** the r15 repairs first made 1-3 letter values after "is", a dash or an arrow refused ("password is ab"),
+and with them ordinary searches such as "forgot password - help" and "token is a JWT". The coordinator narrowed that
+to the rule in the table; the 6.4 row "password is x" was corrected to match.
+
+**Residual added:** a letter-only value of 1-3 letters after "is", a dash or an arrow ("password is ab",
+"token -> xy") - the LDEC-007 residual, as for a bare label followed by one word. Every residual of 6.4-6.13 stands,
+including OD-7 and OD-8.

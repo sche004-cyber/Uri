@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 import re
+import functools
 import threading
 import time
 from pathlib import Path
@@ -42,11 +43,16 @@ UNTRUSTED = "UNTRUSTED_FIELD"
 IDENTIFIER = re.compile(r"[a-z][a-z0-9]{0,23}(?:[._-][a-z][a-z0-9]{0,23})*")
 
 
+@functools.lru_cache(maxsize=1024)
+def _identifier_ok(value: str) -> bool:      # pure: a gateway is built with the same registered names every time
+    return (len(value) <= 64 and bool(IDENTIFIER.fullmatch(value)) and not re.search(r"\d{4,}", value)
+            and not _classify_identifier(value).categories())
+
+
 def _registered_identifiers(values):
     checked = set()
     for value in values:
-        if (type(value) is not str or len(value) > 64 or not IDENTIFIER.fullmatch(value)
-                or re.search(r"\d{4,}", value) or _classify_identifier(value).categories()):
+        if type(value) is not str or not _identifier_ok(value):
             raise ValueError("PRIVACY_IDENTIFIER_INVALID")
         checked.add(value)
     return frozenset(checked)
