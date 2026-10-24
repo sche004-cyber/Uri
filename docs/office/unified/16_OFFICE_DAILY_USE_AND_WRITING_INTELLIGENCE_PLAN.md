@@ -395,8 +395,13 @@ FACT_CHECK coverage (formerly the "Caught" / "Not caught" lists of "Exception in
     Assistant, Deputy, Joint, Under, Additional, Chief, Senior, Junior, Executive, District, Section ...) and has
     another designation word after it: the name ends there ("Smt. Rekha Rani Joint Director and Shri Mohan Lal
     Deputy Director", "Shri Rajendra Prasad Meena Deputy Secretary is requested ..."), FB14 R2-02 / FB15 R2-03. A
-    single trailing head word is a surname ("Shri Asghar Ali Engineer", "Shri Ram Prakash Senior"), and so is the
-    word after a one-word name ("Shri Rustom Collector");
+    single trailing head word after two or more other words may be a surname or a designation ("Shri Asghar Ali
+    Engineer", "Shri Homi Dinshaw Mistry Engineer"): the name without that word is the firm fact (FACT_MISSING when
+    it is absent: "Shri Asghar Khan Engineer"), and the full form is soft. When the draft has only the firm part it
+    gives FACT_CHECK ("'Shri Asghar Ali Engineer' appears only as 'Shri Asghar Ali'. Check the name."), unless the
+    head word is written elsewhere in the draft ("Shri Homi Dinshaw Mistry" with "Engineer" on its own line: no
+    warning); another surname ("Shri Asghar Ali Khan") gives FACT_CHECK (FB15 follow-up). The word after a one-word
+    name stays firm ("Shri Rustom Collector");
   - before an untitled name: designation and courtesy words ("Deputy Secretary Ramesh Kumar" is "Ramesh Kumar"),
     when at least two other words remain; an untitled run "<designation> X and <designation> Y" is two names
     ("Section Officer Kavita Sharma and Executive Engineer Anil Rao"), FB15 R2-02;
@@ -702,7 +707,13 @@ was a surname ("Shri Asghar Ali Engineer"); corrected below.
   gives FACT_CHECK.
 - R2-03 (LOW): the designation-head cut applies only when another designation word follows the head word; a single
   trailing head word stays in the titled name ("Shri Asghar Ali Engineer": a dropped or replaced surname gives
-  FACT_MISSING).
+  FACT_MISSING). Correction (FB15 follow-up, coordinator decision on d540c918): that made the probe's faithful draft
+  "Shri Homi Dinshaw Mistry" (designation "Engineer" dropped) a FACT_MISSING. The trailing head word is now soft:
+  the firm fact is the name without it, and dropping or replacing only that word gives FACT_CHECK, or nothing when
+  the word appears elsewhere in the draft; a replaced firm part still gives FACT_MISSING. Corpus cases S-38 (Homi
+  Dinshaw Mistry Engineer) and S-39 (Asghar Ali Engineer) cover both readings; the two S-35 changed drafts that
+  only change the last word moved to checked_drafts, and property (c) expects FACT_CHECK for a surname change of
+  such a name.
 - R2-04 (LOW): a short title-case code after an en/em dash or "&" is a code when the next word is an honorific, a
   section noun (Section, Cell, Branch, Division, Unit, Wing) or a courtesy or designation word, or when a
   capitalised designation phrase leads to an honorific ("12/3/2026–Estt Shri Ram Lal's case",

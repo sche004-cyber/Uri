@@ -834,6 +834,19 @@ def is_titled(name: str) -> bool:
     return bool(words) and _is_hon(words[0])
 
 
+def _soft_head(name: str):
+    """FB15 follow-up: a titled name whose last word is a single designation head word, with at least two other words
+    after the title ("Shri Asghar Ali Engineer", "Shri Homi Dinshaw Mistry Engineer"), returns (firm part, head word):
+    the head word may be a surname or a designation. A one-word name ("Shri Rustom Collector") returns None."""
+    words = _norm(name).split()
+    i0 = 0
+    while i0 < len(words) and _is_hon(words[i0]):
+        i0 += 1
+    if i0 and len(words) - i0 >= 3 and _is_head(words[-1]) and not _is_head(words[-2]):
+        return " ".join(words[:-1]), words[-1]
+    return None
+
+
 def missing_facts(instruction: str, draft_text: str) -> list:
     """FB12 (OD-OD-6): two signals per marked fact of the instruction.
     - FACT_MISSING: the fact does not appear word for word (per-kind token boundaries; a name inside a longer
@@ -858,6 +871,28 @@ def missing_facts(instruction: str, draft_text: str) -> list:
             longer = [n for n in names if n != f["text"] and low in _norm(n).lower()]
             draft_longer = [n for n in draft_names if n not in names and n != f["text"] and low in _norm(n).lower()]
             occ = _name_occurrences(f["text"], draft_text, longer, draft_longer)
+            soft = _soft_head(f["text"]) if is_titled(f["text"]) else None
+            if soft and not any(o is None for o in occ):
+                # FB15 follow-up: the firm part is the name without its trailing head word; the full form is soft
+                firm, head = soft
+                flow = _norm(firm).lower()
+                f_longer = [n for n in names if n != f["text"] and n != firm and flow in _norm(n).lower()]
+                f_draft = [n for n in draft_names if n not in names and _norm(n).lower() != _norm(f["text"]).lower()
+                           and n != firm and flow in _norm(n).lower()]
+                focc = _name_occurrences(firm, draft_text, f_longer, f_draft)
+                if not focc:
+                    out.append({"code": "FACT_MISSING", "kind": "name", "text": f["text"],
+                                "message": f"The draft does not contain the name '{firm}' from your instruction. "
+                                           "Check it before saving."})
+                elif any(o is None for o in focc):
+                    # the head word written elsewhere ("Engineer" on its own line) is the designation: nothing to check
+                    if not re.search(r"(?<![^\W_])" + re.escape(head) + r"(?![^\W_])", _clean(draft_text), re.I):
+                        out.append({"code": "FACT_CHECK", "kind": "name", "text": f["text"], "found": firm,
+                                    "message": f"'{f['text']}' appears only as '{firm}'. Check the name."})
+                else:
+                    out.append({"code": "FACT_CHECK", "kind": "name", "text": f["text"], "found": focc[0],
+                                "message": f"'{f['text']}' appears only as '{focc[0]}'. Check the name."})
+                continue
         else:
             occ = _fact_occurrences(f["text"], draft_text, instruction, f["kind"])
         if any(o is None for o in occ):

@@ -172,7 +172,21 @@ def _expected(what: str, kind: str = "", text: str = "") -> str:
     changed or dropped; titled names, dates, amounts, numbers and references keep FACT_MISSING."""
     if kind == "name" and not _HON.match(text.split()[0]):
         return "FACT_CHECK"
+    # FB15 follow-up: a titled name ending in a single designation head word after two or more other words ("Shri
+    # Asghar Ali Engineer") is firm without that word; a change to the last word alone gives FACT_CHECK
+    words = text.split()
+    k = 0
+    while k < len(words) and _HON.match(words[k]):
+        k += 1
+    if (kind == "name" and what == "surname" and len(words) - k >= 3 and words[-1].lower() in _HEADS
+            and words[-2].lower() not in _HEADS):
+        return "FACT_CHECK"
     return "FACT_CHECK" if what in _EXTENDING else "FACT_MISSING"
+
+
+_HEADS = {"director", "secretary", "officer", "engineer", "collector", "commissioner", "superintendent", "assistant",
+          "deputy", "joint", "under", "additional", "chief", "senior", "junior", "executive", "special", "general",
+          "minister", "registrar", "inspector", "magistrate", "section", "district", "divisional", "block"}
 
 
 def test_corpus_is_large_and_varied():

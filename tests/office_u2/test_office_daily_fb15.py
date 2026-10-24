@@ -89,7 +89,8 @@ def test_fb15_r2_03_single_trailing_head_word_is_a_surname(name, changed):
     ins = f"Invite {name} to the meeting on 9th November 2026."
     assert names(ins) == [name]
     assert codes(ins, [f"Invite {name} on 9th November 2026."]) == []
-    assert codes(ins, [f"Invite {changed} on 9th November 2026."]) == [("FACT_MISSING", name)]
+    # FB15 follow-up: the trailing head word is soft (FACT_CHECK); the firm part is the name without it
+    assert codes(ins, [f"Invite {changed} on 9th November 2026."]) == [("FACT_CHECK", name)]
 
 
 def test_r2_03_guard_two_word_designation_still_ends_the_name():
