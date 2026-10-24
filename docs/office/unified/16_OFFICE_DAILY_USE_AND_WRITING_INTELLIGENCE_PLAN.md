@@ -331,6 +331,30 @@ outside this list is outside the guarantee, is listed below, and the Office show
 ("Check before saving": what URI checks, and that the owner reads the whole draft). The Save as card stays the only
 way a draft reaches disk.
 
+Exception inside the scope (owner decision 2026-10-24, OD-OD-5). A marked fact that the draft keeps word for word
+but extends into a longer name or a longer number is caught only where the rules can see the extension.
+- Caught:
+  - a capitalised continuation of a name ("Anjali Sharma", "Smt. Sunita Kumari Singh");
+  - a hyphenated surname;
+  - a lowercase titled name continued at the end of a block or inside a sentence, up to four lowercase words after
+    the title ("Shri ramesh kumar sharma verma");
+  - a longer name with the same start ("Shri Anil Kumar Singh");
+  - a reference with a suffix, a part file or a prefix ("14/2/2026-1", "...-Estt.-II", "...(Pt.)", "...-Estt./1",
+    "A-14/2/2026").
+- Not caught, so the extended draft gives no warning:
+  - a lowercase name without a title continued with lowercase words ("ramesh kumar" -> "ramesh kumar sharma");
+  - a titled lowercase name continued past four lowercase words;
+  - a capitalised name continued in lowercase ("Ramesh iyer");
+  - a continuation after a comma, in brackets or after a possessive ("Ramesh Kumar, Yadav", "Shri ramesh kumar
+    (sharma)", "Ramesh's brother Suresh");
+  - a second honorific with a dot after a name ("Anjali Dr. Sharma");
+  - a capitalised connector ("Anjali Of Delhi");
+  - a date, amount or number followed by more digits or words ("3rd October 2026-27", "15 days and 2",
+    "Rs. 2,45,000/- lakh").
+
+A missing or changed marked fact (one not present word for word) always warns. The extension cases above are the
+only exception, and they are not blockers under OD-OD-5.
+
 How the code reads the name cues of this scope (stated in FB6):
 - An honorific may be followed by a capitalised or a lowercase full name ("Shri Ram Kumar", "Shri ramesh kumar").
   An honorific on its own is never a name.
@@ -416,11 +440,30 @@ confirmed fixed):
 - In the per-line check the draft keeps its block boundaries: spacing is normalised within each line, and a newline
   is kept.
 
+Repairs after fallback review FB9 of 2831f984 (REJECT; record
+`D:/uri-dev/lifecycle/OFFICE-DAILY-USE-r10/fallback/FB9_subagent_2831f984.audit.txt`; FB8 and earlier confirmed
+fixed; this is the last repair round for the extension class under OD-OD-5):
+- R2-01: an honorific word without a dot in the middle of a run, after a name word and not after "and", is a middle
+  name ("Sunita Kumari Singh", "Anil Kumari Prasad"). FB8 had fixed only the end-of-run position. Two people joined
+  by "and" or a comma still split.
+- R2-02: the FB8 limitation sentence said "Shri ramesh kumar sharma" was reported. That was true only inside a
+  sentence; in a "To" block or a heading it passed silently. A titled lowercase name may now end at a newline and
+  have up to four words, and it is read before the capitalised runs, so "Pension of Shri ramesh kumar sharma" no
+  longer lends "Shri" to "Pension of Shri".
+- R2-03: a reference followed directly by "-<letter or digit>", "(<letter or digit>", ".-", "./", ".(" or
+  "/<letter or digit>", or preceded directly by "<letter or digit>-", is another file. A full stop, comma or space
+  after it, and "F.No." / "O.M. No." before it, still match.
+- R2-04: post-nominals and heading words end a name and are never part of it: IAS, IPS, IFS, IRS, MD (in capitals;
+  "Md." stays a name word), Esq., Ji, Retd., PhD, MBBS, Under, Regarding, Sanctioned, With. So "Shri Ramesh Kumar
+  IAS", "Dr. Rakesh Gupta MD" and "Subject: Deputation of Anjali Under Rule 12" give no false warning. A
+  designation written after a name on the same line without a comma ("Shri Ramesh Kumar Assistant") is still
+  reported, which is the safe direction.
+- R2-05 (answered by OD-OD-5): the extension exception is stated in the scope paragraph above.
+- Corpus (297 instructions): property (f) adds "<name> Kumari Xavier" and, for titled lowercase names, "<name>
+  xavier". Property (e) adds a faithful "<name> IAS" / "Under Rule 12" draft. References get "-1", "(Pt.)" and
+  "A-" changes in (c), (d) and (e).
+
 Fact-check limitations that remain (outside the scope above):
-- a lowercase name that the draft continues with lowercase words on the same line is read as the name followed by
-  prose, so the extension is not reported. This applies to a name without an honorific ("ramesh kumar" ->
-  "ramesh kumar sharma") and to an honorific name continued past three lowercase words ("Shri ramesh kumar sharma
-  verma"). "Shri ramesh kumar sharma" and any capitalised continuation are reported;
 - a single capitalised word after "of" that is a place or a body but follows a word not in the designation list
   (for example "the residents of Pune" is excluded, but "the visit of Pune officials" reads "Pune") becomes a name
   fact. That can give a false warning if the draft drops or rewords it, never a silent miss;
@@ -457,6 +500,10 @@ and the V3.1 fallback applies. No GPU-heavy run overlaps an M95 live run; Brain 
 - OD-OD-4 (decided by the owner 2026-10-24): the OD-2 fact check guarantees marked facts only (section 4,
   "Fact-check scope"), and the scope is shown with every draft. Raising the driver budget to chase every phrasing and
   dropping FACT_MISSING were the alternatives offered.
+- OD-OD-5 (decided by the owner 2026-10-24, MM LDEC-013, after FB9): "Fix these, then stop." The FB9 extension
+  shapes were repaired. From then on, a marked fact kept word for word but extended into a longer name or number is
+  a stated limitation (section 4, the exception in "Fact-check scope"), not a blocker. The guarantee stays: a marked
+  fact missing or changed always warns.
 - OD-WI-2 (preference): default language `en-IN` (Indian English spelling) - chosen by default from the owner's
   context; one line to change.
 

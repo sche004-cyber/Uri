@@ -103,8 +103,10 @@ _PERSON_NAME = re.compile(r"\b(?:staff\s+member|employee\s+named|officer\s+named
                           + r"(?=\s*(?:[.,;:(]|$|\b" + _PERSON_CLAUSE_START + r"\b))",
                           re.I)
 # FB6 R2-02: an honorific followed by a lowercase full name ("Shri ramesh kumar", "Smt. anita sharma").
-_HON_LOWER_NAME = re.compile(r"\b(" + _HONORIFIC + r")\s+([a-z][a-z'-]+(?:\s+(?!(?:" + _PERSON_CLAUSE_START
-                             + r")\b)[a-z][a-z'-]+){0,2})(?=\s*(?:[.,;:()]|$|\b" + _PERSON_CLAUSE_START + r"\b))")
+# FB9 R2-02: the name may also end at a newline (a "To" block or a heading), and may have up to four words.
+_HON_LOWER_NAME = re.compile(r"\b(" + _HONORIFIC + r")[ \t]+([a-z][a-z'-]+(?:[ \t]+(?!(?:" + _PERSON_CLAUSE_START
+                             + r")\b)[a-z][a-z'-]+){0,3})(?=[ \t]*(?:\n|[.,;:()]|$)|\s+" + _PERSON_CLAUSE_START
+                             + r"\b)")
 # FB6 R2-03: "of" is a name cue ("the transfer of Ramesh", "the deputation of Anjali"), except after a designation or
 # an institution ("the collector of Pune", "the director of Kolkata office"), where the next word is a place or a
 # body, not a person. Multi-word capitalised names ("Ministry of Finance", "Government of India", "Shri Ram Kumar")
@@ -303,6 +305,11 @@ def extract_facts(instruction: str) -> list:
             add("number", value, m.start(), end)
         else:
             spans.append((m.start(), m.end()))
+    # 5a. an honorific with a lowercase full name (FB6 R2-02), claimed before the capitalised runs so a heading
+    # "Pension of Shri ramesh kumar sharma" does not lend "Shri" to the run "Pension of Shri" (FB9 R2-02)
+    for m in _HON_LOWER_NAME.finditer(text):
+        if not taken(m.start(), m.end()) and m.group(2).split()[0] not in _NOT_NAME:
+            add("name", m.group(0).rstrip(".,;:"), m.start(), m.end())
     # 5. Claim explicitly labelled people before looking at capitalised runs. A title-cased
     # designation after a person can otherwise be mistaken for a second person's name.
     person_spans = []
@@ -347,10 +354,7 @@ def extract_facts(instruction: str) -> list:
                 # FB5 R6-02: only an exact repeat is a duplicate ("Shri Anil Kumar" next to "Shri Anil Kumar
                 # Singh" is a second person)
                 add("name", value, name[0][0], name[-1][0] + len(name[-1][1]))
-    # 6. an honorific with a lowercase full name (FB6 R2-02), then one capitalised word after a cue
-    for m in _HON_LOWER_NAME.finditer(text):
-        if not taken(m.start(), m.end()) and m.group(2).split()[0] not in _NOT_NAME:
-            add("name", m.group(0).rstrip(".,;:"), m.start(), m.end())
+    # 6. one capitalised word after a cue
     cues = list(_CUE_NAME.finditer(text))
     cues += [m for m in _OF_CUE_NAME.finditer(text) if m.group(1).lower() not in _OF_NOT_AFTER]
     for m in sorted(cues, key=lambda x: x.start()):
@@ -385,6 +389,12 @@ def _is_cap(w: str) -> bool:
     return bool(re.match(r"[A-Z][A-Za-z'.-]*$", w) or re.fullmatch(_BRACKET_HON, w))
 
 
+# FB9 R2-04: post-nominals and heading words end a name; they are never part of it ("Shri Ramesh Kumar IAS",
+# "Subject: Deputation of Anjali Under Rule 12", "Leave of Ramesh Sanctioned").
+_NAME_END = {"ias", "ips", "ifs", "irs", "esq", "esq.", "under", "regarding", "sanctioned", "with", "ji", "retd",
+             "retd.", "phd", "ph.d.", "mbbs"}
+
+
 def _cap_runs(text: str, taken):
     """Runs of capitalised words (with of/and/for/the between them). A run ends at punctuation other than a dot
     inside a word, at a claimed span, at a lowercase word and after a word that ends a sentence."""
@@ -401,11 +411,14 @@ def _cap_runs(text: str, taken):
             if last.endswith(".") and not _is_hon(last) and last.lower() not in _NON_TERMINAL \
                     and len(last.rstrip(".").replace(".", "")) > 2:
                 breaks = True
+        # "MD" in capitals is a post-nominal; "Md." is a name word
+        if w.lower() in _NAME_END or w.lower().rstrip(".") in _NAME_END or w == "MD":
+            breaks = True
         if breaks or not (_is_cap(w) or w.lower() in _CONNECTORS):
             if run:
                 runs.append(run)
             run = []
-            if not taken(a, b) and _is_cap(w):
+            if not taken(a, b) and _is_cap(w) and w.lower().rstrip(".") not in _NAME_END and w != "MD":
                 run = [(a, w)]
         else:
             run.append((a, w))
@@ -422,7 +435,12 @@ def _split_at_honorifics(start, words):
         # a second honorific right after one ("Dr. (Smt.)") belongs to the same person; FB8: an honorific word at the
         # end of a run is a surname ("Anjali Kumari"), not the start of another name
         last = i == len(words) - 1
-        if _is_hon(w) and not last and cur and not all(_is_hon(x) for _, x in cur):
+        # FB9 R2-01: a dotless honorific word after a name word, not after "and", is a middle name ("Sunita Kumari
+        # Singh", "Anil Kumari Prasad"); "Shri Ram Kumar and Smt Sita Devi" still splits (a comma ends the run anyway)
+        prev = words[i - 1][1] if i else ""
+        middle = (not w.endswith(".") and not w.startswith("(") and prev and not _is_hon(prev)
+                  and prev.lower() not in _CONNECTORS)
+        if _is_hon(w) and not last and not middle and cur and not all(_is_hon(x) for _, x in cur):
             parts.append(cur)
             cur = []
         cur.append((a, w))
@@ -502,7 +520,8 @@ def _name_hits(name: str, text: str, longer: list, draft_longer=()) -> int:
         # only a capitalised word on the same line ("Shri ramesh kumar Xavier"); a lowercase word after a lowercase
         # name ("asha devi requests ...") is ordinary prose, and a newline is a block boundary
         nxt = re.match(r" ([A-Z][A-Za-z'-]*)", hay[end:])
-        return bool(lower and nxt and nxt.group(1).lower() not in _NOT_NAME and not _is_hon(nxt.group(1)))
+        return bool(lower and nxt and nxt.group(1).lower() not in _NOT_NAME and not _is_hon(nxt.group(1))
+                    and nxt.group(1).lower().rstrip(".") not in _NAME_END and nxt.group(1) != "MD")
     # FB8: a name joined to another word by a hyphen ("Anjali-Sharma") is part of a longer name, not the name itself
     return sum(1 for m in _fact_rx(_norm(name)).finditer(hay)
                if not re.match(r"-[^\W\d_]", hay[m.end():m.end() + 2]) and not re.search(r"[^\W\d_]-$", hay[:m.start()])
@@ -510,7 +529,11 @@ def _name_hits(name: str, text: str, longer: list, draft_longer=()) -> int:
                and not any(a <= m.start() and m.end() <= b and (b - a) > (m.end() - m.start()) for a, b in covers))
 
 
-def fact_present(fact: str, draft_text: str, instruction: str | None = None) -> bool:
+_REF_SUFFIX = re.compile(r"(?:-[A-Za-z0-9]|\([A-Za-z0-9]|\.[-/(]|/[A-Za-z0-9])")
+_REF_PREFIX = re.compile(r"[A-Za-z0-9]-$")
+
+
+def fact_present(fact: str, draft_text: str, instruction: str | None = None, kind: str | None = None) -> bool:
     """A fact counts as present only as a whole token run: no letter or digit or '/' directly before or after it, and
     no digit group continuing it ("25,000" is not inside "1,25,000"; "Kumar" is not inside "Kumari"). Spacing and
     case are ignored; "lakh" also matches "lakhs"; an amount may end in "/-".
@@ -532,6 +555,9 @@ def fact_present(fact: str, draft_text: str, instruction: str | None = None) -> 
         for m in rx.finditer(src):
             same_after.add(_after_word(src, m.end()))
     for m in rx.finditer(hay):
+        # FB9 R2-03: "14/2/2026-1", "...-Estt.-II", "...-Estt.(Pt.)", "...-Estt./1" and "A-14/2/2026" are other files
+        if kind == "reference" and (_REF_SUFFIX.match(hay[m.end():]) or _REF_PREFIX.search(hay[:m.start()])):
+            continue
         if ends_num_word or ends_plain_digit:
             after = hay[m.end():]
             cont = re.match(r"[\s-]+" + _NUM_WORD + r"\b", after, re.I) or \
@@ -560,7 +586,7 @@ def missing_facts(instruction: str, draft_text: str) -> list:
             draft_longer = [n for n in draft_names if n not in names and n != f["text"] and low in _norm(n).lower()]
             present = _name_hits(f["text"], draft_text, longer, draft_longer) >= 1
         else:
-            present = fact_present(f["text"], draft_text, instruction)
+            present = fact_present(f["text"], draft_text, instruction, f["kind"])
         if not present:
             out.append({"code": "FACT_MISSING", "kind": f["kind"], "text": f["text"],
                         "message": f"The draft does not contain the {f['kind']} '{f['text']}' from your instruction. "
