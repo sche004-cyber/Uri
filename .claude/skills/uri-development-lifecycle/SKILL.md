@@ -118,7 +118,9 @@ lifecycle numbers in the first column.
    session; read-only; no implementation or repair authority; given requirements, repository state, diff and
    evidence — never the implementer's conclusion) may review. Record its result with `import-review`. It routes
    findings to repair. Report it as "imported review (not driver-counted)", never as an independent ACCEPT: under
-   owner decision D1 it does not allow VERIFIED or canonical integration; a driver-counted round still does.
+   owner decision D1 it does not allow the driver's VERIFIED or integration by the driver; a driver-counted round
+   still does. Work accepted through the Lifecycle V3.1 fallback path ("Review paths", `task_ledger accept`) is
+   integrated as in stage 11 "Fallback-accepted work".
 4. Nothing independent available ⇒ report `INDEPENDENT AUDIT: BLOCKED`. Never self-review instead.
 5. If Codex fails during a run (WAITING_FOR_MODEL, or any round whose commands were all BLOCKED or whose
    `tests_run` and `inspected` are empty — the driver may
@@ -294,15 +296,17 @@ code alone never means the phase is qualified: live UI, security, regression and
 ## Integration preconditions and authorisation (stage 11)
 
 Integrate (or ask the owner) only when all of these hold, and name them in the authorisation record:
-the exact accepted commits; a final driver-counted independent ACCEPT/ACCEPT WITH FINDINGS on that SHA; no open
+the exact accepted commits; a final driver-counted independent ACCEPT/ACCEPT WITH FINDINGS on that SHA (for
+fallback-accepted work, the fallback acceptance described below); no open
 blocking finding; canonical re-checked for intervening changes (a moved canonical means rebase and re-review); a PASS UI
 qualification record for each user-facing capability (or the owner's explicit acceptance of the named
 NOT VERIFIED items); frozen-file integrity (`protected_paths` diff); provenance; combined regression gates;
 security and approval boundaries checked; the driver receipt (`receipt.json`, `verify` OK) as the reproducible
-integration record. Never merge unqualified work silently. Development-branch acceptance
-is never authorisation for production deployment.
+integration record (for fallback-accepted work, the record described below). Never merge unqualified work
+silently. Development-branch acceptance is never authorisation for production deployment.
 
-Authorisation has two paths (owner decision LDEC-016 and its 2026-10-24 clarification; basis DEC-041):
+Authorisation has two paths (owner decision LDEC-016 and its 2026-10-24 clarifications; basis DEC-041);
+fallback-accepted work takes the first one:
 
 - **Standing policy (automatic).** When every precondition above holds (all independent reviews, tests, security
   checks and integration gates pass on the exact commit) and no significant owner-level decision is involved, the
@@ -315,24 +319,31 @@ Authorisation has two paths (owner decision LDEC-016 and its 2026-10-24 clarific
   sensitive-data changes; new permissions, credentials, privileges or dependencies; frozen or protected paths
   (`authorized_protected_changes`); production deployment or cutover; any finding marked as an owner decision;
   work the owner has reserved or deferred. Ask the owner, with the preconditions, and record their words.
-- **Fallback-accepted work.** A commit accepted only through the fallback review path ("Review paths"; the driver
-  recorded `NO_INDEPENDENT_REVIEWER`, so there is no driver-counted ACCEPT and no driver VERIFIED stop) is not
-  covered by the standing policy: Auditor selection item 3 (D1) applies, and it takes the explicit owner approval
-  path, with the fallback review, the gates run on the exact SHA against the baseline and the push command named
-  in the request.
+- **Fallback-accepted work (owner, 2026-10-24).** A commit accepted through the V3.1 fallback path is covered by
+  the standing policy on the same terms, provided it passes the same gates. Fallback acceptance means: the driver
+  recorded `NO_INDEPENDENT_REVIEWER` on the exact SHA; a fresh isolated fallback review of that SHA returned ACCEPT
+  or ACCEPT WITH FINDINGS with no blocking finding, recorded with `task_ledger review`; and `task_ledger accept`
+  accepted the task. The driver stops before its gates on this path, so the coordinator supplies them: run every
+  gate of the run config's `gates` on the exact SHA in a fresh detached worktree (fixtures installed where a gate
+  needs them), run a failing gate's command on the baseline too, and accept only zero new failures by test id
+  (known baseline failures named); `ws_frozen_check` exit 0. Record the results with `task_ledger test` and as
+  Milestone Manager evidence. The reproducible record is the stored fallback review output, the gate logs, the
+  accepted task and the integration receipt. Restricted decisions still take the explicit owner approval path.
 
 Both paths:
 
 - **Ledger before push.** The independent review, the acceptance and the authorisation are recorded in the
   Milestone Manager ledger before anything is pushed to canonical; the integration record and the receipt follow
   the push.
-- **How the integration is performed.** The run stays `authorized: false` and stops BLOCKED `OWNER_AUTHORIZATION`
-  at VERIFIED with the exact push command in `blocker.needs`. After the authorisation is recorded, re-check the
-  canonical tip (`git ls-remote`; it must equal the driver's recorded `target_tip_before`, otherwise rebase and
-  re-review) and confirm `git merge-base --is-ancestor <verified tip> <sha>`, then run that fast-forward push
-  with the lease pinned to the verified tip (`--force-with-lease=<ref>:<verified tip>`, so a moved target is
-  refused), and verify the remote afterwards. Do not edit `authorized` in a running config (that is a policy change: BLOCKED CONFIG, cleared
-  only by the owner).
+- **How the integration is performed.** The run stays `authorized: false`. A driver-counted run stops BLOCKED
+  `OWNER_AUTHORIZATION` at VERIFIED with the exact push command in `blocker.needs`; the expected tip is the
+  driver's recorded `target_tip_before`. A fallback-accepted run stops at `NO_INDEPENDENT_REVIEWER` with no push
+  command; the expected tip is the run's baseline `expect`, and the command is `git push
+  --force-with-lease=refs/heads/<target>:<expected tip> <canonical remote> <sha>:refs/heads/<target>`. After the
+  authorisation is recorded, re-check the canonical tip (`git ls-remote`; it must equal the expected tip,
+  otherwise rebase and re-review) and confirm `git merge-base --is-ancestor <expected tip> <sha>`, then push
+  with the lease pinned to that tip (a moved target is refused), and verify the remote afterwards. Do not edit
+  `authorized` in a running config (that is a policy change: BLOCKED CONFIG, cleared only by the owner).
 - **Revert-only rollback.** The integration receipt written by the integrating session names the rollback as
   `git revert --no-edit <base>..<tip>` followed by a reviewed fast-forward; never a force-push or a history
   rewrite.
