@@ -258,6 +258,7 @@ Driver outcomes map by stage and blocker kind:
 | BLOCKED `STALLED` or `RETRY_LIMIT` | REJECT (this candidate) |
 | BLOCKED `OWNER_AUTHORIZATION` with `blocker.stage: VERIFIED` | the verdict, ready for stage 11 ("Integration preconditions and authorisation" decides standing policy or owner) |
 | any other BLOCKED `OWNER_*` (including `OWNER_DECISION` for a repair refused as protected or out of scope), or a finding with `owner_decision: true` | BLOCKED (needs the owner) |
+| BLOCKED `NO_INDEPENDENT_REVIEWER`, with the task ledger ACCEPTED on that exact SHA through the fallback path and the stage-11 coordinator gates passed | FALLBACK-ACCEPTED (not driver-counted) |
 | BLOCKED `NO_ACTIONABLE_FINDINGS` | BLOCKED; if all the round's commands were BLOCKED, or its `tests_run` and `inspected` are empty, an auditor failure (Auditor selection) |
 | any other BLOCKED kind (e.g. `TAMPER`, `CONFIG`, `EVIDENCE`, `RESOURCE`, `BUDGET`, `REVIEWER_EXEC`, `REPAIR_FAILED`, `STEP_LIMIT`), WAITING_FOR_MODEL, NOT_VERIFIED | BLOCKED |
 | VERIFIED / COMPLETE on an independent ACCEPT or ACCEPT WITH FINDINGS | that verdict |
@@ -274,7 +275,7 @@ code alone never means the phase is qualified: live UI, security, regression and
   `evidence_ok_for_candidate: true` supports "independently accepted". Work accepted through the V3.1 fallback
   path is reported as **FALLBACK-ACCEPTED** (the task ledger ACCEPTED on the exact SHA with its fallback basis,
   plus the coordinator's gate results of stage 11), never as driver-counted.
-  WAITING_FOR_MODEL, BLOCKED, NOT_VERIFIED or a missing receipt means NOT QUALIFIED; say so.
+  Otherwise WAITING_FOR_MODEL, BLOCKED, NOT_VERIFIED or a missing receipt means NOT QUALIFIED; say so.
 - BLOCKED `OWNER_AUTHORIZATION` with `blocker.stage: VERIFIED` ⇒ go to stage 11 ("Integration preconditions and
   authorisation"); ask the owner only when the explicit-approval path applies. The driver's wording "needs owner
   authorisation" is fixed driver text; stage 11 decides.
@@ -327,13 +328,15 @@ fallback-accepted work takes the first one:
   recorded `NO_INDEPENDENT_REVIEWER` on the exact SHA; a fresh isolated fallback review of that SHA returned ACCEPT
   or ACCEPT WITH FINDINGS with no blocking finding, recorded with `task_ledger review`; and `task_ledger accept`
   accepted the task. The driver stops before its gates on this path, so the coordinator supplies the same checks:
-  run every gate bound in the run's `PLAN` event (the run config unchanged since: `lifecycle verify` OK, no
-  `CONFIG_CHANGED`) on the exact SHA in a fresh detached worktree (fixtures installed where a gate needs them);
-  run a failing gate's command on the baseline too and accept only zero new failures by test id (known baseline
-  failures named); a gate that executed no tests is not a pass unless the gate carries a written
-  `allow_zero_tests` justification (DRV-3); the changed paths baseline..SHA touch no path of the run's resolved
-  `protected_paths` outside `authorized_protected_changes`, and `ws_frozen_check` exits 0. Record the results
-  with `task_ledger test` and as Milestone Manager evidence. The reproducible record is the stored fallback review output, the gate logs, the
+  run every gate bound in the run's `PLAN` event (`lifecycle verify` OK, and the config file's sha256 equals the
+  PLAN event's `config_sha256`; otherwise use the gate definitions recorded in that event's `policy`) on the exact
+  SHA in a fresh detached worktree (fixtures installed where a gate needs them), and run each gate on the baseline
+  too. Accept only the driver's comparison result: no new failure, no known failure with a changed cause and no
+  baseline-passing test missing on the candidate (by test id; known baseline failures named); a gate that
+  executed no tests is not a pass unless the gate carries a written `allow_zero_tests` justification (DRV-3). The
+  changed paths baseline..SHA touch no path of the run's resolved `protected_paths` outside
+  `authorized_protected_changes`, and `ws_frozen_check` exits 0. Record the results with `task_ledger test` and as
+  Milestone Manager evidence. The reproducible record is the stored fallback review output, the gate logs, the
   accepted task and the integration receipt. Restricted decisions still take the explicit owner approval path.
 
 Both paths:
