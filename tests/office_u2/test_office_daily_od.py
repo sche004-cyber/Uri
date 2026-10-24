@@ -447,6 +447,42 @@ def test_ocr_runs_only_on_request_and_is_refused_by_name_without_tesseract(tmp_p
     assert e.value.code == "OCR_UNAVAILABLE"
 
 
+@pytest.mark.parametrize("failure,code", [
+    (FileNotFoundError("tesseract disappeared"), "OCR_UNAVAILABLE"),
+    (OSError("could not start tesseract"), "OCR_FAILED"),
+])
+def test_r11_02_ocr_spawn_failure_has_named_refusal_and_closes_job(monkeypatch, failure, code):
+    jobs = []
+
+    class FakeJob:
+        def __init__(self, **kwargs):
+            self.closed = False
+            jobs.append(self)
+
+        def close(self):
+            self.closed = True
+
+    def fail_spawn(*args, **kwargs):
+        raise failure
+
+    monkeypatch.setattr(OCR.J, "Job", FakeJob)
+    monkeypatch.setattr(OCR.J, "spawn", fail_spawn)
+    with pytest.raises(OfficeError) as e:
+        OCR.ocr_png(Path("page.png"), Path("tesseract.exe"))
+    assert e.value.code == code and e.value.status == 503
+    assert len(jobs) == 1 and jobs[0].closed
+
+
+def test_r11_02_ocr_job_setup_failure_has_named_refusal(monkeypatch):
+    def fail_job(**kwargs):
+        raise OSError("could not create job")
+
+    monkeypatch.setattr(OCR.J, "Job", fail_job)
+    with pytest.raises(OfficeError) as e:
+        OCR.ocr_png(Path("page.png"), Path("tesseract.exe"))
+    assert e.value.code == "OCR_FAILED" and e.value.status == 503
+
+
 def test_ocr_page_cap_lists_skipped_pages(tmp_path, monkeypatch):
     from uri_office import docs as DOCS
     d, _ = docs_with(tmp_path, [""] * (DOCS.MAX_OCR_PAGES + 3), png=tmp_path / "p.png")

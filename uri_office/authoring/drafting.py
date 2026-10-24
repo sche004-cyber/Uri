@@ -98,7 +98,7 @@ _PERSON_CLAUSE_START = (r"(?:is|was|will|shall|has|had|who|and|the|a|an|be|can|m
 _PERSON_NAME_WORD = r"(?!(?:" + _PERSON_CLAUSE_START + r")\b)[A-Za-z][A-Za-z'-]+"
 _PERSON_NAME = re.compile(r"\b(?:staff\s+member|employee\s+named|officer\s+named|person\s+named)\s+("
                           + _PERSON_NAME_WORD + r"(?:\s+" + _PERSON_NAME_WORD + r"){1,3})"
-                          + r"(?=\s*(?:[.,;:]|$|\b" + _PERSON_CLAUSE_START + r"\b))",
+                          + r"(?=\s*(?:[.,;:(]|$|\b" + _PERSON_CLAUSE_START + r"\b))",
                           re.I)
 _LETTER_RECIPIENT = re.compile(r"\bletters?\s+to\s+(" + _PERSON_NAME_WORD
                                + r"(?:\s+" + _PERSON_NAME_WORD + r"){1,3})"
@@ -303,6 +303,8 @@ def extract_facts(instruction: str) -> list:
         if any(re.fullmatch(r"\s+as\s+(?:the\s+)?", text[person_end:start], re.I)
                 or (confident_person and re.fullmatch(r",\s+", text[person_end:start])
                     and (text[end:].startswith(",") or re.match(r"\s+as\b", text[end:], re.I)))
+                or (confident_person and re.fullmatch(r"\s*\(\s*", text[person_end:start])
+                    and re.match(r"\s*\)", text[end:]))
                for _, person_end, confident_person in person_spans if person_end < start):
             designation_spans.append((start, end))
     spans.extend(designation_spans)

@@ -302,3 +302,17 @@ def test_r10_02_single_appointee_before_designation_is_checked():
     assert DR.missing_facts(instruction, draft) == []
     assert [(w["code"], w["kind"], w["text"]) for w in DR.missing_facts(
         instruction, draft.replace("Anil", "Sunil"))] == [("FACT_MISSING", "name", "Anil")]
+
+
+@pytest.mark.parametrize("instruction,draft,person,replacement", [
+    ("Draft a circular appointing staff member ramesh kumar (Section Officer) as liaison.",
+     "Circular: ramesh kumar will serve as liaison.", "ramesh kumar", "suresh kumar"),
+    ("Issue an order appointing officer named asha devi (Project Coordinator) as liaison.",
+     "Order: asha devi will serve as liaison.", "asha devi", "priya devi"),
+])
+def test_r11_01_parenthesized_designation_keeps_labelled_person(instruction, draft, person, replacement):
+    assert [f for f in DR.extract_facts(instruction) if f["kind"] == "name"] == [
+        {"kind": "name", "text": person}]
+    assert DR.missing_facts(instruction, draft) == []
+    assert [(w["code"], w["kind"], w["text"]) for w in DR.missing_facts(
+        instruction, draft.replace(person, replacement))] == [("FACT_MISSING", "name", person)]

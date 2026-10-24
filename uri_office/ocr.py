@@ -37,8 +37,9 @@ def ocr_png(png: Path, exe: Path | None = None, timeout: float = OCR_TIMEOUT_S) 
     exe = exe or tesseract_exe()
     if exe is None:
         raise OfficeError("OCR_UNAVAILABLE", "Tesseract is not installed on this PC", 503)
-    job = J.Job(memory_limit=OCR_MEMORY)
+    job = None
     try:
+        job = J.Job(memory_limit=OCR_MEMORY)
         p = J.spawn([str(exe), str(png), "stdout", "-l", OCR_LANG], job, stdin=subprocess.DEVNULL,
                     stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, cwd=str(Path(png).parent))
         try:
@@ -47,8 +48,13 @@ def ocr_png(png: Path, exe: Path | None = None, timeout: float = OCR_TIMEOUT_S) 
             job.close()                                   # kills Tesseract and anything it started
             p.communicate()
             raise OfficeError("OCR_TIMEOUT", "reading a scanned page took too long", 503) from None
+    except FileNotFoundError:
+        raise OfficeError("OCR_UNAVAILABLE", "Tesseract is not installed on this PC", 503) from None
+    except OSError:
+        raise OfficeError("OCR_FAILED", "Tesseract could not be started", 503) from None
     finally:
-        job.close()
+        if job is not None:
+            job.close()
     if p.returncode != 0:
         raise OfficeError("OCR_FAILED", f"Tesseract exit {p.returncode}", 503)
     return out.decode("utf-8", "replace").replace("\x0c", "").strip()
