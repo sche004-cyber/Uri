@@ -287,3 +287,16 @@ URL rules and in the config-notation rule (only the future 64 KB hooks, OD-1, re
 corrected:** the AC-14c owner decision covers every text that takes more than one reading - an egress form that
 differs from the original, or any invisible shaping character (ZWJ, ZWNJ: emoji sequences, Persian). Every residual of
 6.4-6.11 stands, including OD-7 and OD-8.
+
+### 6.13 Changes after fallback review FB12 (2026-10-24; second review with no STRUCTURAL finding)
+
+| Change | Proof (tests/privacy) |
+|---|---|
+| Config keys (compound, camelCase, run-together) take every separator form when the value holds a letter and a digit or symbol and is 8+ characters; a value before a compound key that ends the sentence | `test_pc21.py::test_fb12_r1_01*` |
+| "set / change / reset / update ... password, PIN, passcode, key, secret or token to (or as) X" | `test_pc21.py::test_fb12_r1_02*` |
+| A ":" inside a clock time or a URL is not a label separator | `test_pc21.py::test_fb12_r1_03*` |
+| Cyrillic ka, Greek kappa and tau read as k and t in labels | `test_pc21.py::test_fb12_r1_04*` |
+
+**Residual added:** a secret right after a commit / sha / md5 / digest / hash / checksum / revision / rev / build word
+(within 12 characters) is not treated as a secret, whatever its alphabet (the exemption exists for digests). Every
+residual of 6.4-6.12 stands, including OD-7 and OD-8.

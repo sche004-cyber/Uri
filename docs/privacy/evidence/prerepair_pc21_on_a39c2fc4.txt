@@ -1,0 +1,13 @@
+            q = f"{rng.choice(['password', 'passcode', 'my password manager'])} {rng.choice(['reset failed', 'not working', 'crashed'])} " \
+E       AssertionError: (269, ['password not working see 01:17:05', 'passcode crashed since 17:21:21', 'password reset failed see 02:00:20', 'passcode reset failed see https://example.com/help?q=reset', 'password not working see https://example.com/help?q=reset'])
+FAILED tests/privacy/test_pc21.py::test_fb12_r1_01_compound_keys_with_any_separator_never_carry_the_value
+FAILED tests/privacy/test_pc21.py::test_fb12_r1_01_value_before_a_compound_key_and_export_forms[{v} is the DB_PASSWORD.]
+FAILED tests/privacy/test_pc21.py::test_fb12_r1_01_value_before_a_compound_key_and_export_forms[{v} was our client_secret]
+FAILED tests/privacy/test_pc21.py::test_fb12_r1_01_value_before_a_compound_key_and_export_forms[export DB_PASSWORD {v}]
+FAILED tests/privacy/test_pc21.py::test_fb12_r1_02_set_or_changed_to_a_value_never_carries_it
+FAILED tests/privacy/test_pc21.py::test_fb12_r1_03_login_help_with_times_and_urls_is_not_refused
+FAILED tests/privacy/test_pc21.py::test_fb12_r1_04_lookalike_letters_in_key_labels_are_read[my api \u043aey: Hunt3r2!xyzQ ok]
+FAILED tests/privacy/test_pc21.py::test_fb12_r1_04_lookalike_letters_in_key_labels_are_read[my api_\u043aey=Hunt3r2!xyzQ]
+FAILED tests/privacy/test_pc21.py::test_fb12_r1_04_lookalike_letters_in_key_labels_are_read[api \u03baey: Hunt3r2!xyzQ]
+FAILED tests/privacy/test_pc21.py::test_fb12_r1_04_lookalike_letters_in_key_labels_are_read[\u03c4oken: Hunt3r2!xyzQ]
+10 failed, 7 passed in 0.99s

@@ -116,6 +116,10 @@ _LABELLED = re.compile(
     # of 6-10 digits, separators allowed (FB9 R1-04).
     r"\bauthorization\W{0,3}basic\s+([A-Za-z0-9+/]{8,}={0,2})|"
     r"\b(?:recovery|backup|2fa|mfa|two[- ]factor)\s+codes?\b\W{0,3}(?:is\s+)?(\d(?:[ -]?\d){5,9})(?!\d)|"
+    # A credential set or changed to a value ("set the password to X", "changed my PIN to 4821"; FB12 R1-02).
+    r"\b(?:set(?:s|ting)?|chang(?:e|ed|es|ing)|reset(?:s|ting)?|updat(?:e|ed|es|ing))\b[^.\n]{0,20}?"
+    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase|m?pin|api[ _-]?key|secret(?: key)?|token)\b"
+    r" (?:to|as) [\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
     # "pass: x" / "pass=x" (never "pass is"), and a code word a few words before its digits ("the PIN for the locker
     # is 4821"). A bare "code" needs exactly 6 digits (OTP length) and no zip/postal/error/status/area word before it.
     r"\b(?:pass|pw)\s*[:=]\s*[\"']?([^\s\"',;]{4,})|"
@@ -148,7 +152,7 @@ _LABELLED = re.compile(
     # symbol, so "pass 2026 exams" and "pass COVID tests" stay readable.
     r"(?:\bpw|(?:user(?:name)?|login|id|wifi|account)\b[^\n]{0,30}?\bpass) "
     r"[\"']?(?=[^\s\"',;]*[A-Za-z])(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
-    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase)\b[^.\n]{1,30}?\b(?:is|:) ?[\"']?"
+    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|passphrase)\b[^.\n]{1,30}?(?:\bis|(?<!\d):(?!//|\d)) ?[\"']?"
     r"(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
     r"\b(?:otp|m?pin(?! ?code)|passcode|cvv)\b[^.\n\d]{1,30}?\b(?:is|:)\s*(\d{3,8})\b|"
     r"(?<!zip )(?<!postal )(?<!error )(?<!status )(?<!area )(?<!country )(?<!pin )(?<!pin-)\bcode\b\s*(?:is|was|:)?\s*(\d{6})(?!\d))")
@@ -233,6 +237,15 @@ _KEYWORD = r"(?:pass(?:word|wd|phrase|code)?|pwd|(?:secret|signing|encryption|ma
 _KEYVAL = re.compile(
     r"(?i)(?<![A-Za-z0-9])[\"']?(?:[A-Za-z0-9]{1,24}[_.-]){0,3}[A-Za-z0-9]{0,24}?" + _KEYWORD + r"[\"']?\s*[:=]\s*"
     r"[\"']?(?=[^\s\"',;{}<>]*\d)([^\s\"',;{}<>]{4,})|"
+    # the same keys with the separator forms of the plain labels ("DB_PASSWORD is X", "client_secret - X",
+    # "export DB_PASSWORD X"; review FB12 R1-01): the value holds a letter and a digit or symbol and is 8+ characters
+    r"(?<![A-Za-z0-9])[\"']?(?:[A-Za-z0-9]{1,24}[_.-]){0,3}[A-Za-z0-9]{0,24}?" + _KEYWORD + r"[\"']?"
+    r"(?: (?:is|was) | ?(?:->|=>|-|\u2013|\u2192|\(|,) ?|\s+)[\"']?"
+    r"(?=[^\s\"',;{}<>()]*[A-Za-z])(?=[^\s\"',;{}<>()]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;{}<>()]{8,})|"
+    # the value before a compound key that ends the sentence ("Hunt3r2!xyz is the DB_PASSWORD.")
+    r"(?<![^\s\"'(])[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{8,})[\"']? (?:is|was|as) "
+    r"(?:(?:my|the|our|your|a|new) ){0,2}(?:[A-Za-z0-9]{1,24}[_.-]){1,3}[A-Za-z0-9]{0,24}?" + _KEYWORD +
+    r"(?=\s*(?:[.,;:!?)\]\"']|$))|"
     r"<(?:[A-Za-z0-9_.-]{0,24}?)" + _KEYWORD + r"[^<>]{0,40}>\s*([^<\s]{4,})\s*</")
 _SPACED_CODE = re.compile(r"(?i)\b(?:otp|cvv2?|cvc2?|pin|passcode)\b[^.\n\d]{0,20}?((?:\d{1,2} ){1,7}\d{1,2})(?!\d)")
 _PHONE_CTX = re.compile(r"(?i)\b(?:call|phone|ph|mob|mobile|cell|whatsapp|contact|tel|telephone|sms|text|reach|"
@@ -767,7 +780,8 @@ def _confusables():
         return {}
 
 
-_CONF = _confusables()
+# Latin look-alikes the UTS #39 ASCII table leaves out (review FB12 R1-04): Cyrillic ka, Greek kappa and tau.
+_CONF = {**_confusables(), "\u043a": "k", "\u03ba": "k", "\u03c4": "t"}
 
 
 @functools.lru_cache(maxsize=8192)       # pure: memoized for long non-ASCII texts (FB5 R1-02)
