@@ -418,9 +418,11 @@ def _cap_runs(text: str, taken):
 def _split_at_honorifics(start, words):
     """FB4 R5-01: every honorific starts a new name ("Shri Ram Kumar and Smt. Sita Devi" is two names)."""
     parts, cur = [], []
-    for a, w in words:
-        # a second honorific right after one ("Dr. (Smt.)") belongs to the same person
-        if _is_hon(w) and cur and not all(_is_hon(x) for _, x in cur):
+    for i, (a, w) in enumerate(words):
+        # a second honorific right after one ("Dr. (Smt.)") belongs to the same person; FB8: an honorific word at the
+        # end of a run is a surname ("Anjali Kumari"), not the start of another name
+        last = i == len(words) - 1
+        if _is_hon(w) and not last and cur and not all(_is_hon(x) for _, x in cur):
             parts.append(cur)
             cur = []
         cur.append((a, w))
@@ -457,22 +459,27 @@ def _fact_rx(t: str):
     return re.compile(r"(?<![^\W_])(?<![/])(?<!\d[,.])" + body + r"(?![^\W_])(?!/(?!-))(?![,.]\d)", re.I)
 
 
-_JUNCTION = re.compile(r"(?i)(?:^|\s)(?:of|for|the|and|to|from|in|on|at|by)\s*$")
+_CONNECTOR_WORD = re.compile(r"(?i)\b(?:of|for|the|and|to|from|in|on|at|by)\b")
 
 
 def _extends(name: str, big: str) -> bool:
-    """FB7 R2-01 / R2-03: does `big` extend the name `name` into a longer name of another person ("Shri Anil Kumar"
-    -> "Shri Anil Kumar Singh")? Not when a connector word joins them ("Deputation of Anjali", "The Tehsildar of
-    Haveli", "Filling Up of the Post of Superintendent"): that is a phrase around the name, not a longer name. Not
-    when only honorifics are added in front ("Ramesh" -> "Shri Ramesh"): that is the same name with a title."""
+    """Does `big` extend the name `name` into a longer name of another person ("Shri Anil Kumar" -> "Shri Anil Kumar
+    Singh")?
+    - Words after the name that continue it make an extension, whatever comes before it ("Deputation of Anjali
+      Sharma", "Promotion of Kavitha Reddy to the Grade of UDC": FB8 R2-01).
+    - With nothing after it (or a connector next), only the words between the last connector and the name count:
+      none ("Deputation of Anjali", "The Tehsildar of Haveli", "Filling Up of the Post of Superintendent": FB7 R2-01)
+      or honorifics only ("Shri Ramesh": FB7 R2-03) is the same name, not an extension."""
     n, b = _norm(name).lower(), _norm(big).lower()
     for m in _fact_rx(n).finditer(b):
         before, after = b[:m.start()], b[m.end():]
-        if _JUNCTION.search(before) or re.match(r"\s*(?:of|for|and|to|from|in|on|at|by)\b", after):
-            continue
-        if not after.strip() and all(_HON_RX.match(w) or re.fullmatch(_BRACKET_HON, w)
-                                     for w in _norm(big)[:m.start()].split()):
-            continue
+        nxt = after.split()[0] if after.split() else ""
+        if nxt and not _CONNECTOR_WORD.fullmatch(nxt):
+            return True                           # more name words after it: another, longer name
+        cuts = list(_CONNECTOR_WORD.finditer(before))
+        lead = _norm(big)[cuts[-1].end():m.start()] if cuts else _norm(big)[:m.start()]
+        if all(_HON_RX.match(w) or re.fullmatch(_BRACKET_HON, w) for w in lead.split()):
+            continue                              # nothing or only titles before it: the same name
         return True
     return False
 
@@ -481,12 +488,26 @@ def _name_hits(name: str, text: str, longer: list, draft_longer=()) -> int:
     """Count occurrences of a name outside a longer name that extends it. Longer names of the instruction cover their
     occurrences in any case (FB5 R6-02); longer names found only in the draft cover only their own, case-sensitive
     run positions (FB7 R2-01), so a title-case heading never hides the same words in a lowercase body sentence."""
-    hay = _norm(text)
+    # spacing is normalised within each line; a newline (a block boundary) is kept
+    hay = "\n".join(" ".join(line.split()) for line in _clean(text or "").splitlines())
     covers = [(m.start(), m.end()) for big in longer if _extends(name, big) for m in _fact_rx(_norm(big)).finditer(hay)]
     covers += [(m.start(), m.end()) for big in draft_longer if _extends(name, big)
                for m in re.finditer(r"(?<![^\W_])" + re.escape(_norm(big)) + r"(?![^\W_])", hay)]
+    # FB8: a name with a lowercase word ("Shri ramesh kumar") is not seen by the capitalised-run stage, so in the
+    # draft an occurrence followed directly on the same line by a capitalised name word ("Shri ramesh kumar Xavier")
+    # is a longer name, not this one. A lowercase word after it is read as prose (plan 16 limitation).
+    lower = any(w[:1].islower() and w.lower() not in _CONNECTORS for w in _norm(name).split())
+
+    def continued(end):
+        # only a capitalised word on the same line ("Shri ramesh kumar Xavier"); a lowercase word after a lowercase
+        # name ("asha devi requests ...") is ordinary prose, and a newline is a block boundary
+        nxt = re.match(r" ([A-Z][A-Za-z'-]*)", hay[end:])
+        return bool(lower and nxt and nxt.group(1).lower() not in _NOT_NAME and not _is_hon(nxt.group(1)))
+    # FB8: a name joined to another word by a hyphen ("Anjali-Sharma") is part of a longer name, not the name itself
     return sum(1 for m in _fact_rx(_norm(name)).finditer(hay)
-               if not any(a <= m.start() and m.end() <= b and (b - a) > (m.end() - m.start()) for a, b in covers))
+               if not re.match(r"-[^\W\d_]", hay[m.end():m.end() + 2]) and not re.search(r"[^\W\d_]-$", hay[:m.start()])
+               and not continued(m.end())
+               and not any(a <= m.start() and m.end() <= b and (b - a) > (m.end() - m.start()) for a, b in covers))
 
 
 def fact_present(fact: str, draft_text: str, instruction: str | None = None) -> bool:

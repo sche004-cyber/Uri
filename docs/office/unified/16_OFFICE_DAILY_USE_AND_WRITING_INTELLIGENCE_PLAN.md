@@ -386,7 +386,41 @@ including FB6, confirmed fixed):
   ("5-May-2026", "06/Nov/2026") gave only the month as a fact, so a changed day passed silently. That came from the
   r6 bare-month rule. It is now one date fact, with corpus cases P-0 and P-1.
 
+Repairs after fallback review FB8 of 1ad2e97f (REJECT; record
+`D:/uri-dev/lifecycle/OFFICE-DAILY-USE-r9/fallback/FB8_subagent_1ad2e97f.audit.txt`; all FB7 and earlier findings
+confirmed fixed):
+- R2-01, a regression from the FB7 R2-01 repair. The FB7 rule above ("a longer name hides a shorter one only when
+  it extends the name itself, not when a connector word joins them") was wrong as written: it looked only at the
+  words before the name. So "Subject: Deputation of Anjali Sharma" counted as containing "Anjali", and a draft that
+  extended the name in the heading and changed it in the body ("deputation of Sunita") passed silently. The same
+  happened with "Promotion of Kavitha Reddy", "Deputation of Ramesh Kumar Yadav" and "Leave for Ramesh Kumar". The
+  rule now:
+  - words after the name that continue it make a longer name, whatever comes before;
+  - with nothing after it (or a connector next), only the words between the last connector and the name count, and
+    none or honorifics only is the same name (FB7 R2-01 and R2-03 kept).
+- Same class, found by the follow-up search the coordinator asked for, now reported:
+  - an honorific word at the end of a run is a surname ("Anjali Kumari"), not the start of another name;
+  - a name joined by a hyphen to another word ("Anjali-Sharma") is part of a longer name;
+  - a lowercase cued name followed on the same line by a capitalised name word ("Shri ramesh kumar Xavier") is a
+    longer name.
+- Checked and not silent in that search:
+  - commas ("Anjali, Sharma", "Anjali Sharma, Assistant");
+  - "and" ("Anjali and Sita Devi");
+  - brackets ("Anjali (Sharma)");
+  - designations after a name on the same line ("Anjali Sharma Assistant").
+
+  These either keep the name as written or are reported.
+- R2-02: corpus property (f). For every name, the draft extends it into a longer name in a heading ("Subject:
+  Deputation of <name> Xavier") or in a "To" block ("<name> Xavier"), while the body changes the name or drops it.
+  That draft must warn.
+- In the per-line check the draft keeps its block boundaries: spacing is normalised within each line, and a newline
+  is kept.
+
 Fact-check limitations that remain (outside the scope above):
+- a lowercase name that the draft continues with lowercase words on the same line is read as the name followed by
+  prose, so the extension is not reported. This applies to a name without an honorific ("ramesh kumar" ->
+  "ramesh kumar sharma") and to an honorific name continued past three lowercase words ("Shri ramesh kumar sharma
+  verma"). "Shri ramesh kumar sharma" and any capitalised continuation are reported;
 - a single capitalised word after "of" that is a place or a body but follows a word not in the designation list
   (for example "the residents of Pune" is excluded, but "the visit of Pune officials" reads "Pune") becomes a name
   fact. That can give a false warning if the draft drops or rewords it, never a silent miss;

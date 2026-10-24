@@ -14,7 +14,10 @@ data/office_fact_corpus.json:
       facts get "Subject: <fact>"), a capitalised "To" block ("The Tehsildar of <name>") for names, and a body
       sentence that repeats the instruction's own wording. The faithful draft never warns; a one-fact change made
       everywhere the fact appears still warns.
-A new case gets (b), (c), (d) and (e) without writing them."""
+  (f) FB8: for every name, a draft that extends it into a longer name ("Subject: Deputation of <name> Xavier", or a
+      "To" block "<name> Xavier") while the body changes or drops the name must warn: the longer name is another
+      person, so it never stands in for the fact.
+A new case gets (b) to (f) without writing them."""
 from __future__ import annotations
 
 import json
@@ -221,4 +224,28 @@ def test_e_facts_inside_headings_and_sentences(case):
         for what, new in mutations(kind, text):
             if text not in [w["text"] for w in DR.missing_facts(ins, _embedded(case, (i, new)))]:
                 missed.append(f"{kind} '{text}' -> {what} '{new}'")
+    assert not missed, (ins, missed)
+
+
+# (f) FB8 R2-02: a longer name in a heading or a "To" block never stands in for a changed or dropped name.
+def _extended(case, i, body_new, where):
+    ins, text = case["instruction"], case["facts"][i][1]
+    body = _replace_fact(ins, text, body_new, [t for _, t in case["facts"]])
+    head = [f"Subject: Deputation of {text} Xavier"] if where == "heading" else ["To", f"{text} Xavier", "Assistant"]
+    return "\n".join(["Office Order"] + head + [body, "Under Secretary"])
+
+
+@pytest.mark.parametrize("case", [c for c in CORPUS if any(k == "name" for k, _ in c["facts"])],
+                         ids=[c["id"] for c in CORPUS if any(k == "name" for k, _ in c["facts"])])
+def test_f_a_longer_name_never_stands_in_for_the_fact(case):
+    ins = case["instruction"]
+    missed = []
+    for i, (kind, text) in enumerate(case["facts"]):
+        if kind != "name":
+            continue
+        changed = mutations(kind, text)[0][1]
+        for where in ("heading", "to"):
+            for body_new in (changed, "the officer"):
+                if text not in [w["text"] for w in DR.missing_facts(ins, _extended(case, i, body_new, where))]:
+                    missed.append(f"'{text}' extended in the {where}, body -> '{body_new}'")
     assert not missed, (ins, missed)
