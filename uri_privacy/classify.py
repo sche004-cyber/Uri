@@ -105,12 +105,19 @@ def iban_ok(raw: str) -> bool:
 # FB4 R1-06).
 # Separators between a label and its value that the specific forms below do not list (review FB13 R1-01).
 # Never a placeholder's own brackets: a random pseudonym token can end in a label ("[[CONTACT_..._xqpwd]] [[...").
-_OTHER_SEP = r"(?!\s*\]\]|\s*\[\[)(?:\s*[|>#*~^&%$@+<\[\]{}`'\"\\)]{1,3}\s*|[?!]{1,3}(?=\S)|\s+[._?!]{1,3}\s+)"
+# Any run of punctuation, dash runs and mixed marks included ("--", "-->", ":-", "//"; review FB14 R1-01). The value
+# after it must look like a secret - a letter, a digit and one of !@#$%^&* - because these marks join ordinary words
+# too: "API key + OAuth2.0", "password & OAuth2 vs SAML", "token | gpt-4o-mini" (FB14 R1-04: the PC-23 version, which
+# took any letter with a digit or symbol, refused 31 more of 59 ordinary queries).
+_OTHER_SEP = r"(?!\s*\]\]|\s*\[\[)\s*(?:(?:[^\w\s]|(?<=\s)_(?=\s)){1,4}\s*){1,2}"
+_STRONG = r"(?=[^\s\"',;]*[A-Za-z])(?=[^\s\"',;]*\d)(?=[^\s\"',;]*[!@#$%^&*])"
+# an API key or token without marks: upper and lower case and a digit (16+ characters at the call sites: "Bitwarden2024" and "Regenerate_v2" are prose)
+_KEYLIKE = r"(?=[^\s\"',;()]*[a-z])(?=[^\s\"',;()]*[A-Z])(?=[^\s\"',;()]*\d)"
 _LABELLED = re.compile(
     r"(?i)\b(?:(?:otp|one[- ]time (?:password|code|pin)|verification code|security code|auth(?:entication)? code|"
     r"cvv2?|cvc2?|m?pin(?! ?code)|upi pin|atm pin)\b(?: ?(?:number|num|no)\b\.?| ?#)?(?:\s*(?:is|was|=|:|-|#|\()\s*|\s+)"
     r"(\d{3,8})\b|"
-    r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
+    r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|pass ?phrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
     r"(?:private|master|signing|encryption) key)"
     # ":" or "=" take any value; "is"/"was" a value with a digit or symbol, or a 4+ letter word (LDEC-007); an arrow
     # a value with a digit or symbol - "token -> refresh flow", "password is ok" stay readable (coordinator review of
@@ -120,13 +127,13 @@ _LABELLED = re.compile(
     r"\s*(?:->|=>|→)\s*[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{1,}))|"
     # Semicolon and slash separate a value with credential syntax, or a lone letter-only value at clause end.
     # A following prose word ("password / reset help") keeps the text readable.
-    r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
+    r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|pass ?phrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
     r"(?:private|master|signing|encryption) key)\s*[;/]\s*[\"']?"
     r"(?:(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{1,})|"
     r"([A-Za-z]+)(?=\s*(?:[,!?'\")\]]|\.(?=\s|$)|$)))|"
     # A short value after a dash is explicit when the value ends the clause. Keep prose such as
     # "reset your password - see the help page" readable.
-    r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
+    r"(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|pass ?phrase|api[ _-]?key|secret(?: key)?|access token|auth token|token|"
     r"(?:private|master|signing|encryption) key)\s*[-–]\s*[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])"
     r"([^\s\"',;]{1,})(?=\s*(?:[,!?'\")\]]|$))|"
     # "API key abcdefghijklmnop": a key label followed by one long letter-only token (review r6 R3-01).
@@ -137,7 +144,7 @@ _LABELLED = re.compile(
     r"\b(?:recovery|backup|2fa|mfa|two[- ]factor)\s+codes?\b\W{0,3}(?:is\s+)?(\d(?:[ -]?\d){5,9})(?!\d)|"
     # A credential set or changed to a value ("set the password to X", "changed my PIN to 4821"; FB12 R1-02).
     r"\b(?:set(?:s|ting)?|chang(?:e|ed|es|ing)|reset(?:s|ting)?|updat(?:e|ed|es|ing))\b[^.\n]{0,20}?"
-    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase|m?pin|api[ _-]?key|secret(?: key)?|token)\b"
+    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|pass ?phrase|m?pin|api[ _-]?key|secret(?: key)?|token)\b"
     r" (?:to|as) [\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
     # "pass: x" / "pass=x" (never "pass is"), and a code word a few words before its digits ("the PIN for the locker
     # is 4821"). A bare "code" needs exactly 6 digits (OTP length) and no zip/postal/error/status/area word before it.
@@ -153,34 +160,36 @@ _LABELLED = re.compile(
     r"[\"']?(?=[^\s\"',;()]*[A-Za-z])(?=[^\s\"',;()]*[\d!@#$%^&*_+=\[\]{}<>?/\\|~])([^\s\"',;()]{8,})|"
     # (review FB10 R1-01: before it, only the password labels had these separator forms; keys and tokens are 8+
     # characters, so "token ERC-20" stays readable - a 4-7 character secret here is a stated residual)
-    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase)(?:'s)?(?: ?(?:->|=>|-|–|→) ?| )"
+    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|pass ?phrase)(?:'s)?(?: ?(?:->|=>|-|–|→) ?| )"
     r"[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
     # The value before the label ("X is my password", "use X as the password", review FB4 R1-04). A value with a digit
     # or symbol counts wherever the label stands; a letter-only value only when the label ends the sentence and the
     # value is not a question word or pronoun (r6 R4-01, LDEC-007): "huntertwo is my password." is refused, "this is
     # my password manager" and "what is my password" stay readable.
     r"(?<![^\s\"'(])[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})[\"']? (?:is|was|as|=) "
-    r"(?:(?:my|the|our|your|a|new|wifi|login) ){0,2}(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase|pin)\b|"
+    r"(?:(?:my|the|our|your|a|new|wifi|login) ){0,2}(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|pass ?phrase|pin)\b|"
     # (Every alternative starts at a word boundary, the group above opens with \b: a quoted value is matched from its
     # first letter, after the quote. A quoted value is never a question word: '"what" is my password' is refused.)
     r"(?:(?<=[\"'])|(?<![^\s(])(?!(?:what|where|which|when|why|whose|how|this|that|these|those|here|there|mine|yours|"
     r"ours|theirs|same|also|still)\b))([A-Za-z]{4,})[\"']? (?:is|was|as|=) "
-    r"(?:(?:my|the|our|your|a|new|wifi|login) ){0,2}(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase|pin)"
+    r"(?:(?:my|the|our|your|a|new|wifi|login) ){0,2}(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|pass ?phrase|pin)"
     r"(?=\s*(?:[.,;:!?)\]\"']|$))|"
-    # Any other punctuation between a label and its value ("password | X", "token > X", "password # X", "password . X";
-    # review FB13 R1-01). "?" and "!" count glued to the value or with a space on both sides, "." only with a space on
-    # both sides, so "forgot password? Win10 laptop" and "password.v2.json" stay readable. The value holds a letter and a digit or symbol (password labels: 4+ characters, or 6+ digits;
-    # key and token labels: 8+ characters).
+    # Any other punctuation between a label and its value ("password | X", "token > X", "password # X", "password -- X";
+    # reviews FB13 R1-01, FB14 R1-01). The value holds a letter, a digit and one of !@#$%^&* (password labels: 6+
+    # characters; key and token labels: 8+), so "forgot password?Win11" and "token | gpt-4o-mini" stay readable; a
+    # value without such a mark after these separators is a stated residual (LDEC-007, FB14 R1-04).
     r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase)" + _OTHER_SEP +
-    r"[\"']?(?:(?=[^\s\"',;]*[A-Za-z])(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|(\d{6,}))|"
+    r"[\"']?" + _STRONG + r"([^\s\"',;]{6,})|"
     r"\b(?:api[ _-]?key|apikey|(?:client |api )?secret(?: key)?|(?:access|auth|bearer|refresh|api|session) token|"
     r"token|(?:private|master|signing|encryption) key)" + _OTHER_SEP +
-    r"[\"']?(?=[^\s\"',;()]*[A-Za-z])(?=[^\s\"',;()]*[\d!@#$%^&*_+=\[\]{}<>?/\\|~])([^\s\"',;()]{8,})|"
+    r"[\"']?(?:" + _STRONG + r"([^\s\"',;()]{8,})|" + _KEYLIKE + r"([^\s\"',;()]{16,}))|"
+    # "passwords: X" (FB13 R1-01); the plural takes only ":" and "=", since "passwords -> Python3" is prose
+    r"\bp[a@4][s5$]{2}[ _-]?w[o0]rds\s*[:=]\s*[\"']?([^\s\"',;]{1,})|"
     # "pw X" and, after a user/login word, "pass X" (review FB4 R1-04). The value holds a letter and a digit or
     # symbol, so "pass 2026 exams" and "pass COVID tests" stay readable.
     r"(?:\bpw|(?:user(?:name)?|login|id|wifi|account)\b[^\n]{0,30}?\bpass) "
     r"[\"']?(?=[^\s\"',;]*[A-Za-z])(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
-    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rds?|passwd|pwd|passcode|pass ?phrase)\b[^.\n]{1,30}?(?:\bis|(?<!\d):(?!//|\d)) ?[\"']?"
+    r"\b(?:p[a@4][s5$]{2}[ _-]?w[o0]rd|passwd|pwd|passcode|pass ?phrase)\b[^.\n]{1,30}?(?:\bis|(?<!\d):(?!//|\d)) ?[\"']?"
     r"(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{4,})|"
     r"\b(?:otp|m?pin(?! ?code)|passcode|cvv)\b[^.\n\d]{1,30}?\b(?:is|:)\s*(\d{3,8})\b|"
     r"(?<!zip )(?<!postal )(?<!error )(?<!status )(?<!area )(?<!country )(?<!pin )(?<!pin-)\bcode\b\s*(?:is|was|:)?\s*(\d{6})(?!\d))")
@@ -211,14 +220,15 @@ _KEY_BODY = {"AKIA": 16, "ASIA": 16, "AIza": 35, "ghp_": 36, "gho_": 36, "ghs_":
 _KEY_SPLIT = re.compile(r"(?<![A-Za-z0-9])(AKIA|ASIA|AIza|ghp_|gho_|ghs_|ghu_|github_pat_|glpat-|xox[abpr]-|"
                         r"sk-(?:proj-|ant-)?|sk_live_|sk_test_|rk_live_|tvly-)"
                         # groups split by a space, a dash or one other punctuation mark (review FB13 R1-03)
-                        r"([A-Za-z0-9_]{0,80}(?:[ .,:;|/+-]{1,3}[A-Za-z0-9_]{1,40}){0,15})(?![A-Za-z0-9_])")
+                        r"([A-Za-z0-9_]{0,80}(?:[ .,:;|/+~\\=#*-]{1,3}[A-Za-z0-9_]{1,40}){0,15})(?![A-Za-z0-9_])")
 # A PEM private key block, whole (review FB5 R1-07: it was SECRET_LIKE per body line and its last line was sent).
 # PGP armoured private key blocks and PuTTY private key files too (review FB13 R1-04). A block ends at its END line,
 # the next BEGIN or the end of the text, so repeated headers stay linear and a block without END is still covered
 # (before, each BEGIN scanned 20000 characters and a longer block without END was not matched at all).
 _PEM = re.compile(r"-----BEGIN [A-Z0-9 ]{0,40}PRIVATE KEY(?: BLOCK)?-----(?:(?!-----(?:END|BEGIN) )[\s\S])*?"
                   r"(?:-----END [A-Z0-9 ]{0,40}PRIVATE KEY(?: BLOCK)?-----|(?=-----BEGIN )|$)|"
-                  r"PuTTY-User-Key-File-\d+:(?:(?!Private-MAC:|PuTTY-User-Key-File-)[\s\S])*?"
+                  # a PuTTY key file: its header line, then "Encryption:" (a bare mention in prose is not a key)
+                  r"PuTTY-User-Key-File-\d+: ?[\w@.-]+\s+Encryption:(?:(?!Private-MAC:|PuTTY-User-Key-File-)[\s\S])*?"
                   r"(?:Private-MAC: ?[0-9A-Fa-f]*|(?=PuTTY-User-Key-File-)|$)")
 _SSN_SEP = r" ?[-./,:()] ?|[^\w\n]|_"          # one standard (optionally spaced) or any single punctuation separator
 _SSN = re.compile(r"(?<![\d-])(?!000|666|9\d\d)\d{3}-(?!00)\d{2}-(?!0000)\d{4}(?![\d-])|"
@@ -278,47 +288,72 @@ _KEYVAL = re.compile(
     # the same keys with the separator forms of the plain labels ("DB_PASSWORD is X", "client_secret - X",
     # "export DB_PASSWORD X"; review FB12 R1-01): the value holds a letter and a digit or symbol and is 8+ characters
     r"(?<![A-Za-z0-9])[\"']?(?:[A-Za-z0-9]{1,24}[_.-]){0,3}[A-Za-z0-9]{0,24}?" + _KEYWORD + r"[\"']?"
-    r"(?: (?:is|was) | ?(?:->|=>|-|\u2013|\u2192|\(|,|;|/) ?|" + _OTHER_SEP + r"|\s+)[\"']?"
+    r"(?: (?:is|was) | ?(?:->|=>|-|\u2013|\u2192|\(|,) ?|\s+)[\"']?"
     r"(?=[^\s\"',;{}<>()]*[A-Za-z])(?=[^\s\"',;{}<>()]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;{}<>()]{8,})|"
+    # ... and after any other punctuation run, a value that looks like a secret (FB13 R1-01, FB14 R1-01/R1-04)
+    r"(?<![A-Za-z0-9])[\"']?(?:[A-Za-z0-9]{1,24}[_.-]){0,3}[A-Za-z0-9]{0,24}?" + _KEYWORD + r"[\"']?"
+    + _OTHER_SEP + r"[\"']?(?:" + _STRONG + r"([^\s\"',;{}<>()]{8,})|" + _KEYLIKE + r"([^\s\"',;{}<>()]{16,}))|"
     # the value before a compound key that ends the sentence ("Hunt3r2!xyz is the DB_PASSWORD.")
     r"(?<![^\s\"'(])[\"']?(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])([^\s\"',;]{8,})[\"']? (?:is|was|as) "
     r"(?:(?:my|the|our|your|a|new) ){0,2}(?:[A-Za-z0-9]{1,24}[_.-]){1,3}[A-Za-z0-9]{0,24}?" + _KEYWORD +
     r"(?=\s*(?:[.,;:!?)\]\"']|$))|"
     r"<(?:[A-Za-z0-9_.-]{0,24}?)" + _KEYWORD + r"[^<>]{0,40}>\s*([^<\s]{4,})\s*</")
-# Credentials on command lines (review FB13 R1-02): "curl -u user:X", "mysql -pX", "sshpass -p X", "net use ...
-# /user:alice X", and "login with alice / X" (the value holds a letter and a digit or symbol, 6+ characters).
+# Credentials on command lines (reviews FB13 R1-02, FB14 R1-03): the password flag of common tools, and "login with
+# alice / X" when X looks like a secret. Placeholders ("$TOKEN", "<password>", "YOUR_PASSWORD", "*") are not values
+# (FB14 R1-04: "curl -u user:$TOKEN" and "mysql -pYOUR_PASSWORD" in documentation were refused).
 _CLI_CRED = re.compile(
     r"(?i)\b(?:curl|wget|https?|httpie)\b[^\n]{0,80}?\s(?:-u|--user)[ =]?[\"']?[^\s:\"']{1,64}:([^\s\"']+)|"
     r"\b(?:mysql(?:dump|admin)?|mariadb)\b[^\n]{0,80}?\s(?-i:-p)([^\s\"']+)|"
     r"\bsshpass\b[^\n]{0,40}?\s(?-i:-p) ?([^\s\"']+)|"
     r"\bnet\s+use\b[^\n]{0,120}?/user:\S+\s+([^\s\"'/]+)|"
+    r"\bnet\s+user\s+[^\s/]+\s+([^\s\"'/]+)|"
+    r"\b(?:docker|podman|helm|oras|nerdctl)\b[^\n]{0,40}?\blogin\b[^\n]{0,80}?\s(?:-p|--password)[ =]?([^\s\"']+)|"
+    r"\bsqlcmd\b[^\n]{0,80}?\s(?-i:-P) ?([^\s\"']+)|"
+    r"\bredis-cli\b[^\n]{0,80}?\s(?:-a|--pass)[ =]?([^\s\"']+)|"
+    r"\bmongo(?:sh|dump|restore)?\b[^\n]{0,80}?\s(?:-p|--password)[ =]?([^\s\"']+)|"
+    r"\b7za?\b[^\n]{0,80}?\s(?-i:-p)([^\s\"']+)|"
+    r"\bzip\b[^\n]{0,80}?\s(?-i:-P) ?([^\s\"']+)|"
+    r"\bsmbclient\b[^\n]{0,80}?\s(?:-U|--user)[ =]?[^\s%\"']{1,64}%([^\s\"']+)|"
+    r"\bx?freerdp\b[^\n]{0,80}?\s/p:([^\s\"']+)|"
+    r"\bhtpasswd\b[^\n]{0,40}?\s-\w*b\w*\s+\S+\s+\S+\s+([^\s\"']+)|"
+    r"\bldap\w*\b[^\n]{0,80}?\s(?-i:-w) ?([^\s\"']+)|"
+    r"\bssh-keygen\b[^\n]{0,80}?\s(?-i:-N) ?([^\s\"']+)|"
     r"\b(?:login|log in|sign in|signed in|creds?|credentials?)\b[^\n/]{0,30}?(?<![^\s:])[\w.@+-]{1,40} ?/ ?[\"']?"
-    r"(?=[^\s\"',;]*[A-Za-z])(?=[^\s\"',;]*[\d!@#$%^&*()_+=\[\]{}<>?\\|~])([^\s\"',;]{6,})")
-# A table whose header names a credential column (TSV, CSV, markdown, columns aligned by 2+ spaces), and a two-cell
-# markdown row "| password | X |" (review FB13 R1-02). Read on the text as written: folding joins the lines. A cell
-# counts when it holds a digit or symbol (a letter-only cell is the LDEC-007 residual, and "| password | string |" in
-# API documentation stays readable).
-_CRED_HEADER = re.compile(r"(?i)(?:p[a@4][s5$]{2}(?:w[o0]rd|wd|code| ?phrase)s?|pwd|pin|secret|client[ _]?secret|"
-                          r"api[ _-]?key|(?:access[ _-]?)?token|credentials?)")
-_CELL_VALUE = re.compile(r"(?=\S*[\d!@#$%^&*()_+=\[\]{}<>?/\\|~])\S+")
+    + _STRONG + r"([^\s\"',;]{6,})")
+_PLACEHOLDER_VALUE = re.compile(r"\$\{?\w+\}?|<[^>]*>|%\w+%|\*+|[A-Z_]+|\{\{[^}]*\}\}|[\"']{2}|\[[^\]]*\]|\.\.\.")
+# A table whose header names a credential column (TSV, CSV with "," or ";", markdown with or without outer pipes,
+# columns aligned by 2+ spaces), and a two-cell markdown row "| password | X |" (reviews FB13 R1-02, FB14 R1-02). Read
+# on the text as written: folding joins the lines. A header may carry one leading word ("Temp Password", "API Token")
+# and quotes. Password-like headers take a cell with a letter and a digit or one of !@#$%^&*; "pin", "token" and
+# "secret" headers - postal PIN codes, NLP and pricing tables - only a cell that looks like a secret (a letter, a digit
+# and one of !@#$%^&*; FB14 R1-04). Letter-only cells are the LDEC-007 residual.
+_HEADER_LEAD = r"(?:[A-Za-z][A-Za-z-]{0,15}[ _])?"
+_CRED_HEADER = re.compile(r"(?i)" + _HEADER_LEAD + r"(?:p[a@4][s5$]{2}(?:w[o0]rd|wd|code| ?phrase)s?|pwd|"
+                          r"client[ _]?secret|secret[ _]?key|api[ _-]?key|access[ _-]?key|private[ _-]?key|"
+                          r"credentials?)")
+_WEAK_HEADER = re.compile(r"(?i)" + _HEADER_LEAD + r"(?:pin|secret|token)")
+_CELL_PW = re.compile(r"(?=\S*[A-Za-z])(?=\S*[\d!@#$%^&*])\S{6,}")
+_CELL_STRONG = re.compile(r"(?=\S*[A-Za-z])(?=\S*\d)(?=\S*[!@#$%^&*])\S{6,}")
 
 
 def _cells(line: str):
-    """(kind, [(start, end)]) for a table-shaped line: kind "\\t", "|", "," (CSV) or "  "; None otherwise."""
+    """(kind, [(start, end)]) for a table-shaped line: kind "\\t", "|", "," or ";" (CSV), or "  "; None otherwise."""
     if "\t" in line:
         kind, bounds = "\t", [(m.start(), m.end()) for m in re.finditer(r"[^\t]*", line) if m.start() == 0
                               or line[m.start() - 1] == "\t"]
-    elif line.lstrip().startswith("|") and line.count("|") >= 3:
-        a, b = line.index("|") + 1, line.rindex("|")
+    elif "|" in line:
+        outer = line.lstrip().startswith("|") and line.count("|") >= 2
+        a, b = (line.index("|") + 1, line.rindex("|")) if outer else (0, len(line))
         kind, bounds, s = "|", [], a
         for k in range(a, b + 1):
             if k == b or line[k] == "|":
                 bounds.append((s, k))
                 s = k + 1
-    elif "," in line:
-        kind, bounds, s = ",", [], 0
+    elif "," in line or ";" in line:
+        kind = "," if line.count(",") >= line.count(";") else ";"
+        bounds, s = [], 0
         for k in range(len(line) + 1):
-            if k == len(line) or line[k] == ",":
+            if k == len(line) or line[k] == kind:
                 bounds.append((s, k))
                 s = k + 1
     elif re.search(r"\S {2,}\S", line):
@@ -327,12 +362,16 @@ def _cells(line: str):
         return None
     cells = []
     for s, e in bounds:
-        while s < e and line[s].isspace():
+        while s < e and (line[s].isspace() or line[s] in "\"'"):
             s += 1
-        while e > s and line[e - 1].isspace():
+        while e > s and (line[e - 1].isspace() or line[e - 1] in "\"'"):
             e -= 1
         cells.append((s, e))
     return (kind, cells) if len(cells) >= 2 else None
+
+
+def _cell_is_value(cell: str, strong: bool) -> bool:
+    return bool((_CELL_STRONG if strong else _CELL_PW).fullmatch(cell)) and not _PLACEHOLDER_VALUE.fullmatch(cell)
 
 
 def _table_spans(text: str):
@@ -350,10 +389,11 @@ def _table_spans(text: str):
         kind, cells = shape
         line = lines[i]
         names = [line[s:e] for s, e in cells]
-        cols = [k for k, n in enumerate(names) if _CRED_HEADER.fullmatch(n)]
+        cols = {k: not _CRED_HEADER.fullmatch(n) for k, n in enumerate(names)
+                if _CRED_HEADER.fullmatch(n) or _WEAK_HEADER.fullmatch(n)}          # column -> needs a strong value
         if not cols:
             continue
-        if kind == "|" and len(cells) == 2 and cols == [0] and _CELL_VALUE.fullmatch(names[1]):
+        if kind == "|" and len(cells) == 2 and 0 in cols and _cell_is_value(names[1], cols[0]):
             out.append((offsets[i] + cells[1][0], offsets[i] + cells[1][1]))     # "| password | X |"
         for j in range(i + 1, min(len(lines), i + 201)):
             row = shapes[j]
@@ -363,9 +403,9 @@ def _table_spans(text: str):
                 continue                                                         # markdown separator row
             if len(row[1]) != len(cells):
                 break
-            for k in cols:
+            for k, strong in cols.items():
                 s, e = row[1][k]
-                if _CELL_VALUE.fullmatch(lines[j][s:e]):
+                if _cell_is_value(lines[j][s:e], strong):
                     out.append((offsets[j] + s, offsets[j] + e))
     return out
 
@@ -546,7 +586,8 @@ _HINTS = {
     "labelled": re.compile(r"(?i)p[a@4][s5$]{2}|pw|otp|one[- ]time|code|cv[vc]|pin|api|secret|token|key|credential|"
                            r"authorization"),
     "passport": re.compile(r"(?i)passport"),
-    "cli": re.compile(r"(?i)curl|wget|http|mysql|mariadb|sshpass|net\s+use|log ?in|sign|cred"),
+    "cli": re.compile(r"(?i)curl|wget|http|mysql|mariadb|sshpass|net\s+us|log ?in|sign|cred|sqlcmd|redis|mongo|7z|"
+                      r"zip|smbclient|rdp|htpasswd|ldap|ssh-keygen"),
     "spaced_code": re.compile(r"(?i)otp|cv[vc]|pin|passcode"),
     "key_split": re.compile(r"AKIA|ASIA|AIza|gh[opsu]_|github_pat_|glpat-|xox[abpr]-|sk-|sk_|rk_live_|tvly-"),
     "account": re.compile(r"(?i)a/c|acct|account"),
@@ -578,7 +619,8 @@ def _spans(text: str, protected_terms) -> list:
     for m in _scan(_KEYVAL, text, "labelled"):
         add(CREDENTIAL, m, "config_value")
     for m in _scan(_CLI_CRED, text, "cli"):
-        add(CREDENTIAL, m, "command_line")
+        if not _PLACEHOLDER_VALUE.fullmatch(next(g for g in m.groups() if g)):
+            add(CREDENTIAL, m, "command_line")
     for m in _AADHAAR.finditer(text):
         a, s1, b, s2, c = m.groups()
         grouped = bool(s1) and s1 == s2
@@ -671,7 +713,7 @@ def _spans(text: str, protected_terms) -> list:
             continue
         alnum = re.sub(r"[^A-Za-z0-9_]", "", g)
         parts = re.split(r"[^A-Za-z0-9_]", g)
-        punct = re.search(r"[.,:;|/+]", g) is not None      # "sk-learn.preprocessing.StandardScaler" is a module path
+        punct = re.search(r"[.,:;|/+~\\=#*]", g) is not None  # "sk-learn.preprocessing.StandardScaler": a module path
         if len(alnum) >= 16 and (
                 (sum(c.isdigit() for c in alnum) >= 2 and any(re.search(r"[A-Za-z]", p) and re.search(r"\d", p)
                                                                for p in parts))

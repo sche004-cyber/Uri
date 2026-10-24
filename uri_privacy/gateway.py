@@ -186,7 +186,9 @@ class PrivacyGateway:
             # so "4111 1111 [redacted] 1111 1111" is not sent with the whole card around a redacted value (FB4 R1-06).
             joined = _PLACEHOLDER.sub("", out)
             egress_out, out_signals = C.egress_form(out)
-            doubt = bool(out_signals) or (joined != out and any(
+            # Taking the placeholders out can create a costly reading (review FB14 R1-06: 30 s at 64 KB); in doubt.
+            doubt = bool(out_signals) or (joined != out and C.reading_cost(joined) > C.MAX_SCAN_COST) or (
+                joined != out and any(
                 actions.get(c, P.action(c, dest)) != P.ALLOW
                 for c in set(C.classify(joined, protected_terms).categories()) - set(left)))
             # The text that leaves is also read as its egress form, so a value the normalized reading would see in

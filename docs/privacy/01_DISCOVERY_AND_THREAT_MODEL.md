@@ -337,3 +337,19 @@ a bearer token shorter than 8 characters; e-mail with a quoted local part, an IP
 lower-case `xoxb-` key groups on separate lines (they read as prose); a username / password pair without a login or
 credentials word; letter-only table cells and letter-only values in "login with alice / X" (LDEC-007). Every residual of 6.4-6.14
 stands, including OD-7 and OD-8.
+
+### 6.16 Changes after fallback review FB14 (2026-10-24; no STRUCTURAL or HIGH finding)
+
+| Change | Proof (tests/privacy) |
+|---|---|
+| Correction to 6.15 row 1: after the newly covered separators (any run of up to two punctuation groups, dash runs included) the value must look like a secret - a letter, a digit and one of !@#$%^&* (key and token labels: also 16+ characters with upper and lower case and a digit). The PC-23 rule took any letter with a digit or symbol and refused ordinary text | `test_pc24.py::test_fb14_r1_01*`, `test_fb14_r1_04*` |
+| Correction to 6.15 row 2: table headers in two tiers (password-like headers; "pin", "token", "secret" headers need a secret-shaped cell); one leading header word, quotes, ";" CSV and markdown without outer pipes are read; placeholders are not command-line values; more tools (docker/podman/helm login, sqlcmd, redis-cli, mongosh, 7z, zip, smbclient, xfreerdp, net user, htpasswd, ldap*, ssh-keygen) | `test_pc24.py::test_fb14_r1_02*`, `test_fb14_r1_03*` |
+| Correction to 6.15 row 3: key groups split by one of ` . , : ; \| / + ~ \\ = # * -` (runs of up to three) | `test_pc24.py::test_fb14_r1_05*` |
+| Correction to 6.15 row 5: the cost bound applies to the input, its folded readings, its egress form and the placeholder-free re-check reading | `test_pc24.py::test_fb14_r1_06*` |
+
+**Residuals added:** a value without one of !@#$%^&* after a separator other than ":", "=", "is", "was", a dash, an arrow,
+";", "/" or a bare space (an API-key-shaped value of 16+ mixed-case characters with a digit is still read); a value glued
+to its label by "_"; a CSV cell holding a space; a blank line inside a markdown table; header spellings outside the list
+("pwd."); a username / password pair without a login or credentials word; a command-line password of a tool not listed;
+key groups after a prefix without a fixed body length that do not meet the mixed-group conditions. Every residual of
+6.4-6.15 stands, including OD-7 and OD-8.
