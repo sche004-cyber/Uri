@@ -249,3 +249,36 @@ def test_r4_02_labelled_name_stops_at_topic_clause(instruction, draft, name):
     assert DR.missing_facts(instruction, draft) == []
     assert [(w["kind"], w["text"]) for w in DR.missing_facts(
         instruction, draft.replace(name, "another person"))] == [("name", name)]
+
+
+# ---- OFFICE-DAILY-USE-r6 R9 review repair ---------------------------------------------------------------------------
+@pytest.mark.parametrize("instruction,draft,person,replacement", [
+    ("Draft a circular appointing staff member ramesh kumar, Section Officer, as nodal officer.",
+     "Circular: ramesh kumar will serve as nodal officer (SO).", "ramesh kumar", "suresh kumar"),
+    ("Issue an order appointing officer named asha devi, Project Coordinator, as liaison.",
+     "Order: asha devi will liaise with the team.", "asha devi", "priya devi"),
+    ("Issue an order appointing Shri Ramesh Kumar, Section Officer, as liaison.",
+     "Order: Shri Ramesh Kumar will liaise with the team.", "Shri Ramesh Kumar", "Shri Suresh Kumar"),
+])
+def test_r9_01_comma_designation_after_person_is_not_a_name(instruction, draft, person, replacement):
+    assert [f for f in DR.extract_facts(instruction) if f["kind"] == "name"] == [
+        {"kind": "name", "text": person}]
+    assert DR.missing_facts(instruction, draft) == []
+    assert [(w["code"], w["kind"], w["text"]) for w in DR.missing_facts(
+        instruction, draft.replace(person, replacement))] == [("FACT_MISSING", "name", person)]
+
+
+@pytest.mark.parametrize("instruction,draft,person,replacement", [
+    ("Draft an office order appointing Anil as accounts officer.",
+     "Office Order: Anil is appointed as accounts officer.", "Anil", "Sunil"),
+    ("Issue a notice appointing Meera as liaison officer.",
+     "Notice: Meera will serve as liaison officer.", "Meera", "Neeta"),
+    ("Draft an order appointing Anil as Section Officer.",
+     "Order: Anil will serve as SO.", "Anil", "Sunil"),
+])
+def test_r9_02_single_appointee_is_checked(instruction, draft, person, replacement):
+    assert [f for f in DR.extract_facts(instruction) if f["kind"] == "name"] == [
+        {"kind": "name", "text": person}]
+    assert DR.missing_facts(instruction, draft) == []
+    assert [(w["code"], w["kind"], w["text"]) for w in DR.missing_facts(
+        instruction, draft.replace(person, replacement))] == [("FACT_MISSING", "name", person)]

@@ -311,6 +311,12 @@ OFFICE-DAILY-USE-r6 R6 repair:
   fact. Changing that recipient in the draft produces FACT_MISSING; a purpose phrase such as "letter to request
   transfer" is not treated as a name.
 
+OFFICE-DAILY-USE-r6 R9 repair:
+- A comma-delimited designation after an explicitly labelled person is excluded from name facts, as it already was
+  after an honorific name. The person's name remains a fact when the draft rephrases the designation.
+- A single capitalised name between an appointment verb and "as" is a name fact. Changing that appointee in the
+  draft produces FACT_MISSING.
+
 Fact-check limitations that remain:
 - a number followed by a word that is not in the unit list ("3 vehicles") is checked as "3" only, so a changed noun
   is not reported;
