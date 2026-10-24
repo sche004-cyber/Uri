@@ -27,7 +27,7 @@ security, owner-approval, frozen-file, stop or repair rules.
 | 8 | UX and onboarding improvement | Stage 8 UX loop |
 | 9 | Live retest and regression | Stage 8 loop: driver revision run on the repaired SHA + live retest |
 | 10 | Final independent acceptance | final driver run on the SHA that holds the qualification record |
-| 11 | Controlled canonical integration | driver integration, only with owner authorisation |
+| 11 | Controlled canonical integration | driver integration, only with a recorded stage-11 authorisation (standing policy or explicit owner approval) |
 | 12 | Integration receipt and qualification record | driver receipt + UI qualification record |
 
 The skill's own section headings (Stage 1, Stage 2, Stages 3–7, Stage 8) are steps of this skill, not the
@@ -65,7 +65,8 @@ lifecycle numbers in the first column.
    `canonical_url`, baseline (`remote_branch` + the `expect` SHA you verified; the driver finds the remote by URL),
    candidate branch + worktree (outside the main checkout), criteria file, `review_focus`,
    `protected_paths` (`"ws_frozen_check"` = the frozen list), `permitted_paths`, gates, reviewer/implementer
-   providers, limits, integration policy (`authorized: false` unless the owner granted it for this target).
+   providers, limits, integration policy (`authorized: false` until the stage-11 authorisation for this target is
+   recorded; see "Integration preconditions and authorisation").
    Put `state_dir` OUTSIDE the candidate worktree. Keep the template's UX `review_focus` lines and its
    `environment_notes` (auditor evidence classes) for user-facing work.
 5. Select the auditor now (section "Auditor selection"); a provider change after the first run is a config change
@@ -148,7 +149,8 @@ claims, leases, recovery, handoffs. Milestones, roadmap and owner decisions belo
 - Development pause: `availability --dev claude|codex --unavailable` for both pauses every task with a checkpoint;
   only Claude or Codex, recorded available again, can `resume`. Antigravity and subagents can never resume,
   transition or accept (Antigravity may add notes/evidence).
-- Canonical integration is unchanged (driver `integration` with owner authorisation); `task_ledger integrated`
+- Canonical integration is unchanged (driver `integration`, authorised as in "Integration preconditions and
+  authorisation"); `task_ledger integrated`
   only records it from ancestry and the receipt.
 
 ## Development memory, supervised tests, housekeeping (LIFECYCLE-V3.1-STORAGE)
@@ -191,7 +193,7 @@ Run it in the background; it can take hours. It will, without you:
 - re-audit the new SHA with another fresh reviewer, continuing while there is evidence of progress (see the
   continuation policy below);
 - run the gates on the candidate and the baseline and compare failures by test id and cause;
-- integrate only per policy and only with owner authorisation; write `receipt.json` + `RECEIPT.md`.
+- integrate only per policy and only with a recorded stage-11 authorisation; write `receipt.json` + `RECEIPT.md`.
 
 Each stop also writes the visual report (see below). Exit codes: 0 COMPLETE/VERIFIED, 3 BLOCKED, 4 NOT_VERIFIED, 5 WAITING_FOR_MODEL (reviewer unavailable — never an
 ACCEPT). Re-running `run` resumes from `state.json`; it cannot skip a stage (evidence is bound to SHAs).
@@ -199,7 +201,8 @@ For user-facing work set `integration.mode: "none"` in the code-commit run and i
 driver then stops VERIFIED (exit 0, integration `NOT_INTEGRATED_BY_POLICY`), which is the entry point for Stage 8;
 driver VERIFIED is a source-code result, not phase qualification. Only the final revision (and `INTERNAL` work) uses
 `fast-forward` with `authorized: false`: after VERIFIED it stops BLOCKED `OWNER_AUTHORIZATION` with `blocker.stage:
-VERIFIED`, the expected "ready for owner approval" state.
+VERIFIED`, the expected "ready for integration authorisation" state (stage 11 decides whether the standing policy
+covers it or the owner must approve).
 
 ## Stage 8 — Live UI qualification and UX loop (you, Windows runtime)
 
@@ -268,8 +271,9 @@ code alone never means the phase is qualified: live UI, security, regression and
   `evidence_ok_for_candidate: true` supports "independently accepted".
   WAITING_FOR_MODEL, BLOCKED, NOT_VERIFIED or a missing receipt means NOT QUALIFIED; say so.
 - BLOCKED with `OWNER_*` ⇒ ask the owner the specific question in `blocker.needs`; after their answer, record it
-  with `unblock <cfg> --note "<their decision>"` and run again. Never set `authorized: true` or extend
-  `authorized_protected_changes` on your own.
+  with `unblock <cfg> --note "<their decision>"` and run again. Never set `authorized: true` without a stage-11
+  authorisation recorded for this exact target, and never extend `authorized_protected_changes` without the
+  owner's explicit approval.
 - A review made by another channel (e.g. a separate cloud session) may be recorded with `import-review`; it can
   route findings to repair but never counts as an ACCEPT.
 - Report the auditor used (Codex or Claude, fallback reason), the reviewed SHA, the verdict in the words above and
@@ -283,9 +287,9 @@ code alone never means the phase is qualified: live UI, security, regression and
   contains the SHA; receipt written and `verify` OK), **FROZEN** (owner freeze decision recorded), **BLOCKED** (with
   the blocker and the smallest owner action).
 
-## Integration preconditions (stage 11)
+## Integration preconditions and authorisation (stage 11)
 
-Ask the owner for integration authorisation only when all of these hold, and give them in the request:
+Integrate (or ask the owner) only when all of these hold, and name them in the authorisation record:
 the exact accepted commits; a final driver-counted independent ACCEPT/ACCEPT WITH FINDINGS on that SHA; no open
 blocking finding; canonical re-checked for intervening changes (a moved canonical means rebase and re-review); a PASS UI
 qualification record for each user-facing capability (or the owner's explicit acceptance of the named
@@ -293,6 +297,27 @@ NOT VERIFIED items); frozen-file integrity (`protected_paths` diff); provenance;
 security and approval boundaries checked; the driver receipt (`receipt.json`, `verify` OK) as the reproducible
 integration record. Never merge unqualified work silently. Development-branch acceptance
 is never authorisation for production deployment.
+
+Authorisation has two paths (owner decision LDEC-016 and its 2026-10-24 clarification; basis DEC-041):
+
+- **Standing policy (automatic).** When every precondition above holds (all independent reviews, tests, security
+  checks and integration gates pass on the exact commit) and no significant owner-level decision is involved, the
+  integration proceeds without a fresh owner approval. Record the standing-policy authorisation in the Milestone
+  Manager ledger first: an `INTEGRATION` approval for the exact commit that cites the standing policy (LDEC-016).
+- **Explicit owner approval.** Mandatory for significant security, privacy, permission, architectural or other
+  restricted decisions, among them: security exceptions or unresolved security findings; privacy-policy or
+  sensitive-data changes; new permissions, credentials, privileges or dependencies; frozen or protected paths
+  (`authorized_protected_changes`); production deployment or cutover; any finding marked as an owner decision;
+  work the owner has reserved or deferred. Ask the owner, with the preconditions, and record their words.
+
+Both paths:
+
+- **Ledger before push.** The independent review, the acceptance and the authorisation are recorded in the
+  Milestone Manager ledger before anything is pushed to canonical; the integration record and the receipt follow
+  the push.
+- **Revert-only rollback.** The receipt's rollback is `git revert --no-edit <base>..<tip>` followed by a reviewed
+  fast-forward; never a force-push or a history rewrite.
+- A push refused by the session's permission check is not routed around: record a blocker and ask the owner.
 
 ## Current application: URI Office (owner directive 2026-10-15)
 
