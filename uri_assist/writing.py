@@ -518,9 +518,16 @@ def _guard(text: str, field: dict | None):
     if field and field_is_sensitive(field):
         raise WritingError("SENSITIVE_FIELD", "This field may hold a password or code; URI does not read it.", 403)
     counts = Counter()
-    if redact_text(text, counts) != text or sum(counts.values()):
-        raise WritingError("SENSITIVE_TEXT", "This text contains something that looks like a secret (a key, card or "
-                           "ID number), so it is not sent to the Brain. Spelling checks still work.", 403)
+    secret = redact_text(text, counts) != text or sum(counts.values())
+    if not secret:
+        # Review WI-INT R2-01: redact_text misses labelled values ("Password: Office@2026", "otp is 482913",
+        # "api_key: ..."); the M95 classifier finds them. Either one finding a credential or secret is a refusal.
+        from uri_privacy.classify import CREDENTIAL, SECRET_LIKE, classify
+        secret = bool({CREDENTIAL, SECRET_LIKE} & set(classify(text).categories()))
+    if secret:
+        raise WritingError("SENSITIVE_TEXT", "This text contains something that looks like a secret (a password, "
+                           "code, key, card or ID number), so it is not sent to the Brain. Spelling checks still "
+                           "work.", 403)
 
 
 def _body(mode: str, text: str) -> dict:
