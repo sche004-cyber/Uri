@@ -80,6 +80,19 @@ QcOption? _firstUnqualified(Iterable<QcOption> xs) {
   return null;
 }
 
+// Prefer the qualified no-draft vision profile to leave room for the desktop.
+// Keep the existing context preference and fall back when an older worker does
+// not offer it. Qualification and switchability are checked before preference.
+QcOption? _visionTarget(Iterable<QcOption> xs, bool on) {
+  final available = xs.where((o) => o.switchable).toList();
+  if (on) {
+    for (final o in available) {
+      if (!o.mtp) return o;
+    }
+  }
+  return _firstQualified(available);
+}
+
 /// Vision On / Off from the profile now verified as running ([active]).
 /// Prefers keeping the context; when that combination is not qualified, the
 /// qualified profile with the asked vision is offered and the menu says that
@@ -95,13 +108,13 @@ List<QcChoice> visionChoices(List<QcOption> options, Map<String, dynamic>? activ
       continue;
     }
     final same = options.where((o) => o.visionOn == on && (activeCtx == null || o.ctx == activeCtx));
-    final exact = _firstQualified(same);
+    final exact = _visionTarget(same, on);
     if (exact != null) {
       out.add(QcChoice(title: title, target: exact, note: '${exact.label}: ${exact.summary}'));
       continue;
     }
     final blocked = _firstUnqualified(same);
-    final other = _firstQualified(options.where((o) => o.visionOn == on));
+    final other = _visionTarget(options.where((o) => o.visionOn == on), on);
     if (blocked != null && activeCtx != null) {
       out.add(QcChoice(title: '$title at ${ctxLabel(activeCtx)}', blocked: blocked.reason ?? 'Not qualified.'));
     }

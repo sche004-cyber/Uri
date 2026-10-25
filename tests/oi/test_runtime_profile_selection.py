@@ -236,3 +236,65 @@ def test_unreadable_selection_reports_and_keeps_frozen(tmp_path):
     cfg, note = PS.select(frozen(), p)
     assert cfg is frozen() or R.config_digest(cfg) == R.config_digest(frozen())
     assert note.get("error") == "PROFILE_SELECTION_UNREADABLE"
+
+
+@pytest.mark.parametrize("ctx,vision", [(65536, "off"), (32768, "gpu")])
+def test_host_startup_restores_saved_qualified_profile(tmp_path, monkeypatch, ctx, vision):
+    import sys
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import ws_brain_host as H
+    PS.write(tmp_path, ctx, vision, False)
+    calls = []
+    class Host:
+        def __init__(self, report_dir, **kwargs):
+            self.report = {}
+            calls.append(kwargs)
+        def run(self):
+            return 0
+    monkeypatch.setattr(H, "Host", Host)
+    assert H.main(["--report-dir", str(PS.selection_path(tmp_path).parent)]) == 0
+    actual = calls[0]["cfg"]
+    assert actual is not None
+    assert RP.describe(actual)["ctx"] == ctx
+    assert RP.describe(actual)["vision"] == vision
+    assert RP.describe(actual)["mtp"] is False
+
+
+@pytest.mark.parametrize("saved,explicit,expected,error", [
+    (None, None, (32768, "gpu", True), None),
+    ("{bad json", None, (32768, "gpu", True), "PROFILE_SELECTION_UNREADABLE"),
+    ({"schema": PS.SCHEMA, "ctx": 65536, "vision": "gpu", "mtp": False}, None,
+     (32768, "gpu", True), "PROFILE_NOT_QUALIFIED"),
+    ({"schema": PS.SCHEMA, "ctx": 65536, "vision": "off", "mtp": False}, "32768,gpu,0",
+     (32768, "gpu", False), None),
+])
+def test_host_startup_default_validation_and_explicit_precedence(tmp_path, monkeypatch, saved, explicit, expected, error):
+    import sys
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import ws_brain_host as H
+    frozen_cfg = frozen()
+    monkeypatch.setattr(H.R, "load_config", lambda: frozen_cfg)
+    report_dir = PS.selection_path(tmp_path).parent
+    if saved is not None:
+        write_raw(tmp_path, saved)
+    hosts = []
+    class Host:
+        def __init__(self, report_dir, **kwargs):
+            self.report = {}
+            self.cfg = kwargs["cfg"]
+            hosts.append(self)
+        def run(self):
+            return 0
+    monkeypatch.setattr(H, "Host", Host)
+    args = ["--report-dir", str(report_dir)]
+    if explicit:
+        args += ["--profile", explicit]
+    assert H.main(args) == 0
+    host = hosts[0]
+    desc = RP.describe(host.cfg)
+    assert (desc["ctx"], desc["vision"], desc["mtp"]) == expected
+    if expected == RP.FROZEN_KEY:
+        assert host.cfg is frozen_cfg
+        assert R.expected_argv(host.cfg) == R.expected_argv(frozen_cfg)
+    assert host.report["startup_selection"].get("error") == error
+    assert host.report["startup_selection"]["source"] == ("explicit_profile" if explicit else "frozen")

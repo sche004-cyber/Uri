@@ -656,12 +656,20 @@ def main(argv=None):
     ap.add_argument("--override-contention", action="store_true",
                     help="owner-authorized: start next to foreign GPU consumers (recorded; result calibrated)")
     ap.add_argument("--profile", default=None,
-                    help="research candidate (URI-RUNTIME-VRAM-R1): ctx,vision,mtp e.g. 65536,off,1; default = frozen")
+                    help="research override: ctx,vision,mtp; otherwise restore the saved qualified profile, or frozen")
     a = ap.parse_args(argv)
     frozen = R.load_config()
-    cfg = RP.derive_config(frozen, *parse_profile(a.profile)) if a.profile else None
-    return Host(Path(a.report_dir), minutes=a.minutes, override=a.override_contention, cfg=cfg,
-                frozen_cfg=frozen).run()
+    if a.profile:
+        cfg = RP.derive_config(frozen, *parse_profile(a.profile))
+        selection = {"source": "explicit_profile"}
+    else:
+        # Reuse the worker's strict validator: saved choices cannot supply artifacts,
+        # flags or unqualified profiles. With no valid choice, frozen stays the default.
+        cfg, selection = PS.select(frozen, Path(a.report_dir) / PS.SELECTION_FILE)
+    host = Host(Path(a.report_dir), minutes=a.minutes, override=a.override_contention, cfg=cfg,
+                frozen_cfg=frozen)
+    host.report["startup_selection"] = selection
+    return host.run()
 
 
 MTP_TOKENS = {"1": True, "on": True, "true": True, "0": False, "off": False, "false": False}

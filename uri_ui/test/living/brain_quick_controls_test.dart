@@ -166,14 +166,28 @@ void main() {
       expect(vis[1].note, contains('Also changes context to 64K'));
     });
 
-    test('from Long context: vision on is offered only with 32K (Standard, the frozen default)', () {
+    test('from Long context: vision on prefers the qualified lighter 32K profile', () {
       final active = options(active: 'long')[1];
       final vis = visionChoices(opts, active);
       expect(titles(vis), ['On at 64K', 'On', 'Off']);
       expect(vis[0].blocked, lvReason);
-      expect(vis[1].target!.id, 'standard', reason: 'catalog order prefers the frozen default for 32K + vision');
+      expect(vis[1].target!.id, 'standard-nodraft', reason: 'qualified vision without draft leaves GPU headroom');
       expect(vis[1].note, contains('Also changes context to 32K'));
       expect(vis[2].current, isTrue);
+    });
+
+    test('vision falls back to Standard when the lighter profile is not offered', () {
+      final legacy = opts.where((o) => o.id != 'standard-nodraft').toList();
+      final choice = visionChoices(legacy, options(active: 'long')[1]).firstWhere((c) => c.target != null);
+      expect(choice.target!.id, 'standard');
+    });
+
+    test('an unswitchable lighter profile is never preferred', () {
+      final raw = options();
+      raw[2]['switchable'] = false;
+      final filtered = [for (final o in raw) QcOption(o)];
+      final choice = visionChoices(filtered, options(active: 'long')[1]).firstWhere((c) => c.target != null);
+      expect(choice.target!.id, 'standard');
     });
 
     test('an unqualified option is never a target', () {
@@ -181,8 +195,6 @@ void main() {
         for (final ch in visionChoices(opts, active)) {
           expect(ch.target?.qualified ?? true, isTrue);
           expect(ch.target?.id, isNot('long-vision'));
-          // Vision keeps preferring Standard over P3 (P3 is not a quick-control target since URI-CONTROLS-3).
-          expect(ch.target?.id, isNot('standard-nodraft'));
         }
       }
     });
@@ -333,7 +345,7 @@ void main() {
       expect(find.textContaining('until URI is restarted'), findsOneWidget);
       final sent = rt.commands.where((c) => c['command'] == 'brain_reconfigure').toList();
       expect(sent, [
-        {'command': 'brain_reconfigure', 'profile_id': 'standard'},
+        {'command': 'brain_reconfigure', 'profile_id': 'standard-nodraft'},
       ]);
     });
 
