@@ -1,0 +1,110 @@
+{
+  "milestone": "RUNTIME-DESKTOP-20261025-source",
+  "repo": "D:\\uri-dev\\uri-runtime-desktop-20261025",
+  "canonical_url": "https://github.com/sche004-cyber/Uri",
+  "baseline": {
+    "remote_branch": "integration/git-sync-20261008",
+    "expect": "fd4b9af63608e598a0a4c1d35b9485139e63a970"
+  },
+  "candidate": {
+    "branch": "codex/runtime-desktop-20261025",
+    "worktree": "D:\\uri-dev\\uri-runtime-desktop-20261025"
+  },
+  "state_dir": "D:/uri-dev/lifecycle/RUNTIME-DESKTOP-20261025-source",
+  "acceptance_criteria_file": "docs/plans/RUNTIME_DESKTOP_MIGRATION_PLAN.md",
+  "review_focus": [
+    "SOURCE REVIEW STAGE ONLY: independently inspect code against AC1/AC2 and test validity, then driver runs AC3 gates. AC4/AC5 desktop qualification, deployment and final evidence review are subsequent mandatory stages per lifecycle Stage 8, not code-review prerequisites. Record them explicitly as unverified; do not claim milestone completion. Earlier R1 evidence findings remain open for final review. Review all actual source defects normally.",
+    "Review AC1-AC5 against actual production paths. P3 preference respects qualified/switchable filters, same-context preference and Assist locks. Startup reads only validated saved profiles, explicit CLI wins, absent/invalid/unqualified uses frozen; no artifact or authority drift.",
+    "User-facing: every capability reachable through real desktop UI, truthful confirmation/progress/failure/recovery, first-time and returning journeys.",
+    "Final evidence revision: qualification record matches tested code commit; reviewed reports are not auditor live observations."
+  ],
+  "environment_notes": [
+    "Evidence classes (owner directive 2026-10-15). If you are the reviewer, add these keys to your AUDIT_RESULT JSON: \"inspected\" (code and documents you read yourself), \"evidence_reviewed_only\" (reports, screenshots, logs you read but did not reproduce), \"live_observed\" (live behaviour you observed yourself; [] if none); tests you executed go in tests_run and claims you could not verify in unverified. Never present reviewed screenshots or reports as your own live observation. If you are an implementer or diagnosis worker, make the same distinction in your notes."
+  ],
+  "protected_paths": "ws_frozen_check",
+  "authorized_protected_changes": [],
+  "permitted_paths": [
+    "scripts/ws_brain_host.py",
+    "uri_ui/lib/living/integration/brain_quick_controls.dart",
+    "tests/oi/test_runtime_profile_selection.py",
+    "uri_ui/test/living/brain_quick_controls_test.dart",
+    "docs/research/RUNTIME_DESKTOP_ROOT_CAUSE_AUDIT.md",
+    "docs/architecture/RUNTIME_DESKTOP_CANONICAL_ARCHITECTURE.md",
+    "docs/plans/RUNTIME_DESKTOP_MIGRATION_PLAN.md",
+    "docs/runtime_desktop/**",
+    "docs/dev_workflow/lifecycle/RUNTIME-DESKTOP*.json"
+  ],
+  "test_globs": [
+    "tests/**",
+    "**/test/**"
+  ],
+  "allowed_flaky": [],
+  "gates": [
+    {
+      "id": "python",
+      "kind": "pytest",
+      "cmd": [
+        "{python}",
+        "-B",
+        "-m",
+        "pytest",
+        "-c",
+        "scripts/phase2d_pytest.ini",
+        "--rootdir=.",
+        "-q",
+        "tests/oi",
+        "tests/ws"
+      ],
+      "timeout_s": 900
+    },
+    {
+      "id": "flutter",
+      "kind": "flutter",
+      "cwd": "uri_ui",
+      "cmd": [
+        "flutter",
+        "test",
+        "test/living/brain_quick_controls_test.dart"
+      ],
+      "timeout_s": 900
+    }
+  ],
+  "regression_runner": [
+    "{python}",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider"
+  ],
+  "regression_runners": [],
+  "repair_nonblocking_severities": [],
+  "reviewer": {
+    "provider": "codex_cli",
+    "model": "gpt-6-sol",
+    "timeout_s": 1800
+  },
+  "implementer": {
+    "provider": "codex_cli",
+    "model": "gpt-6-sol",
+    "timeout_s": 1800
+  },
+  "limits": {
+    "max_repair_attempts": 3
+  },
+  "continuation": {
+    "stall_rounds": 2,
+    "diagnose_after": 2,
+    "budget": {
+      "max_rounds": 8,
+      "max_cost_usd": 100,
+      "max_hours": 8
+    }
+  },
+  "integration": {
+    "mode": "none",
+    "target_ref": "integration/git-sync-20261008",
+    "authorized": false
+  },
+  "commit_trailers": []
+}

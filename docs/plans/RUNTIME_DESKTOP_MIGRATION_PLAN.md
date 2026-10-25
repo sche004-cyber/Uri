@@ -18,3 +18,7 @@ Acceptance:
 Protected/deferred: frozen files, all model artifacts, engine, permissions, unrelated Office/Web/Writing work, new Assist capture, P1 and stress tests. Only scripts/ws_brain_host.py, uri_ui/lib/living/integration/brain_quick_controls.dart and their focused tests plus this milestone documentation/config/evidence may change.
 
 The shrink-refusal regression now expects P3; the refusal coverage is unchanged.
+
+## Review sequence clarification
+
+The source-review run assesses AC1/AC2 and source-level AC3 guards before the driver runs AC3 gates. AC4/AC5 remain mandatory later-stage acceptance criteria and must be recorded NOT VERIFIED until the coordinator's real desktop run; source acceptance is not milestone completion. The final review assesses all criteria and resolves R1-01/R1-02/R1-03 with exact-code evidence. The earlier r2 review correctly withheld final acceptance because that evidence did not yet exist; it found no production-code defect. Its automatic repair was stopped before edits because live UI qualification is coordinator work. No evidence was fabricated or waived.
