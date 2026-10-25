@@ -166,20 +166,21 @@ void main() {
       expect(vis[1].note, contains('Also changes context to 64K'));
     });
 
-    test('from Long context: vision on prefers the qualified lighter 32K profile', () {
+    test('from Long context: vision on is offered only with 32K (Standard, the frozen default)', () {
+      // Keep the original baseline identity and its legacy-catalog fallback coverage.
+      final legacy = opts.where((o) => o.id != 'standard-nodraft').toList();
       final active = options(active: 'long')[1];
-      final vis = visionChoices(opts, active);
+      final vis = visionChoices(legacy, active);
       expect(titles(vis), ['On at 64K', 'On', 'Off']);
       expect(vis[0].blocked, lvReason);
-      expect(vis[1].target!.id, 'standard-nodraft', reason: 'qualified vision without draft leaves GPU headroom');
+      expect(vis[1].target!.id, 'standard', reason: 'an older worker can offer only the frozen vision fallback');
       expect(vis[1].note, contains('Also changes context to 32K'));
       expect(vis[2].current, isTrue);
     });
 
-    test('vision falls back to Standard when the lighter profile is not offered', () {
-      final legacy = opts.where((o) => o.id != 'standard-nodraft').toList();
-      final choice = visionChoices(legacy, options(active: 'long')[1]).firstWhere((c) => c.target != null);
-      expect(choice.target!.id, 'standard');
+    test('from Long context: vision on prefers the qualified lighter 32K profile', () {
+      final vis = visionChoices(opts, options(active: 'long')[1]);
+      expect(vis.firstWhere((c) => c.target != null).target!.id, 'standard-nodraft');
     });
 
     test('an unswitchable lighter profile is never preferred', () {

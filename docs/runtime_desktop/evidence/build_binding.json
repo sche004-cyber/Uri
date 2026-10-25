@@ -1,0 +1,28 @@
+{
+  "observed_at": "2026-10-25T12:14:21.556058+00:00",
+  "code_commit": "d212536cc27fbfa6623ae8c224b5290dfcc65d55",
+  "ui_exe_sha256": "a89e62266b0f763dd51752067804ef83f7a3311c0250b9a830d2b4b233c691cf",
+  "runtime_receipt_sha256": "c81e44636f3121df12f7b9631acb9d1739fe9d657e82ccb01a08669f5f9b5cc0",
+  "runtime_receipt_candidate": "d212536cc27fbfa6623ae8c224b5290dfcc65d55",
+  "original_installation_retained": true,
+  "original_exe_retained": true,
+  "original_current": {
+    "commit": "fd4b9af63608e598a0a4c1d35b9485139e63a970",
+    "source": "D:\\uri-dev\\uri-app\\builds\\fd4b9af6",
+    "runtime": "D:\\uri-dev\\uri-app\\builds\\fd4b9af6-rt",
+    "built": "2026-10-25T13:04:25.1283719+05:30",
+    "previous": "a1c850672e8dc6754a0297d1400985bb654dc1fb"
+  },
+  "worker_processes_after_switches": [
+    {
+      "ProcessId": 15720,
+      "ParentProcessId": 23288,
+      "CommandLine": "D:\\uri-dev\\uri-app\\builds\\d212536c-rt\\.venv\\Scripts\\python.exe -B -I D:\\uri-dev\\uri-app\\builds\\d212536c-rt\\scripts\\run_uri_integrated_worker.py --manifest D:\\uri-dev\\uri-app\\builds\\d212536c-rt\\work\\c1\\ws-production\\client\\client-manifest.json"
+    },
+    {
+      "ProcessId": 9872,
+      "ParentProcessId": 15720,
+      "CommandLine": "D:\\uri-dev\\uri-app\\builds\\d212536c-rt\\.venv\\Scripts\\python.exe -B -I D:\\uri-dev\\uri-app\\builds\\d212536c-rt\\scripts\\run_uri_integrated_worker.py --manifest D:\\uri-dev\\uri-app\\builds\\d212536c-rt\\work\\c1\\ws-production\\client\\client-manifest.json"
+    }
+  ]
+}

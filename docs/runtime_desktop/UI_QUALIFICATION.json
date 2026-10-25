@@ -1,0 +1,229 @@
+{
+  "schema": "uri-ui-qualification/1",
+  "task": {
+    "task_id": "RUNTIME-DESKTOP-20261025",
+    "capability": "Qualified runtime profile preference and persistence",
+    "classification": "USER_FACING",
+    "phase": "desktop live validation",
+    "candidate_branch": "codex/runtime-desktop-20261025",
+    "code_commit": "d212536cc27fbfa6623ae8c224b5290dfcc65d55",
+    "acceptance_criteria_file": "docs/plans/RUNTIME_DESKTOP_MIGRATION_PLAN.md",
+    "acceptance_criteria": [
+      "AC1",
+      "AC2",
+      "AC3",
+      "AC4",
+      "AC5"
+    ]
+  },
+  "environment": {
+    "windows": "Windows desktop, Radeon RX 7900 GRE 16 GB",
+    "app_build": {
+      "observed_at": "2026-10-25T12:14:21.556058+00:00",
+      "code_commit": "d212536cc27fbfa6623ae8c224b5290dfcc65d55",
+      "ui_exe_sha256": "a89e62266b0f763dd51752067804ef83f7a3311c0250b9a830d2b4b233c691cf",
+      "runtime_receipt_sha256": "c81e44636f3121df12f7b9631acb9d1739fe9d657e82ccb01a08669f5f9b5cc0",
+      "runtime_receipt_candidate": "d212536cc27fbfa6623ae8c224b5290dfcc65d55",
+      "original_installation_retained": true,
+      "original_exe_retained": true,
+      "original_current": {
+        "commit": "fd4b9af63608e598a0a4c1d35b9485139e63a970",
+        "source": "D:\\uri-dev\\uri-app\\builds\\fd4b9af6",
+        "runtime": "D:\\uri-dev\\uri-app\\builds\\fd4b9af6-rt",
+        "built": "2026-10-25T13:04:25.1283719+05:30",
+        "previous": "a1c850672e8dc6754a0297d1400985bb654dc1fb"
+      },
+      "worker_processes_after_switches": [
+        {
+          "ProcessId": 15720,
+          "ParentProcessId": 23288,
+          "CommandLine": "D:\\uri-dev\\uri-app\\builds\\d212536c-rt\\.venv\\Scripts\\python.exe -B -I D:\\uri-dev\\uri-app\\builds\\d212536c-rt\\scripts\\run_uri_integrated_worker.py --manifest D:\\uri-dev\\uri-app\\builds\\d212536c-rt\\work\\c1\\ws-production\\client\\client-manifest.json"
+        },
+        {
+          "ProcessId": 9872,
+          "ParentProcessId": 15720,
+          "CommandLine": "D:\\uri-dev\\uri-app\\builds\\d212536c-rt\\.venv\\Scripts\\python.exe -B -I D:\\uri-dev\\uri-app\\builds\\d212536c-rt\\scripts\\run_uri_integrated_worker.py --manifest D:\\uri-dev\\uri-app\\builds\\d212536c-rt\\work\\c1\\ws-production\\client\\client-manifest.json"
+        }
+      ]
+    },
+    "core": "e8e3b652 + accepted materialized overlay; receipt binds candidate d212536cc27fbfa6623ae8c224b5290dfcc65d55",
+    "brain": "Qwen3.6-35B-A3B UD-IQ3_S, stock llama.cpp b11425 Vulkan; no artifact change",
+    "dependencies": [],
+    "gpu_override": "Existing launcher -OverrideGpu used for this measured campaign under the owner full-autonomy instruction. Current desktop fit was CONTENDED (DWM process counter about 2.8 GiB); lease, ownership and speed calibration remained intact. No foreign process stopped; no admission code changed."
+  },
+  "functional": [
+    {
+      "journey_id": "J1",
+      "user": "first_time",
+      "mandatory": true,
+      "steps": [
+        "Open actual candidate Windows app through production launcher",
+        "Read startup/Ready feedback",
+        "Send harmless marker violet4826 through conversation"
+      ],
+      "expected": "P2 starts from saved selection and Brain answers marker",
+      "actual": "P2 READY, 100.9 tok/s calibration; model replied with violet4826",
+      "outputs": [],
+      "evidence": [
+        "evidence/updated-starting.png",
+        "evidence/p2-answer.png"
+      ],
+      "failure_and_recovery": "No failed load during this campaign. Ordinary fit refusal and failed-switch restore remain covered by existing tests; this campaign did not deliberately induce resource starvation.",
+      "evidence_status": "COMPLETED_WITH_RESULT",
+      "result": "PASS"
+    },
+    {
+      "journey_id": "J2",
+      "user": "returning",
+      "mandatory": true,
+      "steps": [
+        "Click Vision",
+        "Read P3/context/VRAM confirmation and P1 refusal",
+        "Confirm switch",
+        "Ask what is our code"
+      ],
+      "expected": "P3 selected and marker recalled without worker restart",
+      "actual": "P3 c32k-visgpu-mtpoff READY in 35.6 seconds, 98.7 tok/s calibration; Brain recalled violet4826",
+      "outputs": [],
+      "evidence": [
+        "evidence/vision-confirm-p3.png",
+        "evidence/switching-to-p3.png",
+        "evidence/p3-ready.png",
+        "evidence/p3-recall.png"
+      ],
+      "failure_and_recovery": "No failed load during this campaign. Ordinary fit refusal and failed-switch restore remain covered by existing tests; this campaign did not deliberately induce resource starvation.",
+      "evidence_status": "COMPLETED_WITH_RESULT",
+      "result": "PASS"
+    },
+    {
+      "journey_id": "J3",
+      "user": "returning",
+      "mandatory": true,
+      "steps": [
+        "Turn Vision off and confirm",
+        "Enable Thinking independently",
+        "Ask what is our code",
+        "Restore Thinking off"
+      ],
+      "expected": "P2 restored with history and requested reasoning tier",
+      "actual": "P2 READY in 34 seconds; Thinking reply recalled violet4826; UI showed Depth normal then fast",
+      "outputs": [],
+      "evidence": [
+        "evidence/p2-recall-thinking.png"
+      ],
+      "failure_and_recovery": "No failed load during this campaign. Ordinary fit refusal and failed-switch restore remain covered by existing tests; this campaign did not deliberately induce resource starvation.",
+      "evidence_status": "COMPLETED_WITH_RESULT",
+      "result": "PASS"
+    },
+    {
+      "journey_id": "J4",
+      "user": "returning",
+      "mandatory": true,
+      "steps": [
+        "Gracefully exit only this installation Brain host using its stop file",
+        "Relaunch production host without --profile",
+        "Ask what is our code again"
+      ],
+      "expected": "New host reads saved P2, returns Ready, and Brain recalls conversation",
+      "actual": "Host pid 13472 -> 23996; startup_selection.source selection; c64k-visoff-mtpoff READY at 102.1 tok/s; marker recalled",
+      "outputs": [],
+      "evidence": [
+        "evidence/host-before-restart.json",
+        "evidence/host-after-restart.json",
+        "evidence/cold-host-p2-restored.png",
+        "evidence/post-restart-recall.png"
+      ],
+      "failure_and_recovery": "No failed load during this campaign. Ordinary fit refusal and failed-switch restore remain covered by existing tests; this campaign did not deliberately induce resource starvation.",
+      "evidence_status": "COMPLETED_WITH_RESULT",
+      "result": "PASS"
+    }
+  ],
+  "ux": {
+    "discoverability": [
+      "J1/J2: three existing toggles remain visible below chat; no extra controls."
+    ],
+    "navigation": [
+      "Conversation navigation used in the actual Windows app."
+    ],
+    "tool_visibility": [
+      "Vision is on only after verified P3 readiness."
+    ],
+    "control_usability": [
+      "P3 target, 64K -> 32K and VRAM costs stated in confirmation."
+    ],
+    "feedback": [
+      "Starting and Switching states shown; Ready only after calibration."
+    ],
+    "consistency": [
+      "Conversation and Thinking state remained independent of Vision."
+    ],
+    "accessibility": [
+      "Native keyboard events used for text and Enter submission; Narrator not tested."
+    ],
+    "onboarding_needed": [
+      "No new onboarding needed: existing confirmation explains reload and retained conversation."
+    ]
+  },
+  "improvements": [
+    {
+      "issue_id": "RD-1",
+      "class": "MATERIAL",
+      "issue": "Vision On preferred the heavier frozen profile and did not expose P3 through the three-toggle flow.",
+      "repair": "Prefer qualified, switchable no-draft vision while retaining context preference and frozen fallback.",
+      "repair_commit": "87cb664e28d562f42ea4a869a8bb3f4c38fc6656",
+      "onboarding_change": "Existing confirmation now names P3.",
+      "retest": "J2 PASS"
+    },
+    {
+      "issue_id": "RD-2",
+      "class": "MATERIAL",
+      "issue": "Fresh host ignored saved profile.",
+      "repair": "Reuse strict selection validator before host startup; explicit --profile still wins.",
+      "repair_commit": "87cb664e28d562f42ea4a869a8bb3f4c38fc6656",
+      "onboarding_change": "none",
+      "retest": "J4 PASS"
+    }
+  ],
+  "remaining_limitations": [
+    "This campaign used the existing recorded GPU override because this desktop was reporting contention. It does not qualify normal no-override operation under the same pressure. Default admission thresholds remain unchanged.",
+    "P1 (64K GPU vision) remains unqualified and not selectable.",
+    "Assist capture permissions/adapters and physical human input/Narrator are outside this task.",
+    "Prior installation and data remain at fd4b9af6; no user-data migration is claimed. The staged installation is separate.",
+    "Final canonical integration, installed pointer update and desktop-shortcut smoke check occur only after final independent acceptance; the task cannot be reported closed before the deployment receipt exists."
+  ],
+  "independent_audit": {
+    "auditor": "codex_cli",
+    "fallback_reason": null,
+    "reviewer_identity": "codex_cli-38d3c49d-9fab-4075-95ba-d9717d3d730c",
+    "reviewed_commit": "ccbb53823b238342ae0978c8838c89513ef973bf",
+    "lifecycle_state_dirs": [
+      "D:/uri-dev/lifecycle/RUNTIME-DESKTOP-20261025-source-win"
+    ],
+    "repair_iterations": 0,
+    "findings": [
+      "Earlier r2 R1-01/02/03 final-evidence findings are addressed by this new record and actual gate logs; final reviewer must confirm.",
+      "source-win: all 847 Python and 46 Flutter tests passed, but a renamed baseline test ID was marked vanished; fixed by retaining its legacy fallback case and adding the P3-specific case separately. Final driver must confirm no vanished IDs."
+    ],
+    "verdict": "ACCEPT",
+    "auditor_observed_live": false,
+    "auditor_inspected": [
+      "production source and tests; see source-win round.json"
+    ],
+    "auditor_tests_run": [
+      "write-free validation probes; pytest sandbox temp unavailable"
+    ],
+    "auditor_evidence_reviewed_only": [
+      "earlier qualification records"
+    ],
+    "auditor_live_observed": [],
+    "auditor_unverified": [
+      "Final evidence review and corrected final gate comparison pending."
+    ]
+  },
+  "status": "PASS",
+  "status_reason": "All four mandatory live journeys completed on code d212536cc27fbfa6623ae8c224b5290dfcc65d55 with the real Windows app, local Brain, production host and paired Core. PASS describes these live journeys in the recorded override environment; final independent acceptance/integration/deployment are separate.",
+  "recorded_at": "2026-10-25T12:25:06.458497+00:00",
+  "corrections": [
+    "Earlier chat status relied on stale Oct17 research; Oct18 integration and Oct22 three-toggle records were subsequently found."
+  ]
+}

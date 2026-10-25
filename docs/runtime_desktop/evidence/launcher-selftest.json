@@ -1,0 +1,42 @@
+{
+  "schema": "uri.ws.launcher_selftest.v1",
+  "real_installation": {
+    "problems": [],
+    "port": 18302,
+    "ok": true
+  },
+  "negative_legacy_root": {
+    "problems": [
+      "LEGACY_ROOT_REFUSED:C:\\Users\\cheta\\Development\\uri-agent",
+      "MATERIALIZATION_RECEIPT_MISSING",
+      "INSTALLATION_MISSING (run scripts\\ws_provision.py)",
+      "UI_ROOT_NOT_RUNTIME_CANDIDATE"
+    ],
+    "refused": true
+  },
+  "negative_foreign_ui": {
+    "problems": [
+      "UI_OUTSIDE_INTEGRATION_WORKTREE",
+      "LEGACY_UI_REFUSED:C:\\Users\\cheta\\Development\\uri-m37-m39-integration"
+    ],
+    "refused": true
+  },
+  "negative_arbitrary_ui_root": {
+    "problems": [
+      "UI_ROOT_NOT_RUNTIME_CANDIDATE"
+    ],
+    "refused": true
+  },
+  "negative_legacy_port": {
+    "problems": [
+      "RUNTIME_HEAD_NOT_BASE:",
+      "LEGACY_PORT_REFUSED:8000",
+      "INTEGRATED_OPT_IN_MISSING"
+    ],
+    "refused": true
+  },
+  "listener_identity_proven": true,
+  "wrong_key_proof_refused": true,
+  "legacy_port_8000_contacted": false,
+  "gpu_lease": "HELD"
+}

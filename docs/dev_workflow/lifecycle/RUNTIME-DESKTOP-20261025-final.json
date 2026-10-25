@@ -1,0 +1,113 @@
+{
+  "milestone": "RUNTIME-DESKTOP-20261025-final",
+  "repo": "D:\\uri-dev\\uri-runtime-desktop-20261025",
+  "canonical_url": "https://github.com/sche004-cyber/Uri",
+  "baseline": {
+    "remote_branch": "integration/git-sync-20261008",
+    "expect": "fd4b9af63608e598a0a4c1d35b9485139e63a970"
+  },
+  "candidate": {
+    "branch": "codex/runtime-desktop-20261025",
+    "worktree": "D:\\uri-dev\\uri-runtime-desktop-20261025"
+  },
+  "state_dir": "D:/uri-dev/lifecycle/RUNTIME-DESKTOP-20261025-final",
+  "acceptance_criteria_file": "docs/plans/RUNTIME_DESKTOP_MIGRATION_PLAN.md",
+  "review_focus": [
+    "FINAL RELEASE-READINESS REVIEW: inspect full baseline diff, AC1-AC4 and preservation plan AC5; independently verify docs/runtime_desktop/UI_QUALIFICATION.json against raw screenshots/host samples and code commit d212536c. All production bytes after d212536c must be identical (only tests/docs/config differ). Confirm earlier r2 R1-01/02/03 evidence gaps are closed by current evidence and driver gates, not older umbrella qualification.",
+    "The final driver runs full tests/oi+tests/ws and the focused Flutter suite against candidate and baseline; require no new failure or vanished baseline-passing test. A test-name identity issue was fixed by retaining the original legacy-fallback case and adding P3 regression separately.",
+    "Live campaign explicitly used existing recorded -OverrideGpu under the owner full-autonomy instruction; do not claim ordinary no-override qualification, P1 qualification, Assist capture or new model/engine. Review source guards, strict selection validation, explicit CLI precedence, confirmations, context shrink and Assist locks.",
+    "Separate release readiness from stage11/12 deployment: production pointer and shortcut launch are intentionally not changed before final acceptance. They are mandatory post-acceptance smoke checks before the task closes, recorded in deployment receipt. Do not claim already deployed. All completed mandatory UI journeys must match exact tested code and no material issue may be hidden.",
+    "Auditor evidence classes: mark live screenshots/reports as evidence_reviewed_only unless you personally observe them; no self-certified acceptance."
+  ],
+  "environment_notes": [
+    "Evidence classes (owner directive 2026-10-15). If you are the reviewer, add these keys to your AUDIT_RESULT JSON: \"inspected\" (code and documents you read yourself), \"evidence_reviewed_only\" (reports, screenshots, logs you read but did not reproduce), \"live_observed\" (live behaviour you observed yourself; [] if none); tests you executed go in tests_run and claims you could not verify in unverified. Never present reviewed screenshots or reports as your own live observation. If you are an implementer or diagnosis worker, make the same distinction in your notes."
+  ],
+  "protected_paths": "ws_frozen_check",
+  "authorized_protected_changes": [],
+  "permitted_paths": [
+    "scripts/ws_brain_host.py",
+    "uri_ui/lib/living/integration/brain_quick_controls.dart",
+    "tests/oi/test_runtime_profile_selection.py",
+    "uri_ui/test/living/brain_quick_controls_test.dart",
+    "docs/research/RUNTIME_DESKTOP_ROOT_CAUSE_AUDIT.md",
+    "docs/architecture/RUNTIME_DESKTOP_CANONICAL_ARCHITECTURE.md",
+    "docs/plans/RUNTIME_DESKTOP_MIGRATION_PLAN.md",
+    "docs/runtime_desktop/**",
+    "docs/dev_workflow/lifecycle/RUNTIME-DESKTOP*.json",
+    "PROJECT_MEMORY.md",
+    "URI_MILESTONE_TRACKER.md"
+  ],
+  "test_globs": [
+    "tests/**",
+    "**/test/**"
+  ],
+  "allowed_flaky": [],
+  "gates": [
+    {
+      "id": "python",
+      "kind": "pytest",
+      "cmd": [
+        "{python}",
+        "-B",
+        "-m",
+        "pytest",
+        "-c",
+        "scripts/phase2d_pytest.ini",
+        "--rootdir=.",
+        "-q",
+        "tests/oi",
+        "tests/ws"
+      ],
+      "timeout_s": 900
+    },
+    {
+      "id": "flutter",
+      "kind": "flutter",
+      "cwd": "uri_ui",
+      "cmd": [
+        "C:/Users/cheta/flutter/bin/flutter.bat",
+        "test",
+        "test/living/brain_quick_controls_test.dart"
+      ],
+      "timeout_s": 900
+    }
+  ],
+  "regression_runner": [
+    "{python}",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider"
+  ],
+  "regression_runners": [],
+  "repair_nonblocking_severities": [],
+  "reviewer": {
+    "provider": "codex_cli",
+    "model": "gpt-6-sol",
+    "timeout_s": 1800
+  },
+  "implementer": {
+    "provider": "codex_cli",
+    "model": "gpt-6-sol",
+    "timeout_s": 1800
+  },
+  "limits": {
+    "max_repair_attempts": 3
+  },
+  "continuation": {
+    "stall_rounds": 2,
+    "diagnose_after": 2,
+    "budget": {
+      "max_rounds": 8,
+      "max_cost_usd": 100,
+      "max_hours": 8
+    }
+  },
+  "integration": {
+    "mode": "fast-forward",
+    "target_ref": "integration/git-sync-20261008",
+    "authorized": false
+  },
+  "commit_trailers": []
+}

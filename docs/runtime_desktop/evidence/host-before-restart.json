@@ -1,0 +1,319 @@
+{
+  "calibration": {
+    "decode_tps": 100.1,
+    "predicted_n": 160,
+    "prompt_ms": 198.351,
+    "reason": "START",
+    "residency": {
+      "consumers": [
+        {
+          "dedicated_mib": 2847.2,
+          "name": "dwm.exe",
+          "parent": "winlogon.exe",
+          "pid": 1372,
+          "role": "desktop compositor"
+        },
+        {
+          "dedicated_mib": 222.7,
+          "name": "uri_ui.exe",
+          "parent": null,
+          "pid": 23288,
+          "role": null
+        },
+        {
+          "dedicated_mib": 184.1,
+          "name": "explorer.exe",
+          "parent": null,
+          "pid": 8592,
+          "role": null
+        },
+        {
+          "dedicated_mib": 160.1,
+          "name": "ChatGPT.exe",
+          "parent": "ChatGPT.exe",
+          "pid": 17648,
+          "role": null
+        }
+      ],
+      "dedicated_mib": 13151.6,
+      "non_local_mib": 1241.8,
+      "others_mib": 4132.7,
+      "t": 1792930578.99,
+      "verdict_now": "CONTENDED"
+    },
+    "server_create_time": 1792930561.5177042,
+    "server_pid": 23652,
+    "t": 1792930576.848,
+    "threshold_tps": 60.0,
+    "tokens": 160
+  },
+  "detail": null,
+  "explain": "Brain ready (100 tok/s).",
+  "gpu": {
+    "census_s": 3.61,
+    "census_t": 1792930553.24,
+    "explain": "The Brain needs 13.3 GB of GPU memory but only 11.9 GB is free. In use by: dwm.exe (desktop compositor, 2.8 GB), uri_ui.exe (0.2 GB), explorer.exe (0.2 GB), ChatGPT.exe from ChatGPT.exe (0.2 GB). Close those or wait; URI will not stop them.",
+    "fit": {
+      "card_mib": 16368,
+      "consumers": [
+        {
+          "dedicated_mib": 2847.2,
+          "name": "dwm.exe",
+          "parent": "winlogon.exe",
+          "pid": 1372,
+          "role": "desktop compositor"
+        },
+        {
+          "dedicated_mib": 220.7,
+          "name": "uri_ui.exe",
+          "parent": null,
+          "pid": 23288,
+          "role": null
+        },
+        {
+          "dedicated_mib": 184.1,
+          "name": "explorer.exe",
+          "parent": null,
+          "pid": 8592,
+          "role": null
+        },
+        {
+          "dedicated_mib": 162.4,
+          "name": "ChatGPT.exe",
+          "parent": "ChatGPT.exe",
+          "pid": 17648,
+          "role": null
+        }
+      ],
+      "free_mib": 12235.0,
+      "margin_mib": -1423.0,
+      "others_mib": 4133.0,
+      "owner_mib": 0,
+      "required_mib": 13658,
+      "unattributed_mib": 0.0,
+      "verdict": "CONTENDED"
+    },
+    "since_stop_s": 3.7
+  },
+  "heartbeat_at": 1792930685.81,
+  "history": [
+    {
+      "detail": null,
+      "state": "STARTING",
+      "t": 1792930250.687
+    },
+    {
+      "detail": null,
+      "state": "LOADING",
+      "t": 1792930278.28
+    },
+    {
+      "detail": null,
+      "state": "CALIBRATING",
+      "t": 1792930292.25
+    },
+    {
+      "detail": null,
+      "state": "READY",
+      "t": 1792930298.72
+    },
+    {
+      "detail": null,
+      "state": "STOPPING",
+      "t": 1792930412.799
+    },
+    {
+      "detail": null,
+      "state": "STARTING",
+      "t": 1792930416.58
+    },
+    {
+      "detail": null,
+      "state": "LOADING",
+      "t": 1792930423.297
+    },
+    {
+      "detail": null,
+      "state": "CALIBRATING",
+      "t": 1792930438.884
+    },
+    {
+      "detail": null,
+      "state": "READY",
+      "t": 1792930444.697
+    },
+    {
+      "detail": null,
+      "state": "STOPPING",
+      "t": 1792930552.787
+    },
+    {
+      "detail": null,
+      "state": "STARTING",
+      "t": 1792930556.851
+    },
+    {
+      "detail": null,
+      "state": "LOADING",
+      "t": 1792930562.35
+    },
+    {
+      "detail": null,
+      "state": "CALIBRATING",
+      "t": 1792930576.788
+    },
+    {
+      "detail": null,
+      "state": "READY",
+      "t": 1792930582.854
+    }
+  ],
+  "host_pid": 13472,
+  "host_started": 1792930246.994,
+  "last_request": {
+    "action": "reconfigure",
+    "done_state": "READY",
+    "id": "5580326f-1a67-406c-9795-709d1d25fc7f",
+    "result": "DONE",
+    "t": 1792930549.049,
+    "t_done": 1792930583.2
+  },
+  "lease": {
+    "acquired_at": 1792930247.021,
+    "held": true,
+    "recovered_from": null
+  },
+  "override": {
+    "at": 1792930246.994,
+    "by": "--override-contention"
+  },
+  "profile": {
+    "ctx": 65536,
+    "frozen": false,
+    "id": "c64k-visoff-mtpoff",
+    "mtp": false,
+    "qualified": false,
+    "required_mib": 13658,
+    "vision": "off"
+  },
+  "profile_switch": {
+    "fit_before": {
+      "card_mib": 16368,
+      "consumers": [
+        {
+          "dedicated_mib": 2847.2,
+          "name": "dwm.exe",
+          "parent": "winlogon.exe",
+          "pid": 1372,
+          "role": "desktop compositor"
+        },
+        {
+          "dedicated_mib": 220.7,
+          "name": "uri_ui.exe",
+          "parent": null,
+          "pid": 23288,
+          "role": null
+        },
+        {
+          "dedicated_mib": 184.1,
+          "name": "explorer.exe",
+          "parent": null,
+          "pid": 8592,
+          "role": null
+        },
+        {
+          "dedicated_mib": 164.1,
+          "name": "ChatGPT.exe",
+          "parent": "ChatGPT.exe",
+          "pid": 17648,
+          "role": null
+        }
+      ],
+      "free_mib": 12233.3,
+      "margin_mib": -1424.7,
+      "others_mib": 4134.7,
+      "owner_mib": 13739.0,
+      "required_mib": 13658,
+      "unattributed_mib": 0.0,
+      "verdict": "CONTENDED"
+    },
+    "from": "c32k-visgpu-mtpoff",
+    "id": "5580326f-1a67-406c-9795-709d1d25fc7f",
+    "required_mib": 13658,
+    "result": "READY",
+    "seconds": 34.0,
+    "started_stopped_brain": false,
+    "t_done": 1792930583.113,
+    "t_request": 1792930549.146,
+    "t_stopped": 1792930553.185,
+    "to": "c64k-visoff-mtpoff"
+  },
+  "release_measurement": {
+    "since_stop_s": 3.7,
+    "unattributed_mib": 0.0,
+    "verdict": "CONTENDED"
+  },
+  "requests": {
+    "5580326f-1a67-406c-9795-709d1d25fc7f": "DONE",
+    "fd457634-22bd-45e7-b4e6-0a5e232e97bd": "DONE"
+  },
+  "residency": {
+    "consumers": [
+      {
+        "dedicated_mib": 2847.2,
+        "name": "dwm.exe",
+        "parent": "winlogon.exe",
+        "pid": 1372,
+        "role": "desktop compositor"
+      },
+      {
+        "dedicated_mib": 226.5,
+        "name": "uri_ui.exe",
+        "parent": null,
+        "pid": 23288,
+        "role": null
+      },
+      {
+        "dedicated_mib": 184.1,
+        "name": "explorer.exe",
+        "parent": null,
+        "pid": 8592,
+        "role": null
+      },
+      {
+        "dedicated_mib": 162.1,
+        "name": "ChatGPT.exe",
+        "parent": "ChatGPT.exe",
+        "pid": 17648,
+        "role": null
+      }
+    ],
+    "dedicated_mib": 13151.6,
+    "non_local_mib": 1241.8,
+    "others_mib": 4138.5,
+    "t": 1792930646.937,
+    "verdict_now": "CONTENDED"
+  },
+  "schema": "uri.ws.brain_host.v1",
+  "server": {
+    "load_seconds": 15.3,
+    "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+    "owned": true,
+    "pid": 23652
+  },
+  "startup_selection": {
+    "file": "D:\\uri-dev\\uri-app\\builds\\d212536c-rt\\work\\c1\\ws-production\\client\\control\\oi\\brain_profile.json",
+    "profile": {
+      "ctx": 65536,
+      "frozen": false,
+      "id": "c64k-visoff-mtpoff",
+      "mtp": false,
+      "qualified": false,
+      "required_mib": 13658,
+      "vision": "off"
+    },
+    "source": "selection"
+  },
+  "state": "READY",
+  "updated_at": 1792930582.854
+}

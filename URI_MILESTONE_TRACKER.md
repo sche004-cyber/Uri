@@ -170,3 +170,8 @@ Evidence: [consolidated C1–C7 review package](docs/plans/PHASE1_C1_C7_REVIEW_P
 The User authorized continuing independently implementable C4–C7 components while Claude is quota-unavailable. Independent audit/release is durably WAITING_FOR_MODEL; Codex does not substitute for Claude. C4 ticket/claim/journal and synthetic Windows job controls, C5 canonical preparation/selection/quota checkpoint, C6 worker preflight and C7 offline source recovery are implemented and locally validated. Native authentication/adapter tool containment, full C5 feedback/persistence loop, live UI parity and historical owner/key lineage remain gates. All slices remain PROVISIONAL — AWAITING INDEPENDENT REVIEW; partial components are not completed milestones. Production cutover/migration, merge, commit and push remain unperformed.
 
 Updated evidence: [consolidated review package](docs/plans/PHASE1_C1_C7_REVIEW_PACKAGE.md).
+
+
+## Runtime desktop qualified-profile completion, 2026-10-25
+
+Bounded P2/P3 completion and desktop validation are tracked in [delivery state](docs/runtime_desktop/DELIVERY_STATE.md) and its exact-code UI qualification record. Final acceptance, integration and desktop deployment are separate checkpoints; follow the authoritative lifecycle/deployment receipts rather than the older Runtime VRAM research status. P1 remains deferred.
