@@ -30,7 +30,7 @@ ACCEPTED (plan recorded) -> IMPLEMENTING -> AUDITING --REJECT--> FIXING --repair
                                           VERIFYING (gates vs baseline) --new failure--> FIXING
                                               | ok + independent ACCEPT on this SHA
                                               v
-                                          VERIFIED --integration policy--> COMPLETE | BLOCKED (owner authorisation)
+                                          VERIFIED --integration policy--> COMPLETE | BLOCKED (integration authorisation)
 reviewer missing/failed/not independent -> WAITING_FOR_MODEL -> (next run) READY_TO_RESUME -> AUDITING
 BLOCKED --(owner: unblock --note)--> READY_TO_RESUME -> resumes at the blocked stage (a block in VERIFYING/VERIFIED
                                      resumes at AUDITING when the current candidate has no independent ACCEPT)
@@ -52,7 +52,7 @@ BLOCKED --(owner: unblock --note)--> READY_TO_RESUME -> resumes at the blocked s
 | Resume | `state.json` + evidence bound to SHAs and to the event chain; a commit made outside the driver after audit ⇒ BLOCKED (EVIDENCE) and, after `unblock`, re-audit (resume target AUDITING); a forged stage or edited record ⇒ BLOCKED (TAMPER) |
 | Policy binding | the config hash and its policy fields (protected/authorised paths, gates, integration, reviewer, implementer, limits, ...) are recorded in the PLAN event. A run whose config hash or resolved-policy hash (the in-effect policy, including the `ws_frozen_check` protected list re-read from the main checkout each run; R4-01) differs from the pair bound in the event chain (never from state.json) records `CONFIG_CHANGED` with the new policy and stops BLOCKED (CONFIG) until the owner runs `unblock --note` with that config and policy; an existing block (e.g. TAMPER) is kept and CONFIG follows it. The config file itself stays agent-writable: the owner's acknowledgement is the control |
 | Canonical remote (DEV-LIFECYCLE-2) | the config names `canonical_url`; the driver uses the ONE remote whose URL (after `insteadOf` rewriting) is that repository, never a remote name such as `origin`. No matching remote, several, an integration `remote` that differs, an empty baseline `ls-remote` (`baseline.remote_branch`) or an empty integration-target lookup is BLOCKED, never "no baseline" |
-| Integration | re-reads the target tip from the canonical remote, refuses a moved target or a non-fast-forward, `merge` mode re-runs all gates on the merge commit; without `authorized: true` stops with the exact push command |
+| Integration | re-reads the target tip from the canonical remote, refuses a moved target or a non-fast-forward, `merge` mode re-runs all gates on the merge commit; without `authorized: true` stops BLOCKED `OWNER_AUTHORIZATION` with the exact push command. Runs keep `authorized: false`; after the stage-11 authorisation (standing policy or explicit owner approval) is recorded in the Milestone Manager ledger, the coordinator re-checks the canonical tip and runs that push with a pinned lease (SKILL.md "Integration preconditions and authorisation"; work accepted through the V3.1 fallback path is integrated as described there, with the coordinator running the gates bound in the run's PLAN event against the baseline under the driver's comparison rule). Changing `authorized` in a running config is a policy change (BLOCKED CONFIG, owner `unblock`) |
 
 ## 4. Invocation examples
 
@@ -119,7 +119,8 @@ parsed result, `round.json` with worker identity and integrity check), `repairs/
 - The UI qualification of section 8 is enforced by the skill and the auditor, not by the driver: the driver does not
   read the qualification record, and `REPORT.html` / `report_data.json` do not show it: the coordinator shows the
   record's status beside the driver report (SKILL.md "Visual report" item 5). Integration authorisation is the
-  control (SKILL.md "Integration preconditions").
+  control (SKILL.md "Integration preconditions and authorisation": standing policy for routine eligible work,
+  explicit owner approval for restricted decisions; ledger before push; revert-only rollback).
 
 ## 7. Repository note
 
