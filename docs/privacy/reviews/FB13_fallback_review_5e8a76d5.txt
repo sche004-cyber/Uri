@@ -1,0 +1,886 @@
+FB13 - Lifecycle V3.1 fallback review, M95-PRIVACY-r16 round R1
+Candidate 5e8a76d5c50cef3e48db2925bce2f00749652ff1 (verified: `git rev-parse HEAD` in the detached checkout
+  D:/uri-dev/m95-review-5e8a76d5; working tree clean before and after the review, no __pycache__ created)
+Baseline  6e095a5c35d88a8d8fc1513344d418303455fe9b (verified present, type commit; 44 commits in range, 38 non-merge)
+Reviewer: isolated fallback subagent. I followed D:/uri-dev/lifecycle/M95-PRIVACY-r16/state/rounds/R1/reviewer_prompt.md.
+  The driver's R1 attempt ended UNAVAILABLE ("no AUDIT_RESULT block", Codex usage limit in reviewer_stderr.txt).
+Probes: D:/uri-dev/m95-evidence/fb13_probes/ (p1..p11). Synthetic data only. No network: transports were not
+  exercised against real services.
+
+VERDICT: ACCEPT WITH FINDINGS. No STRUCTURAL finding. Six RECALL findings, all blocking:false under LDEC-011.
+
+A note on rules. The prompt's generic severity line says "REJECT if any HIGH or blocking finding". Its focus item 1
+states LDEC-011 as decided: RECALL findings are non-blocking whatever their severity, and the verdict is ACCEPT WITH
+FINDINGS when no STRUCTURAL finding remains. My instructions say to apply LDEC-011 exactly, so R1-01 (RECALL HIGH) is
+blocking:false and the verdict is ACCEPT WITH FINDINGS. PC-22 records that scripts/dev_workflow/lifecycle.py still
+treats every HIGH as blocking. If that driver rule is applied to this JSON, R1-01 will force a repair round. That is
+the open owner decision named in PC-22, not something this review decides.
+
+----------------------------------------------------------------------------------------------------------------------
+Acceptance criteria (fixed before testing)
+- AC-a  No card, Aadhaar, SSN, PAN, IBAN, phone, e-mail, API key or labelled credential reaches WEB_SEARCH, EXTERNAL_*
+        or LOG raw, in a standard form or obfuscated (Unicode, encodings, separators, letters, line breaks,
+        look-alikes), outside the stated residuals. Measured with generated inputs.
+- AC-b  Exempt classes (dates, times, ISO timestamps, IPv4) and ordinary non-numeric text (non-English, emoji, URLs,
+        code) are left unchanged and are not refused.
+- AC-c  The stated residuals in threat model 6.4-6.14 are accurate and complete for what I could find.
+- AC-d  Clean text is sent byte-identical.
+- AC-e  AC-14c on representative text, including non-ASCII, agrees with the documented ranges. The 64 KB and
+        multi-reading misses are the open owner decision (PC-15/PC-18), unless the documents misstate them.
+        Pathological inputs over the cost bound are refused by design.
+- AC-f  Security of uri_privacy: no cross-scope restore, no non-local restore, no grant without a verified user
+        principal, none for CREDENTIAL, none beyond uses/ttl or after revocation (also concurrently). Audit, grant
+        and vault files, logs and exception messages hold no values, spans, tokens or value hashes. Fail closed.
+- AC-g  Integrations (search, scheduler, BrainClient, Office, D10, worker, materializer) behave as the plan states.
+- AC-h  Evidence is honest (measurements.json against PC-2/3/7/22; the corpus is synthetic).
+- AC-i  Scope and reuse: no competing authority, no new dependency, reuse of uri_assist/redact.py and dpapi.
+- AC-j  Frozen boundary: ws_frozen_check exit 0, no protected path changed.
+- AC-k  Every earlier finding id gets FIXED or NOT_FIXED. Every new finding gets class STRUCTURAL or RECALL (LDEC-011).
+
+----------------------------------------------------------------------------------------------------------------------
+Results against the criteria
+
+AC-a (leak sweeps)
+- Digit classes: p10, 3000 generated texts x WEB_SEARCH / EXTERNAL_AGENT / LOG = 9000 calls. Values were card
+  (Luhn), Aadhaar, SSN and mobile, cut into random 1-5 digit groups. Separators were drawn from ASCII punctuation,
+  NBSP, thin space, ideographic space, katakana middle dot, U+2027, full-width forms, U+2044, U+00B7, U+2026, U+2219,
+  newline and 1-2 letter gaps. Digit families: ASCII, Arabic-Indic, Devanagari, Bengali, full-width, math bold, dingbat,
+  Thai, Myanmar, Extended Arabic. Result: 0 calls carried 9 or more value digits. 1821 were refused per non-LOG
+  destination, and LOG was redacted every time.
+- Earlier reproductions (p9, 47 checks) all hold. List under AC-k.
+- Credential labels: NOT met for several written forms. All are RECALL; see R1-01 and R1-02.
+  - p4: 14 labels x 69 separator forms x 2 destinations = 1932 calls, of which 1444 sent the value raw. 50
+    separator forms leaked 28/28, LOG included. Examples: " | ", " > ", " >> ", " # ", " * ", " . ", "~", "!", quotes,
+    brackets, "\", "^", "`", "@", "$", "%", "&", "+", "?", "<". With "/" or ";" only compound keys leaked (4/28).
+  - p5, 30 calls per form: TSV, markdown-table and aligned-column header layouts; `curl -u user:pass`,
+    `mysql -pX`, `sshpass -p X`, `net use ... /user:alice X`; "alice / X" pairs; the plural label "passwords:"; the
+    split label "pass phrase:". Each sent the value raw 27-30/30 times.
+- API keys: NOT met for known prefixes split by punctuation other than space or dash, or containing "-". See R1-03.
+  p11: AKIA keys split by . _ / , : ; | + leaked 18-20/20 per separator (whole key raw). Every prefix leaked with
+  . , : ; |. AIza keys split by spaces leaked when the body holds a "-" (17 of 40 generated).
+- Private keys: a PGP armoured private key block is SECRET_LIKE per body line, not CREDENTIAL. It is pseudonymized at
+  EXTERNAL_* rather than refused, and its last short line and checksum leave raw. See R1-04.
+- Lesser forms: passport, CVV(123), and e-mail with <at>/<dot>, a quoted local part or a dotless domain. See R1-06.
+- Everything else in p1 was refused or redacted. That covers config notations, URLs with userinfo, DATABASE_URL,
+  X-API-Key, bearer, JWT, PAN, IBAN, defanged e-mail, full-width @, NBSP / em-dash separators and the r15 short
+  values.
+
+AC-b and AC-d (benign corpus, p6)
+- 2000 generated texts x 3 destinations. The texts mixed Hindi, Japanese, Arabic, Russian, Chinese, French, German,
+  Thai, Hebrew, Persian (ZWNJ), Korean and Greek prose with emoji ZWJ and keycap sequences, URLs with paths, queries
+  and fragments, code snippets in Python, JS, SQL and shell, and dates, times, ISO timestamps, IPv4 with port, prices
+  and versions.
+- 0 refused at any destination.
+- 26 texts per destination (1.3 %) were altered, all of one shape: an 8-digit id next to a clock time across a
+  separator or newline, e.g. "order 12345678\n10:30" -> "order [redacted]". This is the documented consequence of
+  the r15 R7-01 repair (threat model 6.14: a clock's digits count when it is joined to other digits) together with
+  LDEC-006. I record it as observed, not as a finding.
+- Every other benign text was sent byte-identical.
+
+AC-c (residuals)
+- Not complete. None of the following is stated: the label-separator forms (R1-01), the tabular and CLI forms (R1-02),
+  known-prefix keys split by punctuation (R1-03), or the PGP block (R1-04).
+- One row overclaims. Threat model 6.5 says split AIza keys "are refused when the groups add up to the body length".
+  An AIza body that contains "-" is never counted as adding up, because the pattern treats "-" as a group separator
+  (R1-03).
+- The stated residuals I checked are accurate as written: the LDEC-007 bare-label word, 1-3 letter values after
+  is / dash / arrow, " dot " e-mails in words, Han numerals, values in words, and words between digit groups.
+
+AC-e (latency, cost bound)
+- My samples (p7 plus a re-run), p95: ASCII 3.2 ms / 17.7 ms / 592 ms (400 chars / 2 KB / 64 KB). Hindi 4.6-8.7 ms /
+  24.1 ms / 728-732 ms. Japanese 5.1 / 27.7 / 902 ms. Arabic 3.9-7.8 / 41.5 / 718-1087 ms. Hindi with NBSP
+  (multi-reading path) 11.3 ms / 74 ms / 2.05 s.
+- Runs vary by up to 2x. Arabic at 64 KB measured 1.087 s once and 0.718 s on the re-run. This matches the documents'
+  "thin margin, run-dependent" statement (PC-14/15). The multi-reading misses fall under the open owner decision.
+- recorded measurements.json matches PC-22's stated ranges exactly.
+- The cost bound has a gap. It is computed on the raw input, not on the text that is matched. Full-width "a/" passes
+  it and takes seconds. See R1-05.
+
+AC-f (security of uri_privacy, p8)
+- PASS on every check:
+  - pseudonymize, then exact local restore;
+  - restore at WEB_SEARCH refused (PRIVACY_RESTORE_NOT_LOCAL);
+  - restore by another requester refused (PRIVACY_SCOPE_OWNER_MISMATCH);
+  - scope B leaves scope A's tokens unresolved;
+  - another requester cannot write into a scope (refused, surfaced as PRIVACY_INTERNAL_ERROR, fail closed);
+  - grants without a verified user principal refused (three variants), as are CREDENTIAL grants and grants over 24 h;
+  - a 3-use grant used by 12 threads at once gave exactly 3 raw disclosures;
+  - a revoked grant is not used, and a grant is not applied for another purpose;
+  - a credential next to a granted card is still refused;
+  - non-str input (bytes, None, int, list) and unknown destinations or requesters are refused;
+  - no value, value prefix or sha256 prefix in the audit or grant files or in captured log records;
+  - the audit chain verifies (39 records).
+- From reading the code: vault scope ids are validated, the vault file is Fernet with a DPAPI-protected key, an
+  unreadable vault file is quarantined, audit fields are exact allowlists, and decisions are audited before grants are
+  consumed.
+
+AC-g (integrations, read in the diff)
+- search: the gateway runs before any request; on refusal nothing is sent and the query is not recorded; a query left
+  empty after redaction is refused.
+- bridge: the research query is decided before the job is created.
+- scheduler: params, request and meta are sanitized before the attempt transaction. The refusal sets NEEDS_ATTENTION,
+  restores the attempt count, emits an event without values, and lets an owner cancel win.
+- BrainClient: loopback only and trust_env=False. Every in-repo caller uses 127.0.0.1; tests/oi passes.
+- Office: --brain-url refused when not loopback.
+- D10: created once with an exclusive link or create, DPAPI-protected, and an unreadable file raises instead of being
+  replaced.
+- worker: WS_PACKAGES includes uri_privacy and URI_PRIVACY_HOME is set. The harness turn and the compiled instruction
+  are both gated.
+- materializer: path lists extended.
+
+AC-h (evidence honesty)
+- measurements.json matches PC-22's latency text.
+- The accuracy figures match PC-7 as corrected (core FP 10 %, held-out 6.7 %, all LONG_NUMBER).
+- measurements.json also shows the tuning ("hard") set at FP 8/10 and CONTACT recall 0.83. I checked all of them:
+  seven are LDEC-006 digit-budget costs, one is the stated "confidential" limit, and the miss is the stated " dot "
+  e-mail residual. PC-7 never claimed the hard set, so this is not a finding.
+- tests/privacy/synth.py is generated or invented (example.* domains, computed checksums).
+
+AC-i (scope and reuse)
+- No requirements change and no new third-party import. cryptography>=42 and httpx were already declared.
+- uri_privacy reuses uri_assist.redact and runtime_identity.dpapi.
+- No competing permission system: grants only relax sanitization.
+
+AC-j (frozen boundary)
+- `python -B scripts/ws_frozen_check.py .` exit 0, ok:true (saved as fb13_probes/frozen_check_5e8a76d5.json).
+- `git diff --name-only` touches none of the prompt's protected paths.
+
+AC-k (earlier findings)
+- All 105 ids FB12 listed are FIXED: their pinned regression tests pass in the 1831-test privacy run, and I re-ran a
+  sample of reproductions (p9).
+- FB12 R1-01..R1-05 are FIXED (R1-05 as the stated residual in 6.13).
+- r15 R1-01..R5-01, R6-01, R7-01 and R7-02 are FIXED (R7-02: PC-7 corrected).
+- The PC-22 readability pins hold: "forgot password - help", "token is a JWT", "token -> refresh flow explained".
+
+Gates I ran
+- tests/privacy: 1831 passed.
+- tests/oi, tests/ws, tests/a2ui, tests/ssrf, tests/web and tests/scheduler together: 4809 passed, 23 skipped and 1
+  failed. The failure is the known baseline test_duplicate_startup_and_api (Dussehra date).
+- tests/assist: 2212 passed, 5 failed and 20 errors, which is the known 25 Chromium/Node environmental baseline
+  (node require errors).
+- I did not run tests/office, as instructed.
+
+----------------------------------------------------------------------------------------------------------------------
+Findings
+
+R1-01 RECALL HIGH (blocking:false). A credential label followed by any punctuation separator other than ":", "=",
+  "-", ",", "(", ";" or "/" sends the value raw to every destination, LOG included. The same holds for the labels
+  "passwords" and "pass phrase", and for 1-3 character digit/symbol values after a bare space.
+R1-02 RECALL MEDIUM (blocking:false). Credentials in tabular (TSV, markdown, aligned columns) and command-line forms
+  (curl -u, mysql -p, sshpass -p, net use /user, "alice / X") leave raw to every destination.
+R1-03 RECALL MEDIUM (blocking:false). Known-prefix API keys split by punctuation other than space or dash leave whole
+  or largely raw, and space-split AIza keys whose body contains "-" leave raw. This contradicts the 6.5 row.
+R1-04 RECALL MEDIUM (blocking:false). A PGP armoured private key block is SECRET_LIKE per line, not CREDENTIAL: it is
+  pseudonymized (and grantable) instead of refused, and its last line and checksum leave raw.
+R1-05 RECALL LOW (blocking:false). The matching-cost bound is computed on the raw input, not on the folded or egress
+  text that is matched. Full-width "a/" (16,000 code points) is not refused and takes 3.0 s at WEB_SEARCH and 6.9 s
+  at LOG. The ASCII equivalent is refused in 0 ms.
+R1-06 RECALL LOW (blocking:false). Assorted near-forms leave raw: passport ("passport number, K1234567", "passport
+  (K1234567)", "K1234567 is my passport number", "passport K-1234567"), "CVV(123)", and e-mail with "<at>"/"<dot>",
+  a quoted local part or a dotless domain.
+
+Why none is STRUCTURAL: each is a written form missing from a detector whose class the rules already target
+(labelled credentials, split keys, private-key blocks, passports, e-mail). The same separator gaps were classified
+RECALL by FB10 R1-01, FB12 R1-01 and r15 R4-01/R5-01. None is a code mechanism that defeats an existing detection:
+the reconciliation, the re-checks in both readings, the LOG fallback and the digit budget all held in every sweep.
+R1-05 lets no value through: the output is still classified and re-checked in full, and the cost is time only.
+
+----------------------------------------------------------------------------------------------------------------------
+Self-review (protocol steps 3-6)
+- Every finding has a reproduction I ran myself (p1, p2, p4, p5, p11, p3). Counts are copied from the probe output.
+- I checked each finding against the stated residuals so as not to report a stated one.
+  - R1-01: the LDEC-007 residuals cover letter-only words only, and every value here has a digit and a symbol.
+  - R1-03: 6.4 excludes only unlisted prefixes.
+  - R1-06: "creds" and " at "/" dot " in words are stated, and I left them out.
+- I first read the AIza sweep as noise from my own grouping. A direct example (p11 follow-up) confirmed a "-" in the
+  body is the cause. I first saw the Arabic 64 KB 1.087 s figure as a regression; a re-run gave 0.718 s, so I report
+  it as run variance.
+- The verdict follows LDEC-011 as the prompt states it, and the conflict with the generic severity line is disclosed
+  above.
+
+Unverified (and effect on the verdict)
+- I re-checked each of the 105 older ids through its pinned regression test and a sample of hand reproductions, not by
+  reproducing every one by hand. No effect: the tests pass and the sample all held.
+- tests/office was not run (instruction), so AC-16 for that suite rests on the driver's PC-22 gate run. No effect on
+  the privacy verdict.
+- The live Windows evidence (live_a21f2c77.json, D10 restart, real search transport) was reviewed, not re-run. DPAPI
+  tests in tests/privacy did run on this Windows host. No effect.
+- measurements.json was produced by run m95-pc22-measure, whose recorded head is b3683181, before the a21f2c77 cache
+  commit. I could not tie it to the exact tree. My own samples are consistent with it. No effect.
+- My latency samples were taken while other sessions may have been using the host. No effect: AC-14c misses are an
+  open owner decision.
+
+AUDIT_RESULT_BEGIN
+{
+ "candidate": "5e8a76d5c50cef3e48db2925bce2f00749652ff1",
+ "baseline": "6e095a5c35d88a8d8fc1513344d418303455fe9b",
+ "verdict": "ACCEPT WITH FINDINGS",
+ "findings": [
+  {
+   "id": "R1-01",
+   "class": "RECALL",
+   "severity": "HIGH",
+   "blocking": false,
+   "category": "security",
+   "owner_decision": false,
+   "title": "A credential label followed by a punctuation separator other than : = - , ( ; / (e.g. ' | ', ' > ', ' # ', ' * ', ' . ', '~', quotes, brackets), the labels 'passwords' and 'pass phrase', and 1-3 character digit/symbol values after a bare space send the value raw to every destination including LOG",
+   "files": [
+    "uri_privacy/classify.py:106-174",
+    "uri_privacy/classify.py:253-265",
+    "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md:305-319"
+   ],
+   "evidence": "Probe fb13_probes/p4_label_sweep.py: 14 labels (password/Password/PASSWORD/passwd/pwd/passcode/passphrase/api key/API_KEY/secret/token/access token/client_secret/DB_PASSWORD) x 69 separator forms (every ASCII punctuation alone and space-padded, ' >> ', ' ==> ', tab, newline, space) x WEB_SEARCH and LOG, value = random 10-14 chars with a digit and a symbol: 1444 of 1932 calls sent the value raw; 50 separator forms leaked 28/28 (LOG included), e.g. 'my password | aou*kFP8HMFv thanks', 'my password > VtFHcg6*Oa thanks', 'my password # Rue2h^DmIrW thanks', 'my password * AmEBt5XR*w thanks', 'my password . 5ka!yRMcIyEKg thanks'; only ' : ', ' = ', ' - ', ' , ', ' ( ', ' ==> ', tab, newline, space and their unpadded forms were caught every time ('/' and ';' leak only after compound keys, 4/28). p5: 'passwords: l8Ghi!YkCRReFy' and 'pass phrase: RVCNx8*JwGvx' 30/30 raw. p1: 'password 7x!' and 'password 12' sent raw (the bare-space alternative needs 4+ characters). Every alternative of _LABELLED / _KEYVAL enumerates its separators, so any other punctuation leaves the value outside every pattern. Not a stated residual (6.4-6.14 list only letter-only values, 1-3 letter values after is/dash/arrow, 4-7 character key values, 'creds', non-English labels). Same class as FB10 R1-01 / FB12 R1-01 / r15 R4-01 (RECALL).",
+   "suggested_fix": "Replace the per-alternative separator lists with one separator class for all credential labels: any run of 1-3 non-alphanumeric, non-space characters (optionally space-padded) between label and a value that holds a letter and a digit or symbol; accept plural labels and 'pass phrase'; keep the LDEC-007 letter-only conditions. Pin with a generated label x punctuation x destination test, or state the remaining forms as residuals."
+  },
+  {
+   "id": "R1-02",
+   "class": "RECALL",
+   "severity": "MEDIUM",
+   "blocking": false,
+   "category": "security",
+   "owner_decision": false,
+   "title": "Credentials in tabular layouts (TSV, markdown table, aligned columns) and command-line forms (curl -u user:pass, mysql -pX, sshpass -p X, net use /user:alice X, 'alice / X') leave raw to every destination",
+   "files": [
+    "uri_privacy/classify.py:106-174",
+    "uri_privacy/classify.py:253-265"
+   ],
+   "evidence": "Probe fb13_probes/p5_struct_forms.py, 10 random letter+digit+symbol values x WEB_SEARCH / EXTERNAL_AGENT / LOG per form: 'username\\tpassword\\nalice\\tw3!HWsWyykmoHD' 30/30 raw; '| user | password |\\n|---|---|\\n| alice | e4@bngLQqc |' 27/30; '| password | iKgg!Cd4hioFz |' 30/30; 'USER      PASSWORD\\nalice     JNFy7wd@kRq' 30/30; 'curl -u alice:NwnGJH&Zz9vFAk https://api.example.com/v1' 30/30; 'mysql -u root -ph9CNK@oJOm -h db' 30/30; 'sshpass -p Qd@7hfnpLCMPM ssh alice@host' 30/30; 'net use Z: \\\\server\\share /user:alice 9ByWesxx%D' 30/30; 'login with alice / aoERHU%F0uCZqW' 30/30; 'creds: alice / XODYn6eiL%iELu' 30/30. (The CSV header form, PGPASSWORD and git URL userinfo are caught.) Not stated as residuals.",
+   "suggested_fix": "Add the common command-line credential flags (-u user:pass, -p<value>/-p <value> after mysql/sshpass/psql, /user: ... <value>) and a header-row rule for TSV/markdown/aligned tables whose header names a credential column; otherwise state tabular and command-line forms as residuals in the threat model."
+  },
+  {
+   "id": "R1-03",
+   "class": "RECALL",
+   "severity": "MEDIUM",
+   "blocking": false,
+   "category": "security",
+   "owner_decision": false,
+   "title": "Known-prefix API keys split by punctuation other than space or dash leave whole or largely raw, and space-split AIza keys whose body contains '-' leave raw, contrary to threat model 6.5",
+   "files": [
+    "uri_privacy/classify.py:198-201",
+    "uri_privacy/classify.py:531-552",
+    "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md:180"
+   ],
+   "evidence": "Probe fb13_probes/p11_split_keys.py (6 prefixes x 11 separators x 10 synthetic keys in groups of 4 x WEB_SEARCH and LOG; 'leak' = half or more of the body raw): AKIA 20/20 for '.', '_', ',', ':', ';', '|' and 18/20 for '/', '+' (e.g. 'my key AKIAUUGL.5FJ6.MIWB.IJUC please' sent unchanged to WEB_SEARCH, EXTERNAL_MODEL and LOG); every prefix (AIza, ghp_, glpat-, sk-proj-, xoxb-) 20/20 for '.', ',', ':', ';', '|'. _KEY_SPLIT accepts only ' ' or '-' between groups, and the digit budget redacts only the digit-dense middle when there are 9+ digits ('AIzaSyA[redacted]K.lMnOpQrStUv'). AIza with spaces: 17 of 40 generated keys leaked whole (e.g. 'my key AIzakZeE SG61 she- QAqq 0nv3 Vth1 Ls6v 6_O9 JL8 please' unchanged at LOG) because a '-' inside the base64url body is read as a group separator, so the groups never add up to 35; 6.5 states these split keys are refused. 6.4's residual covers only prefixes NOT in the list.",
+   "suggested_fix": "Allow any single punctuation separator (and newline) between groups after a known prefix, and count '-'/'_' inside AIza/glpat-/sk- bodies as body characters when the fixed-length sum is computed (try both readings); otherwise state the forms as residuals and correct the 6.5 row."
+  },
+  {
+   "id": "R1-04",
+   "class": "RECALL",
+   "severity": "MEDIUM",
+   "blocking": false,
+   "category": "security",
+   "owner_decision": false,
+   "title": "A PGP armoured private key block is not CREDENTIAL: it is SECRET_LIKE per line (pseudonymized and grantable, not refused) and its last short line and checksum leave raw",
+   "files": [
+    "uri_privacy/classify.py:202-204",
+    "uri_privacy/classify.py:529-530"
+   ],
+   "evidence": "_PEM matches only '-----BEGIN ... PRIVATE KEY-----'; '-----BEGIN PGP PRIVATE KEY BLOCK-----' has ' BLOCK' after 'KEY', so it never matches. A synthetic 300-byte armoured block: WEB_SEARCH and LOG -> six '[redacted]' lines, then 'hGflRtU+yOKhJXvb =Ab3d -----END PGP PRIVATE KEY BLOCK-----' raw; EXTERNAL_MODEL -> SENT with six SECRET_LIKE tokens and the 16-character last line raw (16 body characters left in every destination). SECRET_LIKE at EXTERNAL_* is PSEUDONYMIZE and grantable, so a SECRET_LIKE grant would release the private key raw; the FB5 R1-07 repair made PEM private keys CREDENTIAL (hard refuse) for exactly this reason.",
+   "suggested_fix": "Extend the private-key block rule to '-----BEGIN PGP PRIVATE KEY BLOCK-----' (and OpenSSH/PuTTY 'PuTTY-User-Key-File' private sections) as CREDENTIAL for the whole block."
+  },
+  {
+   "id": "R1-05",
+   "class": "RECALL",
+   "severity": "LOW",
+   "blocking": false,
+   "category": "code",
+   "owner_decision": false,
+   "title": "The matching-cost bound (PRIVACY_INPUT_TOO_COMPLEX) is computed on the raw input, not on the folded or egress text that is matched, so full-width look-alikes of a pathological input take seconds instead of being refused",
+   "files": [
+    "uri_privacy/gateway.py:110-111",
+    "uri_privacy/classify.py:316-323"
+   ],
+   "evidence": "Probe fb13_probes/p3_cost.py: 'a/' x 8000 (16 KB ASCII): scan_cost 256,016,000 -> refused PRIVACY_INPUT_TOO_COMPLEX in 0.00 s. '\\uff41\\uff0f' x 8000 (full-width, 16,000 code points): scan_cost(raw) = 0 but scan_cost(egress_form) = 256,016,000 -> SENT after 2.99 s at WEB_SEARCH and 6.89 s at LOG ('a\\uff0f' x 8000: 3.24 s / 6.43 s; x2000: 0.2 s / 0.39 s, so quadratic: 64 KB would take tens of seconds). The bound exists so pathological inputs are refused by design (PC-14, 6.6 'Stated limit'); its full-width form slips past. Availability only: the output is still classified and re-checked, no value leaves, and live inputs are capped at 400 characters.",
+   "suggested_fix": "Compute scan_cost on the egress form (or on every folded reading) as well as on the input, and refuse when any exceeds MAX_SCAN_COST."
+  },
+  {
+   "id": "R1-06",
+   "class": "RECALL",
+   "severity": "LOW",
+   "blocking": false,
+   "category": "security",
+   "owner_decision": false,
+   "title": "Near-forms not detected: passport numbers outside 'passport[ no|number][:-] X', 'CVV(123)', and e-mail with '<at>'/'<dot>', a quoted local part or a dotless domain",
+   "files": [
+    "uri_privacy/classify.py:213",
+    "uri_privacy/classify.py:107-109",
+    "uri_privacy/classify.py:222-234"
+   ],
+   "evidence": "Probe fb13_probes/p1_forms.py, raw at WEB_SEARCH, EXTERNAL_AGENT, EXTERNAL_MODEL and LOG: 'passport number, K1234567', 'passport (K1234567)', 'K1234567 is my passport number', 'passport K-1234567', 'passport no: K 1234567', 'CVV(123)', 'alice.smith<at>example<dot>com', '\"alice smith\"@example.com', 'alice.smith@localhost'. None is in the stated residual lists (6.4-6.14 list e-mail in words and outside-Latin/Indic marks only).",
+   "suggested_fix": "Accept ',' / '(' / a space or dash inside the value / value-before-label for passports; '(' after cvv/cvc; '<at>'/'<dot>' defangs; or state these as residuals."
+  }
+ ],
+ "prior_findings": [
+  {
+   "id": "r1-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R2-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R2-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R2-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R2-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-08",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R3-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R3-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R3-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R3-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R4-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R5-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R6-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R7-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R7-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R8-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R8-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R8-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R8-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-08",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R2-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R2-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R3-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R3-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R3-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R4-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R5-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R5-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R5-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-08",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-09",
+   "status": "FIXED"
+  },
+  {
+   "id": "r8-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB6-R3-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB6-R3-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB6-R3-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB7-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB7-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB7-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB8-R2-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB8-R2-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB8-R2-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB8-R2-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9-R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB10-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB10-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB10-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB10-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB11-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB11-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB11-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB11-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB11-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB11-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB11-R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB12-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB12-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB12-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB12-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB12-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "r15-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r15-R2-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r15-R3-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r15-R4-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r15-R5-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r15-R6-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r15-R7-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r15-R7-02",
+   "status": "FIXED"
+  }
+ ],
+ "tests_run": [
+  {
+   "command": "python -B -m scripts.dev_workflow.testrun start --name fb13-privacy -- python -B -m pytest -p no:cacheprovider -q tests/privacy (run fb13-privacy-20261024T061145Z-ff5a5f)",
+   "result": "1831 passed in 69.14s, exit 0",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "testrun fb13-gates: python -B -m pytest -p no:cacheprovider -q tests/oi tests/ws tests/a2ui tests/ssrf tests/web tests/scheduler (run fb13-gates-20261024T061307Z-d551a9)",
+   "result": "4809 passed, 23 skipped, 1 failed: tests/scheduler/test_service_process.py::test_duplicate_startup_and_api (known baseline, Dussehra date)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "testrun fb13-assist: python -B -m pytest -p no:cacheprovider -q tests/assist (run fb13-assist-20261024T062020Z-be57f9)",
+   "result": "2212 passed, 17 skipped, 5 failed + 20 errors = the known 25 Chromium/Node environmental baseline (node require errors)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "python -B scripts/ws_frozen_check.py .",
+   "result": "exit 0, ok:true (fb13_probes/frozen_check_5e8a76d5.json); git diff touches no protected path",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "python -B fb13_probes/p10_digit_sweep.py",
+   "result": "3000 generated card/Aadhaar/SSN/mobile texts x 3 destinations (9000 calls): 0 carried 9+ value digits",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "python -B fb13_probes/p4_label_sweep.py",
+   "result": "1444 of 1932 calls sent the credential raw (R1-01)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "python -B fb13_probes/p5_struct_forms.py",
+   "result": "tabular/CLI/plural-label forms 27-30/30 raw (R1-01, R1-02)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "python -B fb13_probes/p11_split_keys.py",
+   "result": "known-prefix keys split by . , : ; | 20/20 raw per prefix; AIza space-split with '-' 17/40 (R1-03)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "python -B fb13_probes/p1_forms.py and p2_show.py",
+   "result": "targeted forms; PGP block, passport, CVV(123), e-mail near-forms (R1-04, R1-06)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "python -B fb13_probes/p3_cost.py",
+   "result": "full-width 'a/' x8000 sent after 2.99 s / 6.89 s; ASCII refused in 0 s (R1-05)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "python -B fb13_probes/p6_benign.py",
+   "result": "2000 benign texts x 3 destinations: 0 refused; 26 per destination altered (8-digit id joined to a clock, documented r15 R7-01 cost); rest byte-identical",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "python -B fb13_probes/p7_latency.py (+ re-run)",
+   "result": "p95 ASCII 3.2/17.7/592 ms; Hindi 4.6-8.7/24.1/728-732 ms; Japanese 5.1/27.7/902 ms; Arabic 3.9-7.8/41.5/718-1087 ms; Hindi+NBSP 11.3/74/2051 ms; run-dependent, consistent with documented ranges",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "python -B fb13_probes/p8_security.py",
+   "result": "all 28 checks PASS (restore, scopes, grants incl. 12-thread 3-use = 3, revocation, fail-closed, value-free audit/grant files and logs, chain verifies)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "python -B fb13_probes/p9_prior.py",
+   "result": "47 reproductions of earlier findings (FB12, r15, FB11, FB10, FB9, FB8, FB6, FB5, FB4, FB2, S1/R1, r8) all FIXED; PC-22 readability pins hold",
+   "status": "COMPLETED_WITH_RESULT"
+  }
+ ],
+ "unverified": [
+  "The 105 pre-FB12 ids were checked through their pinned regression tests (all pass) and a sample of hand reproductions, not each reproduced by hand; no effect on the verdict.",
+  "tests/office not run (instruction: shared LibreOffice tree); AC-16 for that suite rests on the driver's PC-22 gate runs; no effect on the privacy verdict.",
+  "Live Windows evidence (docs/privacy/evidence/live_a21f2c77.json: D10 restart persistence, real search path against a capture endpoint) reviewed, not re-run; DPAPI unit tests in tests/privacy did run on this Windows host; no effect.",
+  "measurements.json comes from run m95-pc22-measure (recorded head b3683181, before commit a21f2c77); not tied to the exact tree; my own latency samples are consistent with it; no effect.",
+  "Latency samples taken on a shared host with run-to-run variance up to 2x (Arabic 64 KB 1.087 s then 0.718 s); AC-14c misses are an open owner decision (PC-15/PC-18); no effect.",
+  "No real third-party search/model service was contacted (synthetic data, no network); integration behaviour was checked by code reading and the existing MockTransport tests."
+ ],
+ "inspected": [
+  "D:/uri-dev/lifecycle/M95-PRIVACY-r16/state/rounds/R1/reviewer_prompt.md, round.json, reviewer_stderr.txt",
+  "docs/privacy/00_PLAN_AND_ACCEPTANCE_CRITERIA.md (full)",
+  "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md sections 6.4-6.14",
+  "uri_privacy/gateway.py, classify.py, policy.py, vault.py, audit.py, grants.py (grant/match/consume/revoke), keys.py",
+  "uri_assist/redact.py text rules",
+  "git diff 6e095a5c..5e8a76d5 of uri_web/search.py, uri_web/bridge.py, uri_scheduler/engine.py, uri_operational_intelligence/brain_client.py, uri_office/service.py, scripts/run_uri_integrated_server.py, scripts/run_uri_integrated_worker.py, scripts/oi_materialize_test_runtime.py",
+  "tests/privacy/helpers.py, measure.py, synth.py (header and generators), test_r15_short_credentials.py",
+  "docs/privacy/evidence/measurements.json (accuracy, latency, latency_non_ascii)",
+  "requirements.txt"
+ ],
+ "evidence_reviewed_only": [
+  "docs/privacy/reviews/FB12_fallback_review_a39c2fc4.txt (summary and prior_findings list)",
+  "D:/uri-dev/lifecycle/M95-PRIVACY-r15/state/rounds/R1-R7 reviewer_result.txt AUDIT_RESULT findings",
+  "docs/privacy/evidence/live_a21f2c77.json (not re-run)",
+  "PC-22 gate run names (m95-pc22-gates-nooffice, m95-pc22-office) as listed by testrun"
+ ],
+ "live_observed": []
+}
+AUDIT_RESULT_END

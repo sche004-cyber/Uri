@@ -1,0 +1,16 @@
+FAILED tests/privacy/test_pc16.py::test_fb7_r1_01_compatibility_characters_with_letters_do_not_carry_a_value
+FAILED tests/privacy/test_pc16.py::test_fb7_r1_02_symbols_inside_a_protected_gap_do_not_carry_a_value
+FAILED tests/privacy/test_pc16.py::test_fb7_reviewer_reproductions_never_leave[card 4111a\u20261111a\u20261111a\u20261111 lost-4111111111111111]
+FAILED tests/privacy/test_pc16.py::test_fb7_reviewer_reproductions_never_leave[aadhaar 2345a\u20266789a\u20260124 status-234567890124]
+FAILED tests/privacy/test_pc16.py::test_fb7_reviewer_reproductions_never_leave[ssn 123a\u202645a\u20266789 check-123456789]
+FAILED tests/privacy/test_pc16.py::test_fb7_reviewer_reproductions_never_leave[call 98765a\u202643210-9876543210]
+FAILED tests/privacy/test_pc16.py::test_fb7_reviewer_reproductions_never_leave[card 4111ab\xd71111ab\xd71111ab\xd71111 lost-4111111111111111]
+FAILED tests/privacy/test_pc16.py::test_fb7_reviewer_reproductions_never_leave[aadhaar 2345ab\u09646789ab\u09640124-234567890124]
+FAILED tests/privacy/test_pc16.py::test_fb7_reviewer_reproductions_never_leave[call 98765ab\u221e43210-9876543210]
+FAILED tests/privacy/test_pc16.py::test_fb7_random_mixed_gaps_in_the_protected_shape_do_not_leak
+FAILED tests/privacy/test_pc16.py::test_fb7_r1_03_ordinary_cjk_text_is_never_refused
+FAILED tests/privacy/test_pc16.py::test_fb7_r1_03_words_between_numbers_leave_unchanged[\uff21\uff22\uff23 123 \uff24\uff25\uff26 456 \uff27\uff28\uff29 789]
+FAILED tests/privacy/test_pc16.py::test_fb7_r1_03_words_between_numbers_leave_unchanged[\uff83\uff7d\uff84 123 \uff83\uff7d\uff84 456 \uff83\uff7d\uff84 789]
+FAILED tests/privacy/test_pc16.py::test_fb7_r1_03_a_unit_list_over_the_budget_is_redacted_not_refused
+FAILED tests/privacy/test_pc16.py::test_as_written_view_keeps_one_character_per_code_point
+15 failed, 3 passed in 18.43s

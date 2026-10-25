@@ -1,0 +1,664 @@
+FB11 - Lifecycle V3.1 fallback review of M95-PRIVACY-r13 R2
+Candidate f8cc51cef3fd8ca6fd0e361852fb8a0cf39d2ae0 (detached checkout D:\uri-dev\m95-review-f8cc51ce, verified with git rev-parse)
+Baseline  6e095a5c35d88a8d8fc1513344d418303455fe9b (verified present; review range git diff 6e095a5c..f8cc51ce, 69 files)
+Driver state: r13 R1 (codex_cli, QUOTA) and R2 (claude_cli, AUTH) both ended NO_RESULT; this is the independent review for R2,
+run under the R2 reviewer prompt with the Windows adaptations given by the coordinator.
+
+VERDICT: REJECT (two STRUCTURAL findings, R1-01 and R1-02; LDEC-011 makes STRUCTURAL findings blocking)
+
+1. Acceptance criteria I judged against (set before reviewing)
+ A1 LDEC-005/006: no card, Aadhaar, SSN, PAN, IBAN, phone, e-mail, API key or labelled credential, standard or obfuscated,
+    reaches WEB_SEARCH / EXTERNAL_* / LOG raw (or partly raw) without refusal or redaction, outside the stated residuals.
+ A2 Exempt classes and ordinary non-numeric text (non-English, emoji, URLs, code) are unchanged and not refused.
+ A3 Clean text leaves byte-identical.
+ A4 Stated residuals (6.4-6.11) are accurate and complete.
+ A5 restore() only for its own scope, owner and local destinations; grants need a verified user principal, never cover
+    CREDENTIAL, respect uses/ttl/revocation under concurrency; nothing value-bearing in audit, grant, vault, logs, exceptions;
+    every failure path refuses.
+ A6 Integrations: search sends only the sanitized query and nothing on refusal; scheduler gates before any attempt or spawn
+    with consistent state; BrainClient loopback + trust_env=False; Office --brain-url refusal; D10 persistent DPAPI secret.
+ A7 AC-14c and the pathological-input contract are stated accurately (open owner decisions are not new findings unless
+    misstated).
+ A8 No protected path changed; no new dependency; no competing authority.
+ A9 Every earlier finding id re-checked.
+
+2. Results against the criteria
+ A1: largely met. 4,500 generated obfuscated digit texts x 3 destinations: 0 outputs with 9+ digits. All standard forms and
+     about 40 fresh reproductions of earlier findings are refused or redacted. Gaps: R1-01 (LOG keeps the rest of a
+     span-less Assist credential once the digit budget has rewritten a piece of it - STRUCTURAL), R1-02 (a str subclass
+     disables the as-written and egress-form checks - STRUCTURAL, low exploitability), R1-03 (compact "dates" carry any six
+     digits), R1-04 (Han numerals), R1-05 (unlabelled secrets under 40 characters).
+ A2/A3: met. 188/188 hand-written benign cases and 3,000/3,000 generated exempt-token texts byte-identical; real sentences in
+     18 scripts unchanged. Over-budget number lists joined by "|" or katakana middle dot are refused rather than redacted;
+     that follows LDEC-005's separator signal and is not raised.
+ A4: not met in full - R1-03, R1-04, R1-05 are missing from the residual list.
+ A5: met. Cross-scope, wrong-owner and non-local restores refused; grant creation refused without a verifier, CREDENTIAL
+     not grantable; 12 threads on a 3-use grant gave exactly 3 disclosures; revocation immediate; an audit failure refuses
+     and leaves the grant unused; no value, span, token or value hash found in audit/grant/vault bytes or log records.
+     Exception: R1-01 for log output.
+ A6: met by code reading and tests (search refusal returns before the client is built; scheduler gate runs before the
+     attempt row; BrainClient require_loopback + trust_env=False, all callers use 127.0.0.1; Office ap.error on NotLoopback;
+     persistent_secret created once, DPAPI ciphertext, corrupted file refused and kept - observed with real DPAPI).
+ A7: not met in full - R1-06 (quadratic patterns not covered by the cost bound; PC-17 calls _KEYVAL linear) and R1-07
+     (ZWJ/ZWNJ text misses AC-14c on a path the documents describe as meeting it).
+ A8: met. ws_frozen_check exit 0, no protected path in the diff, cryptography already in requirements.txt.
+ A9: all 98 earlier ids FIXED (see prior_findings and the unverified notes on how).
+
+3. Self-review of this report
+ - Re-ran every reproduction quoted in the findings after writing them; line references re-checked against the checkout.
+ - Leak counting: an early probe counted a leak only when the value's digits were contiguous in the output and so missed
+   carriers split by decoy digits; I replaced it by printing outputs and by a 9-digit count on digit-free templates.
+ - R1-02 classification: it fits LDEC-011's STRUCTURAL definition (a mechanism that disables whole check families), but no
+   data path can produce a str subclass. I kept it blocking because the owner's bar is unconditional for STRUCTURAL and
+   the fix is one line; the owner may waive it.
+ - R1-06 and R1-07 are not bypasses; the JSON schema needs a class, so they carry RECALL (non-structural) and are
+   non-blocking.
+ - Gate failures: 25 tests/assist failures/errors are node MODULE_NOT_FOUND in this environment; not compared on the
+   baseline by me (listed under unverified).
+
+4. Files
+ Report: this file. JSON: audit_result.json in the same folder (validated with json.loads). Probes p1-p23 in this folder.
+ Checkout state after review: git status --short empty, no __pycache__ or .pytest_cache created.
+
+AUDIT_RESULT_BEGIN
+{
+ "candidate": "f8cc51cef3fd8ca6fd0e361852fb8a0cf39d2ae0",
+ "baseline": "6e095a5c35d88a8d8fc1513344d418303455fe9b",
+ "verdict": "REJECT",
+ "findings": [
+  {
+   "id": "R1-01",
+   "class": "STRUCTURAL",
+   "severity": "MEDIUM",
+   "blocking": true,
+   "category": "security",
+   "owner_decision": false,
+   "title": "LOG keeps part of a credential that only the Assist rules detect, when another rule has already rewritten a piece of it",
+   "files": [
+    "uri_privacy/gateway.py:160-163",
+    "uri_privacy/gateway.py:174-197",
+    "uri_privacy/classify.py:935-938"
+   ],
+   "evidence": "Assist credential kinds (bearer and similar) carry no span. At LOG the gateway first rewrites the other findings, then runs uri_assist.redact_text on the rewritten text. When the digit budget (or any other span) has already replaced a piece inside the token, the Assist pattern no longer matches, the re-check classifies the output as clean, and the rest of the token is written. Reproductions at LOG: 'Authorization: Bearer abcdef1234567890abcdef' -> 'Authorization: Bearer abcdef[redacted]abcdef'; 'Authorization: Bearer ddae376bcb558ff3a1401687' -> 'Authorization: Bearer ddae376bcb[redacted]'; 'Bearer 3c542c1767c5b3f493bffc04' -> 'Bearer [redacted]bffc04'; 'xoxb-LRReRrVyio2M4533822254Tm3cxPMPnLOf30' -> '[redacted][redacted]cxPMPnLOf30'; 'Authorization%3A%20Bearer%20abcdef1234567890abcdef' -> 'Authorization%3A%20Bearer%20abcdef[redacted]abcdef'. Generated: random hex bearer tokens of 24 characters, 21 of 120 kept 6 or more token characters; 31 characters, 21 of 120; base62 tokens holding a 10-digit run, 49 of 600 kept 8 or more. Labelled ('password:', 'api_key=', 'X-Api-Key:', 'token='), URL-userinfo and config forms were fully redacted (0 of 480 per length) because they have spans. Plan 2.2 sets CREDENTIAL at LOG to REDACT and AC-4 forbids raw values in log records; no stated residual covers this. It is a handling mechanism for every span-less credential, not one more spelling, so STRUCTURAL. No live consumer uses the LOG destination today, so MEDIUM.",
+   "suggested_fix": "At LOG, when cls.credential_kinds is non-empty, run the Assist redaction before any other rewrite (then classify and rewrite that result), or write the line fully redacted when redact_text on the rewritten output no longer finds every credential kind the input had. Add a generated test: tokens with digit runs or letter-gap digit chains after 'Bearer' / 'Authorization: Bearer' at LOG keep no 6-character piece of the token."
+  },
+  {
+   "id": "R1-02",
+   "class": "STRUCTURAL",
+   "severity": "LOW",
+   "blocking": true,
+   "category": "security",
+   "owner_decision": false,
+   "title": "A str subclass passes the non-text check and can switch off the as-written and egress-form checks",
+   "files": [
+    "uri_privacy/gateway.py:96",
+    "uri_privacy/classify.py:687",
+    "uri_privacy/classify.py:953"
+   ],
+   "evidence": "prepare() accepts anything with isinstance(text, str). egress_form() and classify() call text.isascii() to pick their fast paths, so a subclass whose isascii() returns True skips NFKC, the disguise signals and the as-written digit budget (the FB7 repair). With class S(str): def isascii(self): return True, S('4111a\\u20261111a\\u20261111a\\u20261111') is sent unchanged to WEB_SEARCH, LOG and EXTERNAL_MODEL, while the same text as a plain str is redacted; the same holds for 'ab\\u00d7' gaps. Plan 2.6 / AC-9 require non-text input to be refused. Not reachable from data today: every in-repo caller passes JSON-decoded plain str, and common subclasses (markupsafe.Markup, StrEnum) do not override isascii. STRUCTURAL because it disables whole check families for any value; LOW because only calling code can construct such an object.",
+   "suggested_fix": "In prepare() and restore(), refuse anything whose type is not exactly str (PRIVACY_INPUT_NOT_TEXT), or convert it to a plain str with str.__new__(str, text) before any processing, and add a test with a subclass that overrides isascii."
+  },
+  {
+   "id": "R1-03",
+   "class": "RECALL",
+   "severity": "LOW",
+   "blocking": false,
+   "category": "code",
+   "owner_decision": false,
+   "title": "The compact-date exemption accepts any six digits, so a card can travel as 'dates' that are not valid dates",
+   "files": [
+    "uri_privacy/classify.py:302-303",
+    "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md:161"
+   ],
+   "evidence": "_DATE's third alternative '(?:19|20)\\d{6}(?=T)' checks neither month nor day, and the card rules ignore spans made only of exempt digits. 'logs 20429141T 20777631T 20706311T' (carrying the Luhn-valid 4291417776317063) leaves unchanged at WEB_SEARCH, EXTERNAL_MODEL, EXTERNAL_AGENT, EXTERNAL_SERVICE and LOG, and so does 'at 20429141T000000 and 20777631T000000 ...'. Threat model 6.4 states the residual as 'a value written as a sequence of valid dates', and 6.6 lists only the free digits of clock fractions (9) and IPv4 ports (5). Needs deliberate shaping, so LOW.",
+   "suggested_fix": "Validate the compact form like the separated forms: (?:19|20)\\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\\d|3[01])(?=T); or add six free digits per compact date to the 6.6 residual list."
+  },
+  {
+   "id": "R1-04",
+   "class": "RECALL",
+   "severity": "LOW",
+   "blocking": false,
+   "category": "documentation",
+   "owner_decision": false,
+   "title": "Numbers written with Han numerals are not counted and are not listed as a residual",
+   "files": [
+    "uri_privacy/classify.py:968-975",
+    "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md:156-168"
+   ],
+   "evidence": "'我的电话是一三九一二三四五六七八' (an 11-digit mobile), '卡号 四一一一 一一一一 一一一一 一一一一' and '電話 〇九〇-一二三四-五六七八' are sent unchanged at WEB_SEARCH, EXTERNAL_MODEL and LOG. Han numerals have no Unicode digit value, so neither the folded nor the as-written reading counts them. The residual list names values 'written in words' and 'non-standard national formats'; Han numerals are digit-like characters in common CJK use and are not clearly either.",
+   "suggested_fix": "State it in the residual list, or fold 〇一二三四五六七八九 to digits for the digit budget only and re-run the CJK benign corpus."
+  },
+  {
+   "id": "R1-05",
+   "class": "RECALL",
+   "severity": "LOW",
+   "blocking": false,
+   "category": "documentation",
+   "owner_decision": false,
+   "title": "Unlabelled secrets without a known prefix and shorter than 40 characters pass raw; the residual list does not say so",
+   "files": [
+    "uri_privacy/classify.py:250-278",
+    "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md:156-168"
+   ],
+   "evidence": "Random mixed-case alphanumeric strings in 'connect using {v} for the webhook' at WEB_SEARCH: 20 characters 200/200 raw, 24 characters 200/200, 32 characters 199/200, 39 characters 198/200, 40 characters 0/200 (redacted). 'use whsec_<32 alphanumerics> in the config' is sent raw. With a label ('token', 'api key', 'secret') they are refused. The 40-character bound (32 for hex) comes from the reused Assist long_secret rule and is not stated among the residuals in 6.4-6.11.",
+   "suggested_fix": "Add the bound to the residual list; optionally add common prefixes such as whsec_ to the key-prefix list."
+  },
+  {
+   "id": "R1-06",
+   "class": "RECALL",
+   "severity": "MEDIUM",
+   "blocking": false,
+   "category": "code",
+   "owner_decision": false,
+   "title": "Several patterns are quadratic and are not covered by the matching-cost bound: 64 KB shapes take 4-89 s and are not refused",
+   "files": [
+    "uri_privacy/classify.py:650-651",
+    "uri_privacy/classify.py:233-236",
+    "uri_privacy/classify.py:284-294",
+    "docs/privacy/00_PLAN_AND_ACCEPTANCE_CRITERIA.md:160"
+   ],
+   "evidence": "Not a bypass (outputs are correct), so not STRUCTURAL. _SEP_RUN and _LETTER_RUN backtrack over a long digit run from every start position: '1'*4096 / *8192 / *16384 take 0.45 / 1.40 / 5.5 s at WEB_SEARCH, and '\\uff11'*65536 takes 89 s at WEB_SEARCH and at LOG. _KEYVAL: 'api_key=' repeated to 4 / 8 / 16 KB takes 0.02 / 0.08 / 0.29 s and 4.3 s at 64 KB (PC-17 calls the new pattern linear). The reused Assist URL splitting (_split_url_parts): 'a.'*32768 takes 23 s at WEB_SEARCH and 47 s at LOG; 'a1.'*21845 takes 15.7 s. None is refused as PRIVACY_INPUT_TOO_COMPLEX, because scan_cost models only the long_secret rule. Live consumers cap input at 400 / 300 characters (a few ms there), so the exposure is the future 64 KB hooks (OD-1) and any LOG caller.",
+   "suggested_fix": "Start the disguise patterns only at the beginning of a digit run ((?<!\\d) before \\d+, likewise for _LETTER_RUN), which makes them linear; bound _KEYVAL's prefix repetition; extend scan_cost (or a length-and-shape bound) to the Assist URL rules; correct PC-17's linearity statement."
+  },
+  {
+   "id": "R1-07",
+   "class": "RECALL",
+   "severity": "MEDIUM",
+   "blocking": false,
+   "category": "documentation",
+   "owner_decision": false,
+   "title": "The AC-14c misses are scoped to 'text whose egress form differs', but ZWJ/ZWNJ text (emoji sequences, ordinary Persian) misses AC-14c on the other path",
+   "files": [
+    "uri_privacy/classify.py:567-589",
+    "docs/privacy/00_PLAN_AND_ACCEPTANCE_CRITERIA.md:162",
+    "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md:271-273"
+   ],
+   "evidence": "_needs_readings() returns True for any invisible character, so a text holding ZWJ or ZWNJ is folded four times even when its egress form equals the original. p95 on this host (400 characters WEB_SEARCH / 2 KB / 64 KB EXTERNAL_MODEL, same synthetic card and e-mail in each): ASCII 3.1 / 16.2 / 475 ms; English with one family emoji per ~95 characters 12.3 / 64.8 / 2098 ms; Persian with ZWNJ 14.8 / 80.7 / 2352 ms; the same Persian without ZWNJ 4.4 / 22.4 / 645 ms. PC-19 says AC-14c is met on the single-reading path for non-ASCII text, and 6.11 says the open decision covers 'every script whose egress form differs'; measurements.json has no ZWJ or ZWNJ row. The owner decision is being taken on an incomplete scope.",
+   "suggested_fix": "Add ZWJ/ZWNJ rows (emoji, Persian) to latency_non_ascii and restate PC-15 / PC-18 / PC-19 and 6.11 to cover the multi-reading path; optionally decide the extra readings per region instead of per text."
+  }
+ ],
+ "prior_findings": [
+  {
+   "id": "r1 R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R2-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R2-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R2-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R2-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-08",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1 R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1 R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1 R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1 R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1 R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1 R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R3-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R3-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R3-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R3-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R4-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R5-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R6-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R7-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R7-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R8-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R8-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R8-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R8-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2 R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2 R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2 R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2 R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2 R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3 R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3 R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3 R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3 R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3 R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3 R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3 R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4 R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4 R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4 R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4 R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4 R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4 R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4 R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4 R1-08",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R2-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R2-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R3-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R3-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R3-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R4-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R5-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R5-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R5-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5 R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5 R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5 R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5 R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5 R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5 R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5 R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5 R1-08",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5 R1-09",
+   "status": "FIXED"
+  },
+  {
+   "id": "r8 R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB6 R3-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB6 R3-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB6 R3-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB7 R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB7 R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB7 R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB8 R2-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB8 R2-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB8 R2-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB8 R2-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9 R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9 R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9 R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9 R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9 R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9 R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9 R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB10 R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB10 R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB10 R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB10 R1-04",
+   "status": "FIXED"
+  }
+ ],
+ "tests_run": [
+  {
+   "command": "testrun fb11-privacy: python -B -m pytest -p no:cacheprovider -q tests/privacy (checkout at f8cc51ce)",
+   "result": "1727 passed in 74.95 s, exit 0",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "testrun fb11-gates: python -B -m pytest -p no:cacheprovider -q tests/oi tests/ws tests/a2ui tests/assist tests/ssrf tests/web tests/scheduler",
+   "result": "6 failed, 7021 passed, 40 skipped, 20 errors, exit 1. All 25 tests/assist failures and errors are node MODULE_NOT_FOUND in the Chromium/Playwright runners (NODE_PATH defaults to /opt/node22; the candidate does not change uri_assist), plus the known baseline failure tests/scheduler/test_service_process.py::test_duplicate_startup_and_api. No privacy-related failure.",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "python -B scripts/ws_frozen_check.py",
+   "result": "exit 0, unapproved_protected_changes []; git diff 6e095a5c..f8cc51ce touches no protected path",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "probe p5: 4,500 generated obfuscated card / Aadhaar / SSN / mobile texts x WEB_SEARCH, EXTERNAL_MODEL, LOG (random 2-6 group splits; Unicode punctuation, space, zero-width and letter gaps; full-width, Devanagari and Arabic-Indic digits)",
+   "result": "0 outputs carrying 9 or more digits; 2022 refused, 2478 sanitized",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "probes p6 / p7b / p23b: 47 hand-written benign texts x 4 destinations; 3000 generated exempt-token texts; 2500 generated multi-script word texts x 2 destinations; 18 real-script sentences",
+   "result": "188/188 and 3000/3000 byte-identical; multi-script 4940 unchanged, 60 refused only where a word begins with U+0E33 (invalid Thai); real sentences all unchanged",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "probes p3 / p4 / p13 / p19 / p20 / p21: standard forms of every category; fresh reproductions of about 40 prior findings; 1500 generated API keys and e-mails; unlabelled-secret length sweep",
+   "result": "prior-finding reproductions all refused or redacted; e-mail 1500/1500 redacted; listed-prefix keys refused; see R1-04 and R1-05",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "probes p11 / p22: restore across scopes, owners and non-local destinations; grant authority; CREDENTIAL grant; 12 threads on a 3-use grant; revocation; audit failure with a grant; byte scan of audit, grant and vault files and log records; DPAPI persistent_secret",
+   "result": "all refused or contained as specified; 3 of 12 raw disclosures for uses=3; no value, span or token in files or logs; DPAPI secret stable across starts, ciphertext on disk, corrupted file refused and left in place",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "probes p1 / p2 / p14 / p18: exempt-token carriers, str subclass, LOG credential remnants",
+   "result": "see R1-01, R1-02, R1-03",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "probes p8 / p9 / p10 / p15 / p16 / p17: latency by text kind; pathological 64 KB shapes; per-pattern timing",
+   "result": "see R1-06, R1-07",
+   "status": "COMPLETED_WITH_RESULT"
+  }
+ ],
+ "unverified": [
+  "tests/office was not run by me (the shared LibreOffice tree is in use by another session); the Office part of AC-12 and tests/office/test_worker_isolation.py rest on the implementer's and driver's runs.",
+  "I did not run the gate suites on the baseline; the assist MODULE_NOT_FOUND failures are attributed to this environment because the candidate does not modify uri_assist, not by a baseline comparison.",
+  "AC-17 (live worker search path against a local capture endpoint, D10 restart persistence through scripts/run_uri_integrated_server.py) was not re-run; I exercised uri_privacy.keys.persistent_secret with real DPAPI and read the server's inline copy of the same logic.",
+  "Prior findings are marked FIXED because their named regression tests passed in my run, plus my own fresh reproductions for about 40 security-relevant ones; I did not re-run each original reviewer's exact reproduction. r6 R5-03 (AC-14b) counts as FIXED only because owner decision LDEC-008 replaced it; AC-14c is the open owner decision.",
+  "Recall on real-world data is not measured (as PC-7 says); all my sweeps are synthetic.",
+  "Latency figures come from this host with no other suite running; absolute values vary between runs."
+ ],
+ "inspected": [
+  "docs/privacy/00_PLAN_AND_ACCEPTANCE_CRITERIA.md (full)",
+  "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md (section 3, sections 6.4-6.11)",
+  "uri_privacy/gateway.py",
+  "uri_privacy/classify.py",
+  "uri_privacy/policy.py",
+  "uri_privacy/grants.py",
+  "uri_privacy/keys.py",
+  "uri_privacy/vault.py (open, get)",
+  "uri_web/search.py",
+  "uri_web/bridge.py (diff)",
+  "uri_scheduler/engine.py (diff and _execute)",
+  "uri_scheduler/gif_task.py (build_package)",
+  "uri_operational_intelligence/brain_client.py (diff)",
+  "uri_office/service.py (diff)",
+  "scripts/run_uri_integrated_server.py (diff)",
+  "scripts/run_uri_integrated_worker.py (diff)",
+  "scripts/oi_materialize_test_runtime.py (diff)",
+  "tests/privacy/synth.py, helpers.py, measure.py (head)",
+  "tests/assist and tests/office pin-test diffs",
+  "git diff --stat 6e095a5c..f8cc51ce",
+  "all BrainClient callers"
+ ],
+ "evidence_reviewed_only": [
+  "docs/privacy/evidence/measurements.json (latency, latency_non_ascii)",
+  "D:/uri-dev/lifecycle/M95-PRIVACY-r1, r3, r6, r8 reviewer_result.txt (finding ids and titles; r3 R8-02 evidence)",
+  "D:/uri-dev/lifecycle/M95-PRIVACY-r13 R1/R2 round.json (both reviewers unavailable: QUOTA, AUTH)",
+  "docs/privacy/reviews/* (finding ids only)"
+ ],
+ "live_observed": [
+  "Gateway behaviour on this Windows host through direct prepare()/restore() calls against the checkout (all probes above)",
+  "Real DPAPI round trip and corrupted-file refusal for uri_privacy.keys.persistent_secret (current user)",
+  "Grant consumption under 12 concurrent threads"
+ ]
+}
+AUDIT_RESULT_END

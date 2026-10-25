@@ -1,0 +1,7 @@
+FAILED tests/privacy/test_pc20.py::test_fb11_r1_01_log_keeps_no_piece_of_a_bearer_token
+FAILED tests/privacy/test_pc20.py::test_fb11_r1_01_reviewer_reproductions[xoxb-LRReRrVyio2M4533822254Tm3cxPMPnLOf30]
+FAILED tests/privacy/test_pc20.py::test_fb11_r1_01_reviewer_reproductions[Authorization%3A%20Bearer%20abcdef1234567890abcdef]
+FAILED tests/privacy/test_pc20.py::test_fb11_r1_02_str_subclasses_are_refused_by_prepare_and_restore
+FAILED tests/privacy/test_pc20.py::test_fb11_r1_03_invalid_compact_dates_are_not_exempt
+FAILED tests/privacy/test_pc20.py::test_fb11_r1_06_disguise_patterns_are_linear[digits]
+6 failed, 3 passed in 120.32s (0:02:00)

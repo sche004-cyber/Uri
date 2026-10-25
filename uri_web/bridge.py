@@ -123,6 +123,23 @@ class WebResearch:
         if job is not None and job[1].is_alive():
             job[0].yield_brain()
 
+    @staticmethod
+    def _private_query(q: str) -> str:
+        """M95 (review R2-04): the privacy decision comes before the query is emitted, stored, searched or given to the
+        Brain. Only the sanitized query goes on; a refused query refuses the command and is recorded nowhere."""
+        if not q.strip():
+            return q
+        from uri_privacy import PrivacyRefused, default_gateway
+        from uri_privacy.gateway import REDACTED
+        try:
+            out = default_gateway().prepare(q, requester="uri_web.research", destination="WEB_SEARCH",
+                                            purpose="web_research").text
+        except Exception as exc:                                    # noqa: BLE001 - fail closed
+            raise Refused(exc.code if isinstance(exc, PrivacyRefused) else "PRIVACY_INTERNAL_ERROR") from None
+        if not out.replace(REDACTED, "").strip():
+            raise Refused("PRIVACY_QUERY_EMPTY")
+        return out
+
     def _web_research(self, c):
         q = c["query"]
         if not isinstance(q, str) or len(q) > MAX_QUERY:
@@ -132,6 +149,7 @@ class WebResearch:
             raise Refused("ARGUMENT_INVALID")
         if not q.strip() and not urls and not feeds:
             raise Refused("EMPTY_REQUEST")
+        q = self._private_query(q)
         req = P.ResearchRequest(query=q, urls=urls, feeds=feeds, use_brain=bool(c["use_brain"]))
         job = P.ResearchJob(req, fetcher=self._fetcher_factory(), providers=self._providers_factory(),
                             complete=self._guarded_complete(), progress=self._on_progress)

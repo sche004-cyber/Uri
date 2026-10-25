@@ -1,0 +1,593 @@
+FB8: fallback independent review of M95-PRIVACY-r10, round R2 (driver reviewer prompt followed; Windows adaptations as instructed)
+
+Candidate 83334676d45755f89aacf9bd628aa4a2ace53df5 (detached HEAD, checked). Baseline 6e095a5c35d88a8d8fc1513344d418303455fe9b (commit present; review range diffed).
+Both R1 and R2 of driver run r10 returned UNAVAILABLE (claude_cli AUTH). This report is a substitute for that reviewer.
+
+Acceptance criteria I judged against:
+(a) No card, Aadhaar, SSN, PAN, IBAN, phone, e-mail, API key or labelled credential reaches WEB_SEARCH, EXTERNAL_* or LOG raw, in standard or obfuscated form, outside the stated residuals (LDEC-005/006/007).
+(b) Exempt classes and ordinary text are left unchanged and are not refused.
+(c) The residuals in 6.4-6.8 are accurate and complete.
+(d) Clean text is sent byte-identical.
+(e) AC-14c, with the 64 KB combining-mark miss accepted as recorded.
+(f) Grant, restore and audit security; fail closed.
+(g) Integrations, D10, frozen boundary.
+
+Verdict: REJECT. Two HIGH findings and one blocking MEDIUM.
+
+R2-01 HIGH. Labelled credentials written in JSON, YAML, env, XML or code style go out raw to every destination, LOG included. Examples:
+  {"password": "abc123xyz789"}
+  client_secret: ...
+  access_token: ...
+  DB_PASSWORD: ...
+  private_key: ...
+In a generated sweep, all 136 compound-label ':' texts leaked; only the '=' forms are caught. I confirmed it on the Tavily wire (MockTransport) and in the scheduler's task.json. Cause: _LABELLED's leading \b does not hold after '_' or in camelCase, and its separator cannot step over a closing quote. No stated residual covers this.
+
+R2-02 HIGH. egress_form converts look-alike punctuation (for example U+0589 Armenian full stop, U+02D0 modifier colon) to ASCII '.' or ':'. That turns a digit run into an exempt IPv4:port or clock token. The original's own classification finds LONG_NUMBER, but gateway.py:125-135 has no branch for "original has a category, egress form is clean", so the egress form goes out with every digit. Example: 'card 41\u0589111\u0589111\u0589111\u02d011111' is sent as 'card 41.111.111.111:11111'. In the dot x colon sweep, 2520 of 2990 texts leaked. My random fuzz found the same class without being aimed at it. This contradicts 6.8 ("either reading is redacted") and 6.4 ("non-standard separators refused").
+
+R2-03 MEDIUM (blocking). Defanged and spaced e-mails are sent raw at WEB_SEARCH: [.], [@], (@), (.), "x @ y . com", "y .com". They are not in the residual list.
+
+R2-04 LOW. A PAN with two different separators ('ABCPE 1234-F'), 'cvv2 123' and 'pin: 12 34' are not detected and not listed as residuals.
+
+What held up:
+- (b) and (d) on 50 generated benign and exempt texts.
+- Grants:
+  - no verifier, a component principal or a bad principal are all refused;
+  - CREDENTIAL is not grantable;
+  - limits on ttl and uses are enforced;
+  - 30 concurrent threads on uses=5 got exactly 5 uses;
+  - revocation and expiry take effect.
+- restore:
+  - refused for any destination that is not local;
+  - refused for another requester;
+  - a token from another scope is left as foreign;
+  - invalid scope ids are refused.
+- Non-text inputs are refused.
+- No values were found in audit or grant files or in logs.
+- D10: the same secret across starts, no plaintext on disk, and a corrupted file stops startup without being replaced (function level only).
+- BrainClient accepts loopback only.
+- ws_frozen_check exits 0 and no protected path changed.
+- Gate suites: only the known baseline failure in scheduler, plus Node MODULE_NOT_FOUND errors in assist, which are environmental. tests/office not run, as instructed.
+- Every earlier finding I re-ran is fixed. The rest are marked FIXED from the passing regression suite (see unverified).
+- AC-14c: 400 characters and 2 KB are within bounds. At 64 KB Hindi was 1.12 s, which the documents already record as NOT MET. Run-to-run variance is large.
+
+Checkout state: git -C D:\uri-dev\m95-review-83334676 status --short was empty at the end, and no __pycache__ was created (python -B, -p no:cacheprovider). Probe scripts are in this folder.
+
+AUDIT_RESULT_BEGIN
+{
+ "candidate": "83334676d45755f89aacf9bd628aa4a2ace53df5",
+ "baseline": "6e095a5c35d88a8d8fc1513344d418303455fe9b",
+ "verdict": "REJECT",
+ "findings": [
+  {
+   "id": "R2-01",
+   "severity": "HIGH",
+   "blocking": true,
+   "category": "security",
+   "owner_decision": false,
+   "title": "Labelled credentials in JSON/YAML/config form (quoted label, or a compound label such as client_secret, access_token, DB_PASSWORD) reach WEB_SEARCH, EXTERNAL_* and LOG raw",
+   "files": [
+    "uri_privacy/classify.py:107-112",
+    "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md:146"
+   ],
+   "evidence": "prepare() returned the input unchanged (SENT, no category) at WEB_SEARCH, EXTERNAL_MODEL, EXTERNAL_AGENT, EXTERNAL_SERVICE and LOG for '{\"password\": \"abc123xyz789\"}', '{\"access_token\":\"abc123xyz789\"}', \"'api_key': 'abc123xyz789'\", '<password>abc123xyz</password>', 'client_secret: abc123xyz789', 'DB_PASSWORD: hunter2x9', 'AWS secret access key: abc123xyz789'. Generated sweep (p2.py): 34 compound labels (client_secret, api_secret, user_password, db_password, access_token, refresh_token, auth_token, api_token, bot_token, AWS_SECRET_ACCESS_KEY, private_key, secret_key, session_token, master_password, root_password, clientSecret and others) x separators ': ' and ':' x 2 values: all 136 texts leaked at WEB_SEARCH. Only the '=' forms are caught, by the reused Assist query_secret rule. Cause: _LABELLED opens with \\b, which does not hold after '_' or inside camelCase, and its separator \\s*(?:is|was|=|:) cannot step over the closing quote of a quoted key. Wire capture: TavilyProvider with httpx.MockTransport sent 'client_secret: Q7m2Zp9Lr4Ks8Tv1 invalid_client error' and 'DB_PASSWORD: hunter2x9 docker compose not working' unchanged, audit outcome ALLOWED. Scheduler: _sanitize_for_harness + gif_task.build_package wrote 'client_secret: Q7m2Zp9Lr4Ks8Tv1' and 'family; wifi config {\"password\": \"Q7m2Zp9Lr4\"}' into task.json. CREDENTIAL is a hard refusal at external destinations and REDACT at LOG (plan 2.2, AC-2, AC-10, AC-11). Threat model 6.4 says labelled credentials with the label before the value are refused (LOG: redacted). No stated residual covers quoted or compound English labels, and no earlier review raised them.",
+   "suggested_fix": "Start the label alternatives after a non-letter boundary that also holds after '_' and at camelCase joins ((?<![A-Za-z]) instead of \\b), and accept an optional closing quote before the separator (label[\"']?\\s*(?:is|was|=|:)). Add a generated sweep over common key names x JSON/YAML/env/XML layouts x all destinations."
+  },
+  {
+   "id": "R2-02",
+   "severity": "HIGH",
+   "blocking": true,
+   "category": "security",
+   "owner_decision": false,
+   "title": "Punctuation look-alikes that egress_form turns into '.' or ':' create an exempt IPv4:port or clock token, and the gateway drops the original reading's LONG_NUMBER, so cards, SSNs and Aadhaar numbers reach every destination raw",
+   "files": [
+    "uri_privacy/gateway.py:125-135",
+    "uri_privacy/classify.py:452-466",
+    "uri_privacy/classify.py:595-614",
+    "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md:228"
+   ],
+   "evidence": "'card 41\\u0589111\\u0589111\\u0589111\\u02d011111 declined' (U+0589 ARMENIAN FULL STOP, U+02D0 MODIFIER LETTER TRIANGULAR COLON) -> SENT 'card 41.111.111.111:11111 declined' at WEB_SEARCH, LOG and EXTERNAL_MODEL, with all 16 digits of 4111111111111111 on the wire. Same for 'ssn 1\\u02d023\\u02d045\\u05896789 form' -> 'ssn 1:23:45.6789 form' and 'my aadhaar 23\\u058945\\u058967\\u058989\\u02d00124' -> '23.45.67.89:0124'. Generated sweep (sweep2.py): every code point _punct_ascii maps to '.' (23) x every one it maps to ':' (65) in the card layout above x WEB_SEARCH and LOG: 2520 of 2990 texts leaked. A random mixed-gap fuzz (fz1.py, 3000 texts x 3 destinations) found the same class without being aimed at it (2 texts, 6 leaks, e.g. U+2255 inside an SSN). Mechanism: classify(original) finds the run (LONG_NUMBER, rule digit_budget; as_written is False because a folded reading found it). classify(egress form) finds nothing, because the converted separators form an exempt IPv4 or clock. gateway.py:125-135 has no branch for 'the original has a category, the egress form is clean, not as_written', so the egress form is sent without rewrite or re-check. As written these separators are not ASCII dots or colons, so the input is not a value written as an IPv4 address or clock time (the 6.4 residual). Section 6.8 says a run over the budget in either reading is redacted, and 6.4 says digits joined by non-standard separators are refused. Neither holds.",
+   "suggested_fix": "In prepare(), when the original's classification has any category the egress form's lacks, refuse as doubt (LOG: fully redacted) or rewrite from the original's spans. Separately, let exempt tokens match only separators that were ASCII as written, so the gateway's own folding can never create an exemption. Add a sweep over every _punct_ascii code point inside IPv4, clock and date layouts."
+  },
+  {
+   "id": "R2-03",
+   "severity": "MEDIUM",
+   "blocking": true,
+   "category": "code",
+   "owner_decision": false,
+   "title": "Common defanged and spaced e-mail forms are not detected and reach WEB_SEARCH unchanged",
+   "files": [
+    "uri_privacy/classify.py:244-254",
+    "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md:205-206"
+   ],
+   "evidence": "prepare() at WEB_SEARCH returned these unchanged: 'john.doe@example[.]com', 'john.doe[@]example.com', 'john.doe(@)example.com', 'john.doe@example(.)com', 'john.doe @ example . com', 'john.doe@example .com', 'john.doe@example. com'. TavilyProvider wire capture sent 'contact john.doe@example[.]com' unchanged, and the scheduler wrote 'email me at john.doe@example[.]com' into task.json. The rule handles '(at)', '[dot]' and spaces around '@' only (6.6 row 2). The stated residuals list only ' at ' / ' dot ' written as words and combining marks outside Latin/Indic; '[.]', '(.)', '[@]', '(@)' and a spaced dot are not listed. CONTACT must be redacted at WEB_SEARCH (plan 2.2, AC-10).",
+   "suggested_fix": "Accept '[.]', '(.)', '{.}', '[@]', '(@)', '{@}' and single spaces around '.' in the domain part of the third _EMAIL alternative, or list these forms as residuals in 6.4-6.8 for an owner decision."
+  },
+  {
+   "id": "R2-04",
+   "severity": "LOW",
+   "blocking": false,
+   "category": "code",
+   "owner_decision": false,
+   "title": "PAN with two different separators, and some code-word forms, are not detected and are not listed as residuals",
+   "files": [
+    "uri_privacy/classify.py:142-151",
+    "uri_privacy/classify.py:262"
+   ],
+   "evidence": "Sent unchanged at WEB_SEARCH: 'PAN ABCPE 1234-F' and 'PAN ABCPE.1234 F' (upper case; 6.6 says one punctuation separator anywhere), 'cvv2 123', 'pin: 12 34'. The listed residuals cover lower-case spaced PANs and year-shaped digits only.",
+   "suggested_fix": "Allow a space or one punctuation separator independently at each PAN group boundary in upper case and accept cvv2/cvc2, or state these forms as residuals."
+  }
+ ],
+ "prior_findings": [
+  {
+   "id": "r1/R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1/R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1/R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1/R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1/R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1/R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1/R2-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1/R2-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1/R2-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1/R2-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-08",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3/R3-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3/R3-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3/R3-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3/R3-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3/R4-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3/R5-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3/R6-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3/R7-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3/R7-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3/R8-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3/R8-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3/R8-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3/R8-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-08",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6/R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6/R2-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6/R2-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6/R3-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6/R3-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6/R3-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6/R4-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6/R5-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6/R5-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6/R5-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-08",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-09",
+   "status": "FIXED"
+  },
+  {
+   "id": "r8/R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB6-R3-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB6-R3-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB6-R3-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB7-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB7-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB7-R1-03",
+   "status": "FIXED"
+  }
+ ],
+ "tests_run": [
+  {
+   "command": "testrun fb8-privacy: python -B -m pytest -p no:cacheprovider -q tests/privacy",
+   "result": "1670 passed in 59.93s",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "testrun fb8-web: pytest tests/web",
+   "result": "3727 passed",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "testrun fb8-ssrf: pytest tests/ssrf",
+   "result": "65 passed",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "testrun fb8-scheduler: pytest tests/scheduler",
+   "result": "1 failed (test_service_process.py::test_duplicate_startup_and_api, the known baseline failure), 70 passed",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "testrun fb8-oi: pytest tests/oi",
+   "result": "315 passed, 9 skipped",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "testrun fb8-ws: pytest tests/ws",
+   "result": "525 passed, 14 skipped",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "testrun fb8-a2ui: pytest tests/a2ui",
+   "result": "107 passed",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "testrun fb8-assist: pytest tests/assist",
+   "result": "5 failed, 2212 passed, 17 skipped, 20 errors. Every failure and error is Node MODULE_NOT_FOUND in the Chromium render harness (this checkout has no node_modules), so they are environmental and not in uri_privacy code. Not compared against the baseline",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "python -B scripts/ws_frozen_check.py (in checkout)",
+   "result": "exit 0, ok true, unapproved_protected_changes []; git diff changes no protected path",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "p1.py/p2.py/p3.py credential label probes (generated, 4 destinations)",
+   "result": "all 136 compound-label ':' forms and the JSON/XML-quoted labels leaked raw (R2-01)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "p4.py contact/ID forms; p5.py TavilyProvider MockTransport wire capture; p6.py scheduler task.json capture",
+   "result": "R2-01, R2-03 and R2-04 reproduced on the wire and in task.json",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "fz1.py random mixed-gap digit-budget fuzz, seed 7, 3000 texts x 3 destinations",
+   "result": "6 leaks (exempt-token class, R2-02), 2124 refused",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "sweep2.py: _punct_ascii '.' x ':' code points in an IPv4:port card layout x 2 destinations; clock layout; 10,831 P/S/Z/Cf/Mn/Me/Lm code points as single separators in SSN and card",
+   "result": "2520 of 2990 leaked (R2-02); clock layout 0 of 1495; single-separator SSN and card 0 leaks",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "benign.py: 50 ordinary/exempt texts (dates, times, ISO, IPv4, scripts, emoji, URLs, code, decomposed, NBSP, fullwidth) x 3 destinations",
+   "result": "all byte-identical apart from the documented outcomes (CONFIDENTIAL REQUIRE_GRANT at EXTERNAL_MODEL, ZWSP among ASCII refused)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "prior.py: reproductions for r3 R3-01..R8-02, r1 R1-01/R2-02, FB1/FB2/FB4/FB5/FB6/FB7 forms, r8 R1-01",
+   "result": "all refused or redacted as documented; clean decomposed text byte-identical",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "sec1.py: grants (no verifier, bad principal, component, CREDENTIAL, ttl, uses=True, NaN ttl, 30 threads on uses=5, revoke, expiry, wrong destination), restore (non-local, LOG, other requester, cross scope, bad scope ids), non-str inputs, 1.2 MB input, file/log scan",
+   "result": "all refused or limited as specified; exactly 5 of 30 concurrent uses allowed; no values in audit/grant files or logs; audit chain verifies",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "d10.py: server persistent_secret (extracted via ast) and uri_privacy.keys on Windows DPAPI",
+   "result": "same secret across calls, no plaintext on disk, a corrupted file gives PROTECTED_KEY_UNAVAILABLE and the file is kept",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "BrainClient loopback probes",
+   "result": "127.0.0.1 and ::1 accepted; localhost, 10.0.0.1, 0.0.0.0, ftp, suffix hosts and None refused",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "perf2.py: measure.latency + latency_scripts + own scripts (Korean, Thai, emoji, Chinese, Russian)",
+   "result": "p95 at 400 chars 2.8-8.0 ms; 2 KB 15-41 ms; 64 KB ASCII 0.53 s, Arabic 0.95 s, Japanese 0.97 s, Hindi 1.12 s (documented NOT MET); Korean/Thai with values 1.09-1.14 s in one run, Korean 0.69 s on a rerun (run-dependent)",
+   "status": "COMPLETED_WITH_RESULT"
+  }
+ ],
+ "unverified": [
+  "tests/office not run by me (another session uses the shared LibreOffice tree, per instructions)",
+  "tests/assist failures and errors (Node MODULE_NOT_FOUND) not compared against the baseline; judged environmental from the error text",
+  "AC-13/AC-17: live Windows server restart and the real worker search path not run; D10 checked at function level only",
+  "Real search providers and vendor CLIs not contacted; leaks shown at the MockTransport and task.json boundary",
+  "Prior findings: about 30 ids re-run individually (prior.py, sec1.py); the rest are marked FIXED from the passing regression tests in tests/privacy plus code reading, without individual reproduction",
+  "AC-14c at 64 KB: about 1.6x variance between runs; Korean (no combining marks) exceeded 1 s in one run and not in another. Not raised as a finding",
+  "Visible symbols inside a label ('password\\u00a1: x', 'pass\\u00a1word: x') pass; treated as deliberate obfuscation close to the stated leetspeak residual and not raised"
+ ],
+ "inspected": [
+  "docs/privacy/00_PLAN_AND_ACCEPTANCE_CRITERIA.md (full)",
+  "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md sections 6.4-6.8",
+  "uri_privacy/classify.py (full)",
+  "uri_privacy/gateway.py",
+  "uri_privacy/policy.py",
+  "uri_privacy/grants.py",
+  "uri_privacy/vault.py",
+  "uri_privacy/audit.py",
+  "uri_privacy/keys.py",
+  "uri_assist/redact.py _TEXT_RULES",
+  "uri_web/search.py (diff, _call, TavilyProvider)",
+  "uri_web/bridge.py diff",
+  "uri_scheduler/engine.py diff",
+  "uri_scheduler/gif_task.py build_package",
+  "uri_operational_intelligence/brain_client.py diff",
+  "uri_office/service.py diff",
+  "scripts/run_uri_integrated_server.py (persistent_secret, main)",
+  "scripts/run_uri_integrated_worker.py diff",
+  "scripts/oi_materialize_test_runtime.py diff",
+  "uri_core/core/runtime_identity.py dpapi",
+  "tests/privacy/measure.py accuracy/latency",
+  "tests/privacy/test_classify.py FP test",
+  "tests/privacy/synth.py (e-mail domains)"
+ ],
+ "evidence_reviewed_only": [
+  "docs/privacy/evidence/measurements.json",
+  "docs/privacy/reviews/FB1..FB7 (searched for earlier coverage of quoted labels)",
+  "D:/uri-dev/lifecycle/M95-PRIVACY-r1, r3, r6, r8 round.json finding lists",
+  "D:/uri-dev/lifecycle/M95-PRIVACY-r10/state/rounds/R1, R2 round.json (reviewer UNAVAILABLE, AUTH)"
+ ],
+ "live_observed": []
+}
+AUDIT_RESULT_END

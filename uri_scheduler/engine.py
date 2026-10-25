@@ -102,6 +102,39 @@ class Scheduler:
         self.store = Store(self.state_dir / "scheduler.db", now_fn=now_fn)
         self.instance_id = uuid.uuid4().hex
         self.startup = {}
+        self._privacy = None
+
+    @property
+    def privacy(self):
+        """M95 privacy gateway for what this scheduler sends to the external harness (audit under the state dir)."""
+        if self._privacy is None:
+            from uri_privacy.audit import PrivacyAudit
+            from uri_privacy.gateway import PrivacyGateway
+            self._privacy = PrivacyGateway(audit=PrivacyAudit(self.state_dir / "privacy" / "audit.jsonl"))
+        return self._privacy
+
+    def _sanitize_for_harness(self, value, *, requester, task_id):
+        """Every free-text string the owner supplied, through the gateway. Not reversible: the harness output is
+        rendered as-is, so nothing could be put back. Raises uri_privacy.PrivacyRefused."""
+        if isinstance(value, str):
+            if not value.strip():
+                return value
+            return self.privacy.prepare(value, requester=requester, destination="EXTERNAL_AGENT",
+                                        purpose="scheduled_creative", task_id=task_id, reversible=False).text
+        if isinstance(value, dict):
+            return {self._sanitize_for_harness(k, requester=requester, task_id=task_id):
+                    self._sanitize_for_harness(v, requester=requester, task_id=task_id) for k, v in value.items()}
+        if isinstance(value, list):
+            return [self._sanitize_for_harness(v, requester=requester, task_id=task_id) for v in value]
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            # A number cannot hold a redaction (a phone number stored as an int, review S1-08): if its text would be
+            # changed for the harness, the task is refused instead.
+            text = str(value)
+            if self.privacy.prepare(text, requester=requester, destination="EXTERNAL_AGENT",
+                                    purpose="scheduled_creative", task_id=task_id, reversible=False).text != text:
+                from uri_privacy import PrivacyRefused
+                raise PrivacyRefused("PRIVACY_REFUSED")
+        return value
 
     # ---- process lifecycle ----------------------------------------------------------------------------------------
     def _acquire_lock(self):
@@ -818,6 +851,38 @@ class Scheduler:
         if workspace.exists():                     # a crashed earlier process with the same attempt number: keep evidence
             workspace = workspace.with_name(workspace.name + "_" + uuid.uuid4().hex[:6])
         kind = (occ["request"] or {}).get("kind", "generate")
+        # M95 privacy gateway, before any attempt exists: what the owner typed goes to the external harness only after
+        # credentials are refused and identifiers / contact details are removed (EXTERNAL_AGENT, not reversible).
+        from uri_privacy import PrivacyRefused
+        try:
+            who = "uri_scheduler." + job["template_id"]
+            params = self._sanitize_for_harness(job["params"], requester=who, task_id=attempt_key)
+            request = self._sanitize_for_harness(occ["request"], requester=who, task_id=attempt_key)
+            # Calendar names and records are copied into task.json by the template.
+            # Prepare them before the attempt/workspace is created as well.
+            package_occ = dict(occ, meta=self._sanitize_for_harness(occ["meta"], requester=who,
+                                                           task_id=attempt_key))
+            # The previous candidate is the harness's own earlier output (scene, concept) returned to the same harness:
+            # running each of its numbers through the gateway protected nothing and cost one audit record per value
+            # (review FB1 R1-06). What the owner typed (params, request, calendar meta) is still gated above.
+            previous = self._previous_for(occ)
+            package_previous = previous
+        except PrivacyRefused as exc:
+            reason = "PRIVACY_REFUSED:" + exc.code
+            with self.store.tx() as db:
+                # An owner cancel recorded while the gate ran wins, exactly as in the transaction below (review S1-08).
+                if db.execute("SELECT reason FROM occurrence WHERE occ_id=?", (occ_id,)).fetchone()["reason"] == "CANCEL_REQUESTED":
+                    self._set_occ(db, occ_id, "CANCELLED", "CANCELLED_BY_OWNER", lease_owner=None)
+                    self.store.emit(db, "occurrence.cancelled_before_start", job_id=job["job_id"], occ_id=occ_id, payload={})
+                    return {"occ_id": occ_id, "result": "CANCELLED", "reason": "CANCELLED_BY_OWNER"}
+                self._set_occ(db, occ_id, "NEEDS_ATTENTION", reason, attempts=occ["attempts"] - 1, lease_owner=None)
+                self.store.emit(db, "occurrence.privacy_refused", job_id=job["job_id"], occ_id=occ_id,
+                                payload={"code": exc.code, "needs": [list(n) for n in exc.needs],
+                                         "recovery": ["remove the password, code, key or marked-confidential text "
+                                                      "from the task, then Retry",
+                                                      "Cancel this occurrence"]})
+            self.notify("needs_attention", {"occ_id": occ_id, "code": reason})
+            return {"occ_id": occ_id, "result": "NEEDS_ATTENTION", "reason": reason}
         with self.store.tx() as db:
             # Cancellation recorded while the gate ran (review round 6, F1): settle it here, before any attempt exists or
             # any harness work is submitted. After this transaction, cancel_occurrence finds the attempt and withdraws its
@@ -834,9 +899,8 @@ class Scheduler:
                             payload={"attempt_id": attempt_id, "mode": gate.mode, "executor": gate.executor_id,
                                      "qualification": gate.qualification, "kind": kind, "workspace": str(workspace)})
         template = TEMPLATES[job["template_id"]]
-        previous = self._previous_for(occ)
-        instructions = template.build_package(workspace, occurrence=occ, params=job["params"], request=occ["request"],
-                                              previous=previous)
+        instructions = template.build_package(workspace, occurrence=package_occ, params=params, request=request,
+                                              previous=package_previous)
         valid_until = occ["deadline_us"] if not occ["request"] else None
         outcome = self.harness.run(attempt_key=attempt_key, principal=job["owner"], workspace=workspace,
                                    instructions=instructions, gate=gate, valid_until_us=valid_until)

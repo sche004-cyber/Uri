@@ -42,7 +42,10 @@ PHASE2_PACKAGES = ("uri_supervisor", "uri_supervisor_bridge")
 WS_PACKAGES = ("uri_operational_intelligence",
                # Web Intelligence (W1) and URI Assist (A0), docs/assist/00_PLAN_AND_ACCEPTANCE_CRITERIA.md. uri_a2ui is
                # read by uri_web.surface (research results render through the existing catalog).
-               "uri_web", "uri_assist", "uri_a2ui")
+               "uri_web", "uri_assist", "uri_a2ui",
+               # M95 privacy gateway (docs/privacy/00_PLAN_AND_ACCEPTANCE_CRITERIA.md): uri_web sends every search
+               # query through it.
+               "uri_privacy")
 WORKER_PROFILE = "ws-integrated"
 
 
@@ -98,6 +101,71 @@ def source_digests():
     return {rel: loader.executed_digest for rel, loader in sorted(_FINDER.executed.items())}
 
 
+HARNESS_TURNS = ("turn_start", "turn_intent")
+
+
+def harness_private(kind, command, turn_error):
+    """M95 OD-1a: a turn for an external harness row (Codex / Claude Code CLI, i.e. a vendor's cloud) is decided by the
+    privacy gateway before the frozen supervised path sees it. Credentials refuse the turn; identifiers and contact
+    details are removed (EXTERNAL_AGENT, not reversible: the vendor CLI's output is not restored). The sanitized text is
+    what the proposal, the approval card and the harness all carry, so approval digests stay consistent. Turns for the
+    local Brain and the deterministic row are untouched."""
+    if kind not in HARNESS_TURNS or not isinstance(command, dict):
+        return command
+    reasoning = command.get("reasoning")
+    if not isinstance(reasoning, dict) or reasoning.get("kind") != "client_external_harness":
+        return command
+    text = command.get("text")
+    if not isinstance(text, str) or not text.strip():
+        return command
+    try:
+        from uri_privacy import PrivacyRefused, default_gateway
+        out = default_gateway().prepare(text, requester="uri_worker.external_harness", destination="EXTERNAL_AGENT",
+                                        purpose="external_harness_turn", reversible=False).text
+    except Exception as exc:                                        # noqa: BLE001 - fail closed
+        code = getattr(exc, "code", None)
+        raise turn_error(code if isinstance(code, str) and code.startswith("PRIVACY_") else "PRIVACY_INTERNAL_ERROR") from None
+    return {**command, "text": out}
+
+
+def harness_approval_private(kind, result, turns, turn_error):
+    """M95 (review FB2 R1-02): the instruction an external harness would run is compiled from intent slots that may
+    have been filled in EARLIER turns on another row, so checking only the current turn's text is not enough. When a
+    harness turn reaches approval, the compiled instruction itself goes through the gateway. It is bound to the approval
+    digest and cannot be rewritten here: if the gateway refuses it or would change it, the pending turn is cancelled
+    and the turn is refused."""
+    if kind not in HARNESS_TURNS or not isinstance(result, dict) or result.get("state") != "approval_required" \
+            or result.get("executor_kind") != "client_external_harness":
+        return result
+    request = result.get("approval_request")
+    inputs = ((request or {}).get("arguments") or {}).get("inputs") if isinstance(request, dict) else None
+    instruction = inputs.get("instruction") if isinstance(inputs, dict) else None
+    code = None
+    if not isinstance(instruction, str):
+        code = "PRIVACY_INSTRUCTION_UNVERIFIED"
+    else:
+        try:
+            from uri_privacy import default_gateway
+            out = default_gateway().prepare(instruction, requester="uri_worker.external_harness",
+                                            destination="EXTERNAL_AGENT", purpose="external_harness_turn",
+                                            reversible=False).text
+            from uri_privacy.classify import canonical
+            # Unchanged, or changed only by NFKC (NBSP, ligatures; clean text now leaves as written), is not a privacy
+            # change.
+            if out not in (instruction, canonical(instruction)):
+                code = "PRIVACY_INSTRUCTION_CHANGED"
+        except Exception as exc:                                    # noqa: BLE001 - fail closed
+            c = getattr(exc, "code", None)
+            code = c if isinstance(c, str) and c.startswith("PRIVACY_") else "PRIVACY_INTERNAL_ERROR"
+    if code is None:
+        return result
+    try:
+        turns.handle("turn_cancel", {"command": "turn_cancel", "turn_id": result.get("turn_id")})
+    except Exception:                                               # noqa: BLE001 - the refusal stands either way
+        pass
+    raise turn_error(code)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", required=True)
@@ -128,6 +196,8 @@ def main():
         os.environ.update(safe)
         from uri_supervisor_bridge.qualification import client_cli_homes, RecordTrust
         os.environ.update(client_cli_homes(root))
+        # M95: the privacy gateway's value-free audit and disclosure grants live with this client's state.
+        os.environ["URI_PRIVACY_HOME"] = str(root / "control" / "privacy")
         composition, bridge = compose_and_build(root, trust=RecordTrust.from_manifest(m), allow_fixture=args.allow_fixture_qualification,
                                                 codex_home=client_cli_homes(root, create=False)["CODEX_HOME"])
         from types import SimpleNamespace
@@ -339,7 +409,8 @@ def main():
                                   "qualification": composition.report, "qualification_live": live,
                                   "supervisor": "uri_supervisor_bridge"}
                     elif kind in {"turn_start", "turn_intent", "turn_decide", "turn_cancel"} or kind in EXECUTION:
-                        result = turns.handle(kind, command)
+                        result = harness_approval_private(
+                            kind, turns.handle(kind, harness_private(kind, command, TurnError)), turns, TurnError)
                     elif kind in {"session", "server_request"}:
                         from uri_core.client_runtime.transport import ClientTransport
                         transport = ClientTransport(manifest)

@@ -1,0 +1,614 @@
+FB9 - Lifecycle V3.1 fallback review, M95-PRIVACY-r11 round R2
+Candidate 14099d1bcde11fd19eb7e8710b11461cb4ceff12 (detached checkout D:\uri-dev\m95-review-14099d1b, HEAD verified)
+Baseline 6e095a5c35d88a8d8fc1513344d418303455fe9b (commit verified, ancestor of candidate)
+Reviewer: isolated subagent following D:/uri-dev/lifecycle/M95-PRIVACY-r11/state/rounds/R2/reviewer_prompt.md
+
+VERDICT: REJECT (one HIGH and one MEDIUM blocking finding, both STRUCTURAL)
+
+Acceptance criteria I judged against
+- LDEC-005/006 contract: no card, Aadhaar, SSN, PAN, IBAN, phone, e-mail, API key or labelled credential may reach
+  WEB_SEARCH / EXTERNAL_* / LOG raw. Measured with generated inputs, not the tests' own lists.
+- Exempt classes and ordinary text are left unchanged and unrefused; clean text is sent byte-identical.
+- The stated residuals in 6.4-6.9 are accurate and complete.
+- AC-14c holds on representative text, and the documents state it correctly.
+- Security of uri_privacy (restore, grants, audit, fail closed); integrations; frozen boundary; scope and reuse.
+
+Findings
+R1-01 HIGH, blocking, STRUCTURAL. gateway.py:126-137 reconciles the egress-form reading with the original reading by
+  category COUNT (Counter difference). It never compares positions. A decoy number that both readings see, and that
+  the original reading merges with the disguised value into one finding, makes the counts equal. The egress form is
+  then sent with only the decoy redacted:
+    'ref 123456789 41\u06d4111\u06d4111\u06d4111:11111' -> 'ref [redacted] 41.111.111.111:11111'
+  This happens at WEB_SEARCH (Tavily MockTransport received exactly that query), EXTERNAL_AGENT, EXTERNAL_MODEL and LOG.
+  Generated sweep: 5468 of 6000 card texts and 726 of 1000 Aadhaar texts leaked with a decoy. Without a decoy, 0 of 600
+  leaked, which means the FB8 R2-02 repair holds only when the egress reading finds nothing at all.
+R1-02 MEDIUM, blocking, STRUCTURAL. If the egress form contains an Assist credential, gateway.py:126 skips the original
+  reading entirely. At LOG the egress form is then written out with only that credential redacted:
+    'Authorization: Bearer abcDEF123456ghiJKL789012mnoPQR 41\u06d4111\u06d4111\u06d4111:11111'
+      -> 'Authorization: [redacted] 41.111.111.111:11111'
+R1-03 LOW RECALL. Basic auth whose base64 has no digit or padding is sent ('Authorization: Basic dXNlcjpwYXNz').
+R1-04 LOW RECALL. Labelled 7-8 digit recovery/backup codes are sent ('recovery code 12345678').
+R1-05 LOW RECALL. A defanged e-mail keeps its first local-part label ('john[.]doe[@]example[.]com' -> 'john[.][redacted]').
+R1-06 LOW documentation (owner decision). The AC-14c evidence never exercises the two-reading path. With one NBSP in a
+  64 KB text, p95 was 0.81-1.07 s for ASCII, 1.21 s for Arabic and 1.12 s for Hindi. The plan says 64 KB is met for
+  ASCII. The 400-character and 2 KB margins are thin too: 9.9 ms against 10 ms, and 48 ms against 50 ms.
+R1-07 LOW documentation. The egress map leaves out web-research URL and feed fetches: user URLs go to third-party
+  hosts without the gateway.
+
+What held up
+- Random-gap sweeps (4000 cards x 2 destinations, gaps from every punctuation/symbol/space code point, with and
+  without decoys): 0 leaks.
+- Every FB3-FB8 and r8 R1-01 reproduction I re-ran was redacted or refused.
+- Exempt and ordinary multilingual text was unchanged and byte-identical. Arabic text with RLM before a Latin word is
+  refused, as section 6.6 says it will be.
+- Restore: cross-scope tokens, a non-local destination and the wrong owner were all refused.
+- Grants: refused without a verified principal and for CREDENTIAL; 20-thread consume on a file store never went past
+  uses_left; revoke takes effect immediately.
+- The grant file holds no values.
+- ws_frozen_check exits 0; no protected path changed; no new dependency.
+- tests/privacy: 1698 passed.
+- Gates (oi, ws, a2ui, assist, ssrf, web, scheduler): 6 failed and 20 errors. One failure is the known scheduler
+  baseline failure. The other failures and all errors are assist real-browser tests with Node MODULE_NOT_FOUND; they
+  fail the same way on the baseline extracted in this environment.
+- tests/office was not run (shared LibreOffice tree).
+
+Prior findings: all 87 ids are FIXED for their reported forms. FB8 R2-02's class stays open through R1-01.
+
+Checkout state at the end: git status --short is empty, and no __pycache__ was left in the checkout.
+
+AUDIT_RESULT_BEGIN
+{
+ "candidate": "14099d1bcde11fd19eb7e8710b11461cb4ceff12",
+ "baseline": "6e095a5c35d88a8d8fc1513344d418303455fe9b",
+ "verdict": "REJECT",
+ "findings": [
+  {
+   "id": "R1-01",
+   "severity": "HIGH",
+   "blocking": true,
+   "category": "security",
+   "class": "STRUCTURAL",
+   "owner_decision": false,
+   "title": "Reconciliation of the egress-form and original readings compares category counts, not spans: a decoy number masks a card or Aadhaar that only the original reading finds, and the egress form carries it out as an exempt IPv4:port token",
+   "files": [
+    "uri_privacy/gateway.py:126-137",
+    "uri_privacy/classify.py:62-66",
+    "uri_privacy/classify.py:199-211"
+   ],
+   "evidence": "gateway.py:128 computes extra = raw.categories() - cls.categories() (Counter difference). When both readings report the same category counts, the egress form is sent rewritten with the egress reading's spans only. _resolve merges a decoy digit run and the disguised value into ONE original-reading finding, so the counts match. Reproduction (WEB_SEARCH, EXTERNAL_AGENT, EXTERNAL_MODEL and LOG alike): prepare('ref 123456789 41\\u06d4111\\u06d4111\\u06d4111:11111') returns 'ref [redacted] 41.111.111.111:11111' (card 4111111111111111). Egress reading: LONG_NUMBER span 4-13 only (the card is an exempt IPv4:port token after U+06D4 ARABIC FULL STOP becomes '.'); original reading: one LONG_NUMBER span 4-34 covering decoy and card; Counter({'LONG_NUMBER': 1}) in both, so extra is empty. Tavily MockTransport capture: query 'ref [redacted] 41.111.111.111:11111', status NO_RESULTS (request sent). Generated sweep (seed 9): 1500 random Luhn-valid cards in 2-3-3-3-5 IPv4:port layout with a random one of the 19 FULL STOP look-alikes and one of 56 colon look-alikes (incl. ':'), 4 decoy shapes ('ref 123456789 ', 'order 1234567890123 ', 'ids 987654321, ', 'tracking 555123456789 / ') x 4 destinations: 5468 of 6000 texts sent the full card digits. The same cards without a decoy: 0 of 600 leaked (the FB8 R2-02 branch works only when the egress reading finds nothing). Aadhaar ('aadhaar ref 123456789 234\\u06d456\\u06d478\\u06d490:124', Verhoeff-valid): 726 of 1000 generated texts leaked at WEB_SEARCH/LOG; EXTERNAL_AGENT output 'aadhaar ref [redacted] 234.56.78.90:124'. The decoy is an ordinary over-budget number (an order id), so the attack needs no disguise beyond the FB8 look-alike class.",
+   "suggested_fix": "Reconcile by position, not by count: map each original-reading finding into egress-form coordinates (egress_form can return a span map) and require that each one is covered by an egress-reading finding with the same or stricter action. If any is not covered, rewrite the original (when nothing else differs) or refuse as doubt. Add a generated test combining every FB8 R2-02 layout with a same-category decoy, both merging and not merging in the original reading."
+  },
+  {
+   "id": "R1-02",
+   "severity": "MEDIUM",
+   "blocking": true,
+   "category": "security",
+   "class": "STRUCTURAL",
+   "owner_decision": false,
+   "title": "When the egress form holds an Assist credential, the original reading is skipped entirely; at LOG the egress form is written with only that credential redacted, so a value the original reading would find reaches the log",
+   "files": [
+    "uri_privacy/gateway.py:126",
+    "uri_privacy/gateway.py:168-170"
+   ],
+   "evidence": "gateway.py:126 runs the original-reading comparison only 'if text != original and not cls.credential_kinds'. WEB_SEARCH/EXTERNAL_* refuse on the credential, but LOG rewrites the egress form, runs redact_text, and re-checks only the egress-form output. Reproduction at LOG: 'Authorization: Bearer abcDEF123456ghiJKL789012mnoPQR 41\\u06d4111\\u06d4111\\u06d4111:11111' -> 'Authorization: [redacted] 41.111.111.111:11111'; 'AKIAIOSFODNN7EXAMPLE 41\\u06d4111\\u06d4111\\u06d4111:11111' -> '[redacted] 41.111.111.111:11111'. No decoy is needed. A span-labelled credential ('password: hunter22 ...') does not trigger this: that case reaches the comparison and is fully redacted.",
+   "suggested_fix": "Always compute the original reading for non-local text whose egress form differs. At LOG, apply the same reconciliation as for the other destinations (or write REDACTED in full whenever the readings disagree), even when the egress form holds an Assist credential."
+  },
+  {
+   "id": "R1-03",
+   "severity": "LOW",
+   "blocking": false,
+   "category": "code",
+   "class": "RECALL",
+   "owner_decision": false,
+   "title": "HTTP Basic credentials whose base64 has no digit, '+', '/' or '=' are sent: 'Authorization: Basic dXNlcjpwYXNz' (user:pass)",
+   "files": [
+    "uri_assist/redact.py:92",
+    "uri_privacy/classify.py:106-144"
+   ],
+   "evidence": "The reused basic_auth rule requires (?=[A-Za-z0-9+/]*[0-9+/=]). 'Authorization: Basic dXNlcjpwYXNz' and \"curl -H 'Authorization: Basic dXNlcjpwYXNz' https://api.example.com\" are sent unchanged to WEB_SEARCH. Plan 2.1 lists 'basic' as a CREDENTIAL rule. Neither the LDEC-007 residual (bare password label plus one word) nor the 6.4-6.9 residual lists cover a labelled Authorization header. Values with a digit or padding ('YWRtaW46UzNjcmV0OQ==') are refused.",
+   "suggested_fix": "In M95's own label rules, treat 'authorization: basic <base64 of 8+ chars>' (or one that decodes to 'x:y') as CREDENTIAL. uri_assist does not need to change."
+  },
+  {
+   "id": "R1-04",
+   "severity": "LOW",
+   "blocking": false,
+   "category": "code",
+   "class": "RECALL",
+   "owner_decision": false,
+   "title": "Labelled 7-8 digit recovery or backup codes are sent: 'recovery code 12345678', 'backup code: 4821-9375'",
+   "files": [
+    "uri_privacy/classify.py:107-108",
+    "uri_privacy/classify.py:144"
+   ],
+   "evidence": "A bare 'code' label needs exactly 6 digits, and the named code labels (otp, verification/security/auth code) do not include recovery or backup codes. Both texts are sent unchanged to WEB_SEARCH. The 6.4 residual covers numbers of 8 digits or fewer 'with no label or context'; these have a label.",
+   "suggested_fix": "Add 'recovery|backup|2fa|mfa code(s)' with 6-10 digits (separators allowed) to the code labels, or state the residual."
+  },
+  {
+   "id": "R1-05",
+   "severity": "LOW",
+   "blocking": false,
+   "category": "code",
+   "class": "RECALL",
+   "owner_decision": false,
+   "title": "A defanged e-mail with '[.]' in the local part is only partly redacted: 'john[.]doe[@]example[.]com' -> 'john[.][redacted]'",
+   "files": [
+    "uri_privacy/classify.py:196-203"
+   ],
+   "evidence": "The defanged alternative's local part is [A-Za-z0-9._%+-]+, so the match starts after '[.]'. The output keeps the first local-part label at WEB_SEARCH and LOG. The full address cannot be rebuilt from the output, so the impact is low.",
+   "suggested_fix": "Allow the defanged dot forms inside the local part as well."
+  },
+  {
+   "id": "R1-06",
+   "severity": "LOW",
+   "blocking": false,
+   "category": "documentation",
+   "class": "STRUCTURAL",
+   "owner_decision": true,
+   "title": "AC-14c evidence measures only the single-reading path. Text whose egress form differs from the original (one NBSP) takes the two-reading path and exceeds 1 s at 64 KB for ASCII and Arabic, while PC-15..PC-17 state that 64 KB is met for ASCII and Japanese",
+   "files": [
+    "tests/privacy/measure.py:136-196",
+    "docs/privacy/00_PLAN_AND_ACCEPTANCE_CRITERIA.md:157-159",
+    "uri_privacy/gateway.py:126-137"
+   ],
+   "evidence": "Same host, idle after the test runs: measure.doc/script_doc texts p95 with one space changed to NBSP vs unchanged. 64 KB EXTERNAL_MODEL: ASCII 1069 ms vs 800 ms (repeat runs 952 and 811 ms, n=20), Arabic 1206 vs 848, Hindi 1125 vs 737. 2 KB: Arabic 48.0 ms (bound 50). 400 chars: Hindi 9.9 ms (bound 10). The measured corpus never triggers the second classification of the original, which any NBSP, full-width character or ligature triggers. 64 KB arises only on the future OD-1 hooks, and PC-15 already leaves 64 KB for an owner decision, so this is non-blocking. The documents misstate which inputs meet the bound.",
+   "suggested_fix": "Add a two-reading (NFKC-changing) case to latency_non_ascii, and restate AC-14c at 64 KB and the thin 400-character and 2 KB margins for the owner decision."
+  },
+  {
+   "id": "R1-07",
+   "severity": "LOW",
+   "blocking": false,
+   "category": "documentation",
+   "class": "STRUCTURAL",
+   "owner_decision": false,
+   "title": "The egress map omits web-research page and feed fetches: user-supplied URLs (with their query strings) are fetched from third-party sites without the gateway",
+   "files": [
+    "uri_web/pipeline.py:174",
+    "uri_web/pipeline.py:196",
+    "uri_web/pipeline.py:233",
+    "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md:36-48"
+   ],
+   "evidence": "bridge._private_query gates only c['query']. c['urls'] and c['feeds'] go to SafeFetcher.fetch unchanged, so a user URL such as https://site.example/?ssn=123-45-6789 reaches the third-party host. Policy 2.2 would make that EXTERNAL_SERVICE GOV_ID = REQUIRE_GRANT. The egress map (E1-E9) does not list this path, and the plan says every non-frozen egress path calls the gateway.",
+   "suggested_fix": "List the URL fetch as an egress path with its decision (gate the URL query string, or record it as user-addressed and out of scope)."
+  }
+ ],
+ "prior_findings": [
+  {
+   "id": "r1 R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R2-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R2-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R2-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1 R2-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-08",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R3-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R3-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R3-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R3-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R4-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R5-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R6-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R7-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R7-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R8-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R8-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R8-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3 R8-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-08",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R2-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R2-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R3-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R3-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R3-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R4-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R5-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R5-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6 R5-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-08",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-09",
+   "status": "FIXED"
+  },
+  {
+   "id": "r8 R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB6 R3-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB6 R3-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB6 R3-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB7 R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB7 R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB7 R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB8 R2-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB8 R2-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB8 R2-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB8 R2-04",
+   "status": "FIXED"
+  }
+ ],
+ "tests_run": [
+  {
+   "command": "testrun start --name fb9-privacy -- python -B -m pytest -p no:cacheprovider -q -x tests/privacy (in the checkout)",
+   "result": "1698 passed in 79.32s; exit_code 0 (run fb9-privacy-20261023T221936Z-b2f220)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "testrun start --name fb9-gates -- python -B -m pytest -p no:cacheprovider -q tests/oi tests/ws tests/a2ui tests/assist tests/ssrf tests/web tests/scheduler",
+   "result": "6 failed, 7021 passed, 40 skipped, 20 errors, exit_code 1 (run fb9-gates-20261023T222059Z-2e640b). Failures: tests/scheduler/test_service_process.py::test_duplicate_startup_and_api (known baseline) and 5 tests/assist real-browser tests (r11 x2, r12 x2, r41_02 python layer). Errors: 20 tests/assist real-Chromium tests incl. test_subpixel_render, all Node 'MODULE_NOT_FOUND' (environmental)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "baseline 6e095a5c extracted with git archive into scratch: python -B -m pytest tests/assist/test_a0_r11*, r12*, r41*, d10*, r13*",
+   "result": "5 failed, 38 passed, 10 errors: the same assist tests fail or error identically on the baseline in this environment (Node module missing)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "python -B scripts/ws_frozen_check.py (checkout)",
+   "result": "exit 0, unapproved_protected_changes []; git diff 6e095a5c..14099d1b touches no protected path; requirements.txt unchanged",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "scratch p2/p3/p4/p10: decoy + look-alike IPv4:port card/Aadhaar sweep and Tavily MockTransport capture",
+   "result": "5468/6000 card texts and 726/1000 Aadhaar texts leaked with a decoy; 0/600 without; transport received 'ref [redacted] 41.111.111.111:11111' (R1-01)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "scratch p5: LOG with an Assist credential + look-alike card",
+   "result": "card written to LOG in IPv4:port form (R1-02)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "scratch p6/p6b: 4000 random Luhn cards split into 2-6 groups, random gaps (any punctuation/symbol/space code point up to U+2FFFF, length 1-4, or <=3 chars with <=2 letters), with and without decoys, WEB_SEARCH + LOG",
+   "result": "0 leaks of 8000 in each run (2478 / 2880 refused)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "scratch p7/p13: exempt classes, ordinary multilingual/emoji/URL/code text, prior-finding reproductions (FB3..FB8, r8 R1-01)",
+   "result": "exempt and ordinary text unchanged and byte-identical (decomposed accents, NBSP, ligature, half-width katakana, BOM); Arabic text with U+200F before a Latin word refused (documented in 6.6); every listed prior reproduction redacted or refused",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "scratch p8/p9: credential and identifier recall list",
+   "result": "Basic auth without digit/padding, mysql -p flag, 7-8 digit recovery/backup codes sent (R1-03, R1-04); other forms refused or redacted",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "scratch p11/p12: AC-14c latency incl. a one-NBSP (two-reading) variant",
+   "result": "400 chars p95 <= 9.9 ms, 2 KB <= 48 ms; 64 KB plain 737-866 ms, with one NBSP 811-1206 ms (R1-06)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "scratch p14: restore cross-scope/non-local/owner, grants without verifier, CREDENTIAL grant, 20-thread consume on a file store, revocation",
+   "result": "foreign token left unresolved; non-local restore, owner mismatch and invalid scope refused; grant without a verified principal and CREDENTIAL grant refused; 3 of 20 concurrent consumes succeeded (uses=3); consume after revoke False; grant file holds no value",
+   "status": "COMPLETED_WITH_RESULT"
+  }
+ ],
+ "inspected": [
+  "docs/privacy/00_PLAN_AND_ACCEPTANCE_CRITERIA.md (full)",
+  "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md (sections 1-6.9)",
+  "uri_privacy/gateway.py",
+  "uri_privacy/classify.py",
+  "uri_privacy/policy.py",
+  "uri_privacy/grants.py",
+  "uri_privacy/vault.py",
+  "uri_privacy/audit.py",
+  "uri_privacy/keys.py",
+  "uri_privacy/__init__.py",
+  "git diff 6e095a5c..14099d1b for uri_web/search.py, uri_web/bridge.py, uri_scheduler/engine.py, uri_operational_intelligence/brain_client.py, uri_office/service.py, scripts/run_uri_integrated_server.py, scripts/run_uri_integrated_worker.py, scripts/oi_materialize_test_runtime.py, tests/office/test_worker_isolation.py, tests/assist/test_a0_access_perception.py",
+  "uri_scheduler/gif_task.py build_package",
+  "uri_web/pipeline.py search/fetch flow",
+  "uri_assist/redact.py text rules",
+  "tests/privacy/measure.py latency functions",
+  "docs/privacy/evidence/measurements.json (latency, latency_non_ascii, memory)"
+ ],
+ "evidence_reviewed_only": [
+  "D:/uri-dev/lifecycle/M95-PRIVACY-r1, r3, r6, r8 round files (finding id enumeration only)",
+  "docs/privacy/evidence/measurements.json recorded numbers other than those I re-measured"
+ ],
+ "live_observed": [],
+ "unverified": [
+  "tests/office not run by me (shared LibreOffice tree in use by another session, per instructions)",
+  "DPAPI paths (persistent_secret, PersistentVaultStore key) exercised only through the tests/privacy suite on this Windows host; no live restart of run_uri_integrated_server.py",
+  "Prior findings marked FIXED rest on the passing tests/privacy regression files for each round plus my own reproductions of FB3-FB8 and r8 R1-01 forms; I did not individually re-run each earlier reviewer's original reproduction for the r1/S1/FB1/FB2/r3/r6 ids",
+  "FB8 R2-02 is FIXED for its reported forms (0/600 without a decoy), but its class stays open through R1-01",
+  "AC-1 recall on real-world data is not measured (PC-7); I did not re-measure the synthetic accuracy corpus",
+  "Latency figures come from one host with small n at 64 KB (n=8-20); the 64 KB result varies between runs",
+  "Frozen egress paths E5-E8 not assessed (OD-1, per instructions)"
+ ]
+}
+AUDIT_RESULT_END

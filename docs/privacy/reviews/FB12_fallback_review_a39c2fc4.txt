@@ -1,0 +1,648 @@
+FB12 - Lifecycle V3.1 fallback review, M95-PRIVACY-r14 round R2
+Candidate a39c2fc40e97f5d1734fd86e250d51e43c55eee6 (verified: detached HEAD of D:\uri-dev\m95-review-a39c2fc4)
+Baseline  6e095a5c35d88a8d8fc1513344d418303455fe9b (verified present; 30 commits in range)
+Reviewer: isolated fallback subagent, following D:/uri-dev/lifecycle/M95-PRIVACY-r14/state/rounds/R2/reviewer_prompt.md
+
+VERDICT: REJECT. No STRUCTURAL finding. Two RECALL HIGH findings are cheap to fix, so they block under LDEC-011,
+following the FB10 R1-01 precedent.
+
+Acceptance criteria I applied
+- (a) No card, Aadhaar, SSN, PAN, IBAN, phone, e-mail, API key or labelled credential reaches WEB_SEARCH /
+  EXTERNAL_* / LOG raw, in standard or obfuscated form, outside the stated residuals. Measured with generated inputs.
+- (b) Exempt classes and ordinary non-numeric text are left unchanged and are not refused.
+- (c) The stated residuals in 6.4-6.12 are accurate and complete.
+- (d) Clean text is sent byte-identical.
+- (e) AC-14c: my measurement must agree with the documented ranges.
+- Security of grants, vault, restore, audit, fail-closed: prompt focus 2.
+- Integrations, honest evidence, scope and reuse, frozen boundary: prompt focus 3-6.
+- Every earlier finding id gets FIXED or NOT_FIXED.
+- Every finding is classified STRUCTURAL or RECALL (LDEC-011).
+
+Summary of results
+- Digit-budget class (cards, Aadhaar, SSN, mobile): 0 leaks in 3000 generated texts. The texts used random 1-5 digit
+  groups, 1-3 random non-alphanumeric BMP separators and random Unicode digit families, at 3 destinations.
+- E-mail: 0 leaks in 3000 generated forms outside the stated " dot "-in-words residual.
+- Every reproduced earlier form is now handled: r1, r3, r6, S1, FB1-FB11. All 105 earlier ids are FIXED.
+- Grants, scopes, restore, non-str input and fail-closed all behave as specified. Concurrent use of a 3-use grant
+  gave 3 of 12 raw disclosures. Audit, grant and vault files and captured logs held no value, value prefix or value hash.
+- Clean text was byte-identical in 7992 of 8000 benign cases. The 8 others are R1-03.
+- My latency figures are inside the PC-20 ranges.
+- tests/privacy: 1736 passed. Other gate suites: the canonical baseline failure set plus Chromium/Node environment
+  failures that fail identically on a baseline export, so no new failure.
+- ws_frozen_check exit 0. No protected path changed and no new dependency.
+- Integrations read as specified:
+  - search: only the sanitized query is sent; nothing is sent on refusal.
+  - scheduler: params, request and meta are gated before any attempt row is created.
+  - BrainClient: loopback only and trust_env=False; every in-repo caller uses 127.0.0.1.
+  - Office: --brain-url refusal.
+  - D10: created once, DPAPI-protected, an unreadable file stops startup.
+  - worker: WS_PACKAGES and URI_PRIVACY_HOME.
+
+Findings (detail in the JSON)
+R1-01 RECALL HIGH, blocking. Compound/config credential keys (DB_PASSWORD, client_secret, clientSecret,
+  AWS_SECRET_ACCESS_KEY, mypassword ...) leak when followed by is, was, a dash, an arrow, a space, a newline, a tab, a
+  comma or "(". The value reaches WEB_SEARCH, EXTERNAL_AGENT and LOG raw: 3309 of 4290 generated calls.
+R1-02 RECALL HIGH, blocking. "changed/set/reset my password (PIN, passcode, key, token) to X" sends X raw to every
+  destination: 711 of 800 generated sentences at each destination.
+R1-03 RECALL MEDIUM, non-blocking. Ordinary login-help text is refused when a password word is followed within 30
+  characters by a clock time with seconds or a URL. 445 of 1000 generated searches were refused.
+R1-04 RECALL LOW, non-blocking. Cyrillic U+043A and Greek U+03C4 look-alike letters are not folded, so
+  "api <U+043A>ey: X" passes. This is not a stated residual.
+R1-05 RECALL LOW, documentation, non-blocking. The SECRET_LIKE context exemption (commit, hash, build, rev ... within
+  12 characters) also releases non-hex mixed-case secrets, and it is not stated as a residual.
+
+AUDIT_RESULT_BEGIN
+{
+ "candidate": "a39c2fc40e97f5d1734fd86e250d51e43c55eee6",
+ "baseline": "6e095a5c35d88a8d8fc1513344d418303455fe9b",
+ "verdict": "REJECT",
+ "findings": [
+  {
+   "id": "R1-01",
+   "class": "RECALL",
+   "severity": "HIGH",
+   "blocking": true,
+   "category": "security",
+   "owner_decision": false,
+   "title": "Compound/config credential keys (DB_PASSWORD, client_secret, clientSecret, AWS_SECRET_ACCESS_KEY ...) followed by 'is', 'was', a dash, an arrow, a bare space, a newline, a tab, a comma or '(' carry the credential raw to every destination, LOG included",
+   "files": [
+    "uri_privacy/classify.py:106-154",
+    "uri_privacy/classify.py:233-236"
+   ],
+   "evidence": "_KEYVAL accepts only ':' or '=' after a compound key, and every _LABELLED alternative starts with \\b, which does not hold after '_' or inside a run-together word ('DB_PASSWORD', 'mypassword'). Generated: 22 compound keys x 13 separators x 5 random letter+digit/symbol values x WEB_SEARCH/EXTERNAL_AGENT/LOG = 4290 prepare() calls; 3309 sent the value raw: 330 of 330 for each of ' is ', ' - ', ' -> ', ' ', newline, tab, ' U+2192 ', ', ', '('; 327/330 for ' was '; only ' : ', ' = ' (and mostly ' => ') are caught. Examples, raw at WEB_SEARCH and LOG: 'the DB_PASSWORD is tYgjmUh$Bel31iE please', 'the client_secret is Hunt3r2!xyz', 'mypassword is Hunt3r2!xyz', 'export DB_PASSWORD Hunt3r2!xyz', 'Hunt3r2!xyz is the DB_PASSWORD.'. Not a stated residual (6.9 lists only letter-only config values; 6.11 only 4-7 character key values). Same form class that FB10 R1-01 repaired for plain key labels (RECALL HIGH, blocking).",
+   "suggested_fix": "Give _KEYVAL (and the value-before-label alternative) the separator set the plain labels have (is/was/dash/arrow/en dash/space/newline/comma/paren) with the existing value condition (a letter plus a digit or symbol, 8+ characters), and let the label match after '_' or inside run-together words; add a generated test over compound keys x separators x destinations."
+  },
+  {
+   "id": "R1-02",
+   "class": "RECALL",
+   "severity": "HIGH",
+   "blocking": true,
+   "category": "security",
+   "owner_decision": false,
+   "title": "'changed/set/reset my password (PIN, passcode, secret, token, API key) to X' sends the new credential raw to every destination, LOG included",
+   "files": [
+    "uri_privacy/classify.py:128-134",
+    "uri_privacy/classify.py:151-152"
+   ],
+   "evidence": "No alternative accepts 'to' between a label and its value (the bare-space form needs the value right after the label; the '[^.\\n]{1,30}? (is|:)' form needs 'is' or ':'). Generated: 800 help-style sentences ('I changed my {label} to {value}', 'reset the {label} to {value} yesterday', 'set my {label} to {value}', ...) over 9 labels, values letter+digit/symbol 8-16 chars, x WEB_SEARCH/EXTERNAL_AGENT/LOG: 711/800 sent raw at each destination, LOG kept the value too. Examples: 'changing the passphrase to 75@yx@8xm5MslfY did not help', 'set the password to Hunt3r2!xyz', 'changed my PIN to 4821'. This is threat T1 (a secret typed into a web-research query); not a stated residual.",
+   "suggested_fix": "Accept 'to' (and 'as' after a change/set/reset verb) between the password/passcode/PIN/key/token labels and the value, with the existing digit-or-symbol value condition; pin it with a generated phrasing x destination test."
+  },
+  {
+   "id": "R1-03",
+   "class": "RECALL",
+   "severity": "MEDIUM",
+   "blocking": false,
+   "category": "code",
+   "owner_decision": false,
+   "title": "Ordinary login-help text is refused when a clock time with seconds or a URL follows a password word within 30 characters",
+   "files": [
+    "uri_privacy/classify.py:151-152"
+   ],
+   "evidence": "The alternative '\\b(password|passwd|pwd|passcode|passphrase)\\b[^.\\n]{1,30}?\\b(?:is|:) ?(value with a digit or symbol)' takes the ':' inside '14:05:59' or inside 'https:' as a label separator. 'password reset not working at 14:05:59' -> PRIVACY_REFUSED at WEB_SEARCH/EXTERNAL_*, LOG fully redacted; 'my password manager crashed at 10:45:12' refused; 'Strasse  password reset not working  https://example.com/path/to/page?q=weather&lang=en ...' refused. Generated: 1000 '{label} {problem} {since|at|after...} {HH:MM[:SS]}' searches -> 445 refused (every HH:MM:SS one). Clock times are an exempt class (focus b); the analogous postal 'pin code' refusal was FB10 R1-03 (RECALL MEDIUM).",
+   "suggested_fix": "Do not accept ':' as the separator when it is between digits or starts '://' (for example '(?<!\\d):(?!//)'), and add the generated login-help-with-time/URL corpus as a not-refused test; otherwise state it as a residual."
+  },
+  {
+   "id": "R1-04",
+   "class": "RECALL",
+   "severity": "LOW",
+   "blocking": false,
+   "category": "code",
+   "owner_decision": false,
+   "title": "Look-alike letters missing from the ASCII confusables table (Cyrillic U+043A, Greek U+03C4) let a credential label pass unread",
+   "files": [
+    "uri_privacy/classify.py:762-770",
+    "uri_privacy/classify.py:803"
+   ],
+   "evidence": "_fold_char maps letters through uri_web.confusables_ascii; C._CONF has no entry for U+043A or U+03C4. 'my api \\u043aey: Hunt3r2!xyzQ ok' and 'my api_\\u043aey=Hunt3r2!xyzQ' are sent raw to WEB_SEARCH and LOG (Cyrillic a/e/o/p/c/x/y/i/s are folded and refused correctly). Deliberate obfuscation, so a residual candidate; the threat model does not list look-alike letters outside the table among its residuals.",
+   "suggested_fix": "Add the missing Latin look-alikes (at least U+043A and U+03BA as k, U+03C4 as t) or state 'look-alike letters outside the UTS #39 ASCII table' as a residual in 6.4."
+  },
+  {
+   "id": "R1-05",
+   "class": "RECALL",
+   "severity": "LOW",
+   "blocking": false,
+   "category": "documentation",
+   "owner_decision": false,
+   "title": "The SECRET_LIKE context exemption (commit/sha/md5/digest/hash/checksum/revision/rev/build within 12 characters) also releases non-hex mixed-case secrets and is not a stated residual",
+   "files": [
+    "uri_privacy/classify.py:242",
+    "uri_privacy/classify.py:453-455"
+   ],
+   "evidence": "'build hash: wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY12345' and 'commit wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY12345 broke prod' leave unchanged at WEB_SEARCH, EXTERNAL_MODEL and LOG; without the context word the same token is SECRET_LIKE and redacted. Intended for digests (PC-1), but not limited to hex and absent from threat model 6.4-6.12.",
+   "suggested_fix": "State it as a residual, or limit the exemption to hex runs (and SRI-style 'sha256-' base64)."
+  }
+ ],
+ "prior_findings": [
+  {
+   "id": "r1-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R2-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R2-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R2-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r1-R2-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "S1-08",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB1-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R3-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R3-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R3-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R3-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R4-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R5-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R6-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R7-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R7-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R8-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R8-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R8-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r3-R8-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB2-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB3-R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB4-R1-08",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R2-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R2-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R3-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R3-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R3-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R4-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R5-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R5-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "r6-R5-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-08",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB5-R1-09",
+   "status": "FIXED"
+  },
+  {
+   "id": "r8-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB6-R3-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB6-R3-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB6-R3-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB7-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB7-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB7-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB8-R2-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB8-R2-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB8-R2-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB8-R2-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB9-R1-07",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB10-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB10-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB10-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB10-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB11-R1-01",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB11-R1-02",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB11-R1-03",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB11-R1-04",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB11-R1-05",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB11-R1-06",
+   "status": "FIXED"
+  },
+  {
+   "id": "FB11-R1-07",
+   "status": "FIXED"
+  }
+ ],
+ "tests_run": [
+  {
+   "command": "python -B -m scripts.dev_workflow.testrun start --name fb12-privacy --timeout 3000 --lock none -- python -B -m pytest -p no:cacheprovider -q tests/privacy (run fb12-privacy-20261024T032019Z-1c2499, head a39c2fc4)",
+   "result": "1736 passed in 74.72s, exit 0",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "testrun fb12-gates (run fb12-gates-20261024T032137Z-c39f3a): pytest -q tests/oi tests/ws tests/a2ui tests/assist tests/ssrf tests/web tests/scheduler",
+   "result": "6 failed, 7021 passed, 40 skipped, 20 errors: tests/scheduler test_duplicate_startup_and_api (known baseline); tests/assist test_subpixel_render 2 errors (known baseline); tests/assist 5 failed + 18 errors in real-Chromium tests (Node MODULE_NOT_FOUND) that fail identically on a git-archive export of baseline 6e095a5c - environmental; no new failure",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "baseline 6e095a5c exported with git archive into the scratchpad; pytest the 9 tests/assist files that failed above",
+   "result": "5 failed, 51 passed, 18 errors - the same set as the candidate",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "python -B scripts/ws_frozen_check.py (candidate checkout)",
+   "result": "exit 0, ok true, unapproved_protected_changes []; git diff 6e095a5c..a39c2fc4 touches no protected path and not requirements.txt",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "sweep1.py: 3000 generated card/Aadhaar/SSN/mobile texts, random 1-5 digit groups, 1-3 random non-alnum BMP separators, 30% of groups in random Nd digit families, x WEB_SEARCH/EXTERNAL_MODEL/LOG",
+   "result": "0 leaks (1943 refused, 1057 redacted)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "p4.py: 3000 generated e-mails over 13 '@' forms x 9 '.' forms x 3 destinations",
+   "result": "280 kept, all with ' dot ' written in words (stated residual); no other leak",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "sweep2.py, p3.py, p9.py, p10.py, p11.py: labelled-credential sweeps (labels x separators x values x full-width/Cyrillic/math-bold transforms x destinations)",
+   "result": "R1-01 (3309/4290 raw), R1-02 (711/800 raw per destination), R1-04; the other kept values are stated residuals (4-7 character or digit-only values after key labels)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "p8.py: reproduction of every earlier code-finding form (r1, r3, r6, S1, FB1-FB11) at WEB_SEARCH/EXTERNAL_MODEL/LOG",
+   "result": "every form refused, redacted, or kept readable as its repair states",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "p7.py: grants (no verifier, wrong principal, component principal, CREDENTIAL, ttl over 24 h, 12 concurrent uses of a 3-use grant, revoke), pseudonymize/restore across scopes, requesters and destinations, non-str inputs, unknown destination and requester, byte scan of audit/grant/vault files and captured logs",
+   "result": "all refused as specified; 3 of 12 concurrent disclosures under a 3-use grant; no value, value prefix or SHA-256 of a value in any file or log; audit chain verify ok",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "p5.py and p12.py: benign corpora (10 scripts, emoji ZWJ/flags/keycaps, URLs, code, NBSP, full-width, decomposed accents) x 3-4 destinations",
+   "result": "clean text byte-identical in 7992/8000 (the 8 are R1-03); number-bearing text changed only by the LDEC-006 budget or refused by the documented LDEC-005 separator signal",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "p6.py: 1000 generated login-help searches with clock times at WEB_SEARCH",
+   "result": "445 refused (R1-03)",
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "command": "lat.py: own p95 of prepare(EXTERNAL_MODEL) on text holding a card, an e-mail, a date and a time; ASCII/Hindi/Japanese at 400 chars, 2 KB, 64 KB",
+   "result": "ASCII 3.5/16.2/475 ms; Hindi 5.2/23.6/693 ms; Japanese (multi-reading path) 6.9/31.0/921 ms - inside the PC-20 ranges; AC-14c met in this run, multi-reading 64 KB margin thin as documented",
+   "status": "COMPLETED_WITH_RESULT"
+  }
+ ],
+ "inspected": [
+  "docs/privacy/00_PLAN_AND_ACCEPTANCE_CRITERIA.md (full)",
+  "docs/privacy/01_DISCOVERY_AND_THREAT_MODEL.md (full)",
+  "uri_privacy/classify.py (full)",
+  "uri_privacy/gateway.py (full)",
+  "uri_privacy/policy.py",
+  "uri_privacy/grants.py",
+  "uri_privacy/vault.py",
+  "uri_privacy/keys.py",
+  "uri_privacy/__init__.py",
+  "uri_assist/redact.py:89-139 (reused rules)",
+  "git diff 6e095a5c..a39c2fc4 of uri_web/search.py, uri_web/bridge.py, uri_scheduler/engine.py, uri_operational_intelligence/brain_client.py, uri_office/service.py, scripts/run_uri_integrated_server.py, scripts/run_uri_integrated_worker.py, scripts/oi_materialize_test_runtime.py, tests/assist/test_a0_access_perception.py, tests/office/test_worker_isolation.py",
+  "uri_scheduler/gif_task.py:66-108",
+  "every in-repo BrainClient( caller (grep) and uri_operational_intelligence/runtime_v1.py base_url",
+  "uri_core/core/runtime_identity.py:182-194 (dpapi signature)"
+ ],
+ "evidence_reviewed_only": [
+  "finding lists of driver rounds M95-PRIVACY-r1 R1-R2, r3 R3-R8, r6 R1-R5, r8 R1 (reviewer_result.txt JSON) and docs/privacy/reviews S1, FB1-FB11 - used only for the ids and titles to re-test",
+  "docs/privacy/evidence/measurements.json and the prerepair_*.txt files were not re-derived"
+ ],
+ "live_observed": [],
+ "unverified": [
+  "tests/office not run by me (the shared LibreOffice tree is in use by another session); the candidate changes tests/office/test_worker_isolation.py only to pin WS_PACKAGES with uri_privacy (plus line endings).",
+  "Live Windows journeys of AC-17 (real worker search path against a capture endpoint, D10 restart persistence) not re-run; DPAPI was exercised only through PersistentVaultStore in p7.py on this Windows host.",
+  "Prior ids marked FIXED: code findings were checked by reproduction (p7, p8, p12 and the sweeps); scheduler/worker/audit-integrity/documentation ids (r1 R1-04, R1-06, S1-07, S1-08, FB1 R1-06, FB2 R1-02/R1-03/R1-04, FB3 R1-07, FB4 R1-06, FB5 R1-07/R1-09, FB9 R1-06/R1-07, FB10 R1-04, FB11 R1-07) by code and document reading plus the passing tests/privacy and tests/scheduler suites, not by a separate live run. FIXED for FB11 R1-04/R1-05/R1-06, FB6 R3-02, FB5 R1-02 and r6 R5-03 means stated as a residual or recorded as the open AC-14c owner decision (PC-15, PC-18, PC-20, LDEC-008), not removed.",
+  "AC-14c at 64 KB on the multi-reading path (ZWJ/ZWNJ, NBSP, Japanese) is an open owner decision as documented; my one run met it for Japanese (921 ms) and did not measure ZWJ/ZWNJ text.",
+  "Recall on real-world data is not measured (as PC-7 states); my sweeps are generated."
+ ]
+}
+AUDIT_RESULT_END

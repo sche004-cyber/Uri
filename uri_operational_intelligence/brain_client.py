@@ -15,9 +15,14 @@ per request costs ~0.22 s). Adds what the research client did not have:
     nothing is retried after output began, and nothing is ever sent to another model).
 
 Request parameters for a tier come from `reasoning_policy.tier_params` (server-side), never from model output.
+
+Local only (M95, threat T4/T5): the base URL must be a loopback address and the HTTP client ignores proxy settings
+(`trust_env=False`). With httpx's default `trust_env=True` a loopback request is sent through a configured proxy
+(measured, httpx 0.28.1), which would carry the conversation off the machine.
 """
 from __future__ import annotations
 
+import ipaddress
 import json
 import threading
 import time
@@ -88,10 +93,26 @@ class CallResult:
         return asdict(self)
 
 
+class NotLoopback(ValueError):
+    pass
+
+
+def require_loopback(base_url) -> None:
+    from urllib.parse import urlsplit
+    try:
+        parts = urlsplit(base_url)
+        ok = parts.scheme in ("http", "https") and ipaddress.ip_address(parts.hostname or "").is_loopback
+    except (ValueError, TypeError, AttributeError):
+        ok = False
+    if not ok:
+        raise NotLoopback("BRAIN_ENDPOINT_NOT_LOOPBACK")
+
+
 class BrainClient:
     """One persistent keep-alive pool per Runtime v1 server."""
 
     def __init__(self, base_url, *, connect_timeout=3.0):
+        require_loopback(base_url)
         self.base_url = base_url.rstrip("/")
         self.connect_timeout = connect_timeout
         self._client = None
@@ -101,7 +122,7 @@ class BrainClient:
         with self._lock:
             if self._client is None:
                 self._client = httpx.Client(
-                    base_url=self.base_url, http2=False,
+                    base_url=self.base_url, http2=False, trust_env=False,
                     timeout=httpx.Timeout(connect=self.connect_timeout, read=None, write=30.0, pool=10.0),
                     limits=httpx.Limits(max_keepalive_connections=4, max_connections=8, keepalive_expiry=300.0))
             return self._client

@@ -1,0 +1,7 @@
+FAILED tests/privacy/test_pc19.py::test_fb10_r1_01_key_labels_with_any_separator_never_carry_the_value
+FAILED tests/privacy/test_pc19.py::test_fb10_r1_02_exempt_tokens_with_any_joiner_are_never_refused
+FAILED tests/privacy/test_pc19.py::test_fb10_r1_03_postal_pin_codes_are_redacted_not_refused[koramangala pin code 560034]
+FAILED tests/privacy/test_pc19.py::test_fb10_r1_03_postal_pin_codes_are_redacted_not_refused[pin code 560034 bank branches]
+FAILED tests/privacy/test_pc19.py::test_fb10_r1_03_postal_pin_codes_are_redacted_not_refused[PIN Code: 560034 courier]
+FAILED tests/privacy/test_pc19.py::test_fb10_r1_03_postal_pin_codes_are_redacted_not_refused[what area has pin code 110001]
+6 failed, 9 passed in 1.24s

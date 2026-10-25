@@ -1,0 +1,5 @@
+FAILED tests/privacy/test_pc15.py::test_fb6_r3_01_no_compatibility_character_between_digit_groups_carries_a_value
+FAILED tests/privacy/test_pc15.py::test_fb6_r3_01_reviewer_reproductions_never_reach_the_wire[card 4111\u33c21111\u33c21111\u33c21111 lost]
+FAILED tests/privacy/test_pc15.py::test_fb6_r3_01_reviewer_reproductions_never_reach_the_wire[aadhaar 2345\ufdfa6789\ufdfa0124 status]
+FAILED tests/privacy/test_pc15.py::test_fb6_r3_01_reviewer_reproductions_never_reach_the_wire[ssn 123\u330745\u33076789 check]
+4 failed, 6 passed in 16.78s

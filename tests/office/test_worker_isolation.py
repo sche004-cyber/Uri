@@ -26,9 +26,10 @@ def _assigned(name):
 
 def test_worker_package_list_is_unchanged():
     # Canonical W1/A0 already added these packages before Office integration.
-    # Pin the whole canonical list; Office must not widen it.
+    # Pin the whole canonical list; Office must not widen it. M95 added uri_privacy (the gateway uri_web calls before
+    # every search; docs/privacy/00_PLAN_AND_ACCEPTANCE_CRITERIA.md I1/I5).
     assert _assigned("WS_PACKAGES") == (
-        "uri_operational_intelligence", "uri_web", "uri_assist", "uri_a2ui")
+        "uri_operational_intelligence", "uri_web", "uri_assist", "uri_a2ui", "uri_privacy")
     assert "uri_office" not in _assigned("PHASE2_PACKAGES")
 
 
