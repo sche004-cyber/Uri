@@ -74,6 +74,7 @@ void main() async {
         // frames while the window is minimised (the binding is removed when
         // the services are disposed).
         configureServices: (services) {
+          services.oi?.dictationScope = () => services.companionPrefs.voice.dictationScope;
           if (companionWindow != null) {
             services.updateCompanionWindow = (layout) async {
               await companionWindow.update(layout);
@@ -98,7 +99,8 @@ void main() async {
               dictation: (raw, {required engine, uncertain = const <String>[]}) async {
                 final oi = services.oi;
                 if (oi == null) return;
-                await oi.sendTranscript(raw, engine: engine, simulated: false, uncertain: uncertain, dictation: true);
+                await oi.sendTranscript(raw, engine: engine, simulated: false, uncertain: uncertain, dictation: true,
+                    dictationScope: services.companionPrefs.voice.dictationScope);
               },
             );
             unawaited(

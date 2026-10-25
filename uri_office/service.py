@@ -157,6 +157,45 @@ class Office:
                 self.grants.revoke(g.grant_id)
         return self.authoring.apply(aid, op)
 
+    def writing(self, verb: str, body: dict) -> dict:
+        """Writing Intelligence (plan 16, WI-A) for text the owner is typing in an Office editor. Nothing here
+        changes a document: the editor applies accepted text through its own authoring op. Offsets are given in
+        Python characters (start/end) and in UTF-16 code units (start16/end16) for the Flutter client."""
+        from uri_assist import writing as WR
+        text = body.get("text")
+        if not isinstance(text, str):
+            raise OfficeError("BAD_REQUEST", "text")
+        try:
+            if verb == "prewarm":
+                WR.default_spell().prewarm(body.get("lang") or WR.DEFAULT_LANG)
+                return {"ok": True}
+            if verb == "check":
+                out = WR.check(text, lang=body.get("lang") or WR.DEFAULT_LANG, ignore=body.get("ignore") or (),
+                               wait=False)
+            elif verb == "apply":
+                return WR.apply(text, body.get("accepted"))
+            elif verb in ("proofread", "rewrite", "complete"):
+                if self.brain is None:
+                    raise OfficeError("BRAIN_UNAVAILABLE", "The local Brain is not running.", 503)
+                client = self.brain.client
+                if verb == "proofread":
+                    out = WR.proofread(text, client=client)
+                elif verb == "rewrite":
+                    out = WR.rewrite(text, body.get("tone"), client=client)
+                else:
+                    out = WR.complete(text, client=client)
+            else:
+                raise OfficeError("NOT_FOUND", "", 404)
+        except WR.WritingError as e:
+            raise OfficeError(e.code, e.message, e.http) from None
+        units, n = [0], 0
+        for ch in text:
+            n += 2 if ord(ch) > 0xFFFF else 1
+            units.append(n)
+        for s in out.get("suggestions", ()):
+            s["start16"], s["end16"] = units[s["start"]], units[s["end"]]
+        return out
+
     def capabilities(self) -> dict:
         # Before the engines start, nothing that needs them is reported ready (review round 1, finding 9).
         states = self._hub.states() if self._hub is not None else {
@@ -1057,6 +1096,9 @@ def make_handler(office: Office, token: str):
                     return office.open_new(b.get("paths"))
                 if parts == ["a2ui", "action"]:
                     return office.action(b.get("action"))
+                # ---- Writing Intelligence (plan 16, WI-A) ----
+                if len(parts) == 2 and parts[0] == "writing":
+                    return office.writing(parts[1], b)
                 # ---- authoring (milestones A/B) ----
                 if parts == ["authoring", "edit"]:
                     return office.authoring.edit_document(b.get("document_id"))

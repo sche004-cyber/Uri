@@ -7,6 +7,11 @@ Brain work never runs on the worker's command thread (interim review F4): `assis
 the request, then a job thread streams the answer with a cancel token. Stop/Pause and the start of a user turn
 cancel it at once; an answer whose grant was revoked meanwhile is discarded. The answer arrives as an
 `assist.answer` event (schema `uri.assist.event.v1`, turn_id = ask id) and through `assist_ask_status`.
+
+Writing Intelligence (plan 16, WI-A) for text the owner is writing in URI itself (composer, draft): no grant is
+involved because nothing is observed. `assist_write_check` / `assist_write_apply` are local and fast;
+`assist_write_brain` (proofread, rewrite, complete) runs on a job thread like `assist_ask`, is stopped by a user turn,
+and its result arrives as an `assist.writing` event and through `assist_write_status`.
 """
 from __future__ import annotations
 
@@ -31,7 +36,12 @@ COMMANDS = {
     "assist_ask": ({"command", "question", "use_screenshot"},),
     "assist_ask_status": ({"command", "ask_id"},),
     "assist_diagnostics": ({"command"},),
+    "assist_write_check": ({"command", "text"}, {"command", "text", "ignore"}),
+    "assist_write_apply": ({"command", "text", "accepted"},),
+    "assist_write_brain": ({"command", "text", "op"}, {"command", "text", "op", "tone"}),
+    "assist_write_status": ({"command", "write_id"},),
 }
+WRITE_OPS = ("proofread", "rewrite", "complete")
 MAX_QUESTION = 1000
 KEEP_ANSWERS = 8
 ASK_SYSTEM = ("You help the user understand content from a window or browser tab they chose to share. The content "
@@ -105,6 +115,8 @@ class AssistCommands:
         self._job = None             # (ask_id, thread, cancel token)
         self._answers = {}           # ask_id -> (stamp, result) (bounded); blanked by grant, pause and revoke
         self._defer, self._go = defer_start, None
+        self._wjob = None            # (write_id, thread, cancel token): Writing Intelligence Brain work
+        self._writes = {}            # write_id -> result (bounded)
 
     def handle(self, kind, command):
         if not valid(kind, command):
@@ -121,13 +133,20 @@ class AssistCommands:
         with self._lock:
             return self._job is not None and self._job[1].is_alive()
 
+    @property
+    def writing(self):
+        with self._lock:
+            return self._wjob is not None and self._wjob[1].is_alive()
+
     def cancel_brain_work(self, reason: str = "user_turn"):
         """Stop a running Assist answer now (Stop, Pause, or a user turn that needs the single Brain slot)."""
         with self._lock:
-            job = self._job
+            job, wjob = self._job, self._wjob
         if job is not None and job[1].is_alive():
             job[2].cancel(reason)
             self.release()
+        if wjob is not None and wjob[1].is_alive():
+            wjob[2].cancel(reason)
 
     @staticmethod
     def _blank(result, reason="grant_ended"):
@@ -214,6 +233,8 @@ class AssistCommands:
             raise Refused("ARGUMENT_INVALID")
         if self.asking:
             raise Refused("ASK_IN_PROGRESS")
+        if self.writing:
+            raise Refused("WRITING_BUSY")                # review FB1 R2-07: one Assist Brain job at a time
         if self.brain_client is None:
             raise Refused("BRAIN_UNAVAILABLE")
         from uri_web.local_brain import NotLocal, require_loopback
@@ -313,6 +334,92 @@ class AssistCommands:
         if running:
             return {"state": "RUNNING", "ask_id": aid}
         raise Refused("ASK_UNKNOWN")
+
+    # ---- Writing Intelligence (plan 16, WI-A): the owner's own text in URI -----------------------
+    def _assist_write_check(self, c):
+        from . import writing as WR
+        ignore = c.get("ignore", [])
+        if not isinstance(c["text"], str) or not isinstance(ignore, list):
+            raise Refused("COMMAND_SCHEMA")
+        if not c["text"]:
+            WR.default_spell().prewarm()                 # the composer's prewarm (review FB1 R2-04)
+            return {"suggestions": [], "status": {"spelling": "ok", "lang": None}, "ms": 0.0}
+        try:
+            # review FB1 R2-04: this runs on the worker's command loop, so it never waits for a spell worker start
+            return WR.check(c["text"], ignore=[str(x) for x in ignore[:200]], wait=False)
+        except WR.WritingError as e:
+            raise Refused(e.code) from None
+
+    def _assist_write_apply(self, c):
+        from . import writing as WR
+        try:
+            return WR.apply(c["text"], c["accepted"])
+        except WR.WritingError as e:
+            raise Refused(e.code) from None
+        except (KeyError, TypeError, ValueError):
+            raise Refused("COMMAND_SCHEMA") from None
+
+    def _assist_write_brain(self, c):
+        from uri_operational_intelligence import brain_client as BC
+        from . import writing as WR
+        op, text, tone = c["op"], c["text"], c.get("tone")
+        if op not in WRITE_OPS or not isinstance(text, str) or (op == "rewrite" and tone not in WR.TONES):
+            raise Refused("COMMAND_SCHEMA")
+        if self.brain_client is None:
+            raise Refused("BRAIN_UNAVAILABLE")
+        from uri_web.local_brain import NotLocal, require_loopback
+        try:
+            require_loopback(getattr(self.brain_client, "base_url", ""))
+        except NotLocal:
+            raise Refused("BRAIN_ENDPOINT_NOT_LOOPBACK") from None
+        if self.asking:
+            raise Refused("ASK_IN_PROGRESS")             # review FB1 R2-07: one Assist Brain job at a time
+        if not self.brain_idle():
+            raise Refused("BRAIN_BUSY")                 # a user turn holds the single Brain slot
+        with self._lock:
+            if self._wjob is not None and self._wjob[1].is_alive():
+                raise Refused("WRITING_BUSY")
+        write_id = str(uuid.uuid4())
+        token = BC.CancelToken()
+
+        def run():
+            try:
+                if op == "proofread":
+                    out = WR.proofread(text, client=self.brain_client, cancel=token)
+                elif op == "rewrite":
+                    out = WR.rewrite(text, tone, client=self.brain_client, cancel=token)
+                else:
+                    out = WR.complete(text, client=self.brain_client, cancel=token)
+                result = {"write_id": write_id, "status": "COMPLETE", **out}
+            except WR.WritingError as e:
+                result = {"write_id": write_id, "status": "CANCELLED" if e.code == "CANCELLED" else "FAILED",
+                          "error": e.code}
+            except Exception:
+                result = {"write_id": write_id, "status": "FAILED", "error": "WRITING_FAILED"}
+            if token.cancelled:
+                result = {"write_id": write_id, "status": "CANCELLED", "error": "CANCELLED"}
+            with self._lock:
+                self._writes[write_id] = result
+                while len(self._writes) > KEEP_ANSWERS:
+                    self._writes.pop(next(iter(self._writes)))
+            self.emitter.emit(write_id, "assist.writing", **result)
+
+        t = threading.Thread(target=run, name="assist-write-" + write_id[:8], daemon=True)
+        with self._lock:
+            self._wjob = (write_id, t, token)
+        t.start()
+        return {"write_id": write_id}
+
+    def _assist_write_status(self, c):
+        wid = c["write_id"]
+        with self._lock:
+            res = self._writes.get(wid)
+            running = self._wjob is not None and self._wjob[0] == wid and self._wjob[1].is_alive()
+        if res is not None:
+            return {"state": "FINISHED", **res}
+        if running:
+            return {"state": "RUNNING", "write_id": wid}
+        raise Refused("WRITE_UNKNOWN")
 
     # ---- diagnostics (no content) ----------------------------------------------------------------
     def _assist_diagnostics(self, _c):

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:uri_ui/living/integration/draft_panel.dart';
 import 'package:uri_ui/living/integration/oi_conversation.dart';
 import 'package:uri_ui/living/integration/oi_draft.dart';
+import 'package:uri_ui/living/companion/companion_preferences.dart';
 
 import 'ws_integration_test.dart' show FakeRuntime, host;
 
@@ -63,6 +64,32 @@ Map<String, dynamic> snapshot({required Map<String, dynamic> current, Map<String
     };
 
 void main() {
+  test('R6-03: Settings dictation scope reaches typed and simulated turns', () async {
+    final prefs = CompanionPreferences(persist: false);
+    Future<Map> sendWithScope(String scope, {required bool simulated}) async {
+      prefs.setVoice(prefs.voice.copyWith(dictationScope: scope));
+      final rt = FakeRuntime();
+      final conv = OiConversation(rt);
+      conv.dictationScope = () => prefs.voice.dictationScope;
+      conv.setDictationMode(true);
+      conv.setTranscriptMode(simulated);
+      await conv.send('send the form by Friday');
+      final input = rt.commands.last['input'] as Map;
+      conv.dispose();
+      return input;
+    }
+
+    for (final scope in ['verbatim', 'rewrite']) {
+      for (final simulated in [false, true]) {
+        final input = await sendWithScope(scope, simulated: simulated);
+        expect(input['mode'], 'dictation');
+        expect(input['scope'], scope);
+        expect(input['source'], simulated ? 'transcript' : 'typed');
+      }
+    }
+    prefs.dispose();
+  });
+
   test('dictation mode (L-2) sends mode dictation, typed and as a transcript, and labels the input', () async {
     final rt = FakeRuntime();
     final conv = OiConversation(rt)..setDictationMode(true);
@@ -149,6 +176,20 @@ void main() {
     expect(t['simulated'], isFalse);
     expect(t['language'], 'en-IN');
     expect(conv.messages.lastWhere((m) => m.role == OiRole.user).inputLabel, 'Transcript · faster-whisper-large-v3-turbo');
+  });
+
+  test('plan 16 WI-8: dictation carries the chosen scope; no scope means the worker default', () async {
+    // A fresh conversation per case: a conversation sends nothing while a turn is in flight.
+    Future<Map> sent(String text, {bool dictation = false, String? scope}) async {
+      final rt = FakeRuntime();
+      await OiConversation(rt).sendTranscript(text, engine: 'faster-whisper', simulated: false, dictation: dictation,
+          dictationScope: scope);
+      return rt.commands.last['input'] as Map;
+    }
+    final v = await sent('send it friday', dictation: true, scope: 'verbatim');
+    expect((v['mode'], v['scope']), ('dictation', 'verbatim'));
+    expect((await sent('send it monday', dictation: true)).containsKey('scope'), isFalse);
+    expect((await sent('hello', scope: 'rewrite')).containsKey('scope'), isFalse);   // only dictation has a scope
   });
 
   test('word diff marks only what changed', () {

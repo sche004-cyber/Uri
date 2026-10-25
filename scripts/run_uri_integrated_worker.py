@@ -282,7 +282,7 @@ def main():
                         continue
                     if kind in WEB_COMMANDS or kind in ASSIST_COMMANDS:
                         handler = web if kind in WEB_COMMANDS else assist
-                        if kind in ("assist_ask", "assist_grant") and oi.switch_pending():
+                        if kind in ("assist_ask", "assist_grant", "assist_write_brain") and oi.switch_pending():
                             # Closure QCC-R1-04: no Assist answer or new grant on a Brain that is being reloaded.
                             raise TurnError("BRAIN_RESTARTING")
                         try:
