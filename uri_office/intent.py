@@ -99,7 +99,10 @@ def resolve(intent: str, target_kind: str | None, *, stage: int) -> dict:
         needed.append("input_file")
     if intent == "view_pdf" and target_kind != "pdf":
         needed.append("input_file")
-    return {"result": "matched", "intent": intent, "capability": intent, "stage": stage, "inputs_needed": needed}
+    out = {"result": "matched", "intent": intent, "capability": intent, "stage": stage, "inputs_needed": needed}
+    if cap is not None and cap.get("route"):
+        out["route"] = cap["route"]          # OD-2: write_document runs through POST /authoring/draft, not a workflow
+    return out
 
 
 def clarify(target_kind: str | None) -> dict:

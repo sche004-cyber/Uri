@@ -131,6 +131,11 @@ class OfficeClient {
   Future<Map<String, dynamic>> authoringNew({String? templatePath, String? kind, String? layout}) =>
       _post('/authoring/new', {'template_path': ?templatePath, 'kind': ?kind, 'layout': ?layout});
   Future<Map<String, dynamic>> authoringLayouts() => _get('/authoring/layouts');
+  /// OD-2 (plan 16): a Word document drafted by the Brain from [instruction], in [layout] or the kind the
+  /// instruction names. Returns `status` propose (an authoring view of a new working copy, with `warnings`), clarify
+  /// or cannot (a message only).
+  Future<Map<String, dynamic>> authoringDraft(String instruction, {String? layout}) =>
+      _post('/authoring/draft', {'instruction': instruction, 'layout': ?layout});
   Future<Map<String, dynamic>> authoringView(String aid) => _get('/authoring/$aid');
   /// One change; a picture's path comes from the owner's picker only.
   Future<Map<String, dynamic>> authoringOp(String aid, Map<String, dynamic> op, {String? imagePath}) =>
@@ -151,6 +156,12 @@ class OfficeClient {
   Future<Map<String, dynamic>> openDocument(String path) => _post('/open/document', {'path': path});
   Future<Map<String, dynamic>> document(String id) => _get('/document/$id');
   Future<Map<String, dynamic>> searchDocument(String id, String text) => _post('/document/$id/search', {'text': text});
+  /// OD-3: a PDF's text, page by page (OCR of pages without a text layer only when [ocr] is true).
+  Future<Map<String, dynamic>> documentText(String id, {bool ocr = false}) =>
+      _post('/document/$id/text', {if (ocr) 'ocr': true});
+  /// OD-3: a new Word working copy made from a PDF's text (saved only through the Save as card).
+  Future<Map<String, dynamic>> documentToWord(String id, {bool ocr = false}) =>
+      _post('/document/$id/to_word', {if (ocr) 'ocr': true});
   Future<Map<String, dynamic>> closeDocument(String id) => _post('/document/$id/close');
   Future<Map<String, dynamic>> retryDocument(String id) => _post('/document/$id/retry');
   Future<Map<String, dynamic>> request(Map<String, dynamic> body) => _post('/request', body);

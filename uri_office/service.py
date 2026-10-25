@@ -162,7 +162,12 @@ class Office:
         states = self._hub.states() if self._hub is not None else {
             e: ("unverified", "ENGINE_UNAVAILABLE") for e in ("libreoffice", "winrt_pdf", "pdf_text")}
         overrides = {"print_document": "available"} if self.printing_enabled else None
-        return CAP.registry(states, available_overrides=overrides)
+        reg = CAP.registry(states, available_overrides=overrides)
+        if self.brain is None:                       # OD-2: drafting needs the Brain; say why it is not ready
+            for c in reg["capabilities"]:
+                if "uses_brain" in c["effects"] and c["status"] == "available" and c.get("route"):
+                    c["ready"], c["unready_reason"] = False, "BRAIN_UNAVAILABLE"
+        return reg
 
     # ---- O2P printing (A1 §A4, §A6) -------------------------------------------------------------------------------
     @property
@@ -212,6 +217,72 @@ class Office:
         s = self.documents.open(raw_path)
         self.recent.add(s.path, s.kind, s.size)
         return s.view()
+
+    # ---- OD-2: a Word document drafted by the Brain (plan 16 section 3) -------------------------------------------
+    def draft_document(self, body) -> dict:
+        """`POST /authoring/draft {instruction, layout?}`. The layout comes from the request or, deterministically,
+        from keywords in the instruction; with neither, URI asks which kind of document (no Brain call). The Brain's
+        blocks become a NEW working copy in that layout (nothing on disk until the owner approves Save as); facts
+        from the instruction are checked in `warnings`, each with its code (plan 16, OD-OD-6): FACT_MISSING when a fact
+        is not in the draft word for word, FACT_CHECK when it is there only inside a longer name or reference."""
+        from .authoring import docx_templates as T
+        from .authoring import drafting as DR
+        instruction = body.get("instruction")
+        if not isinstance(instruction, str) or not instruction.strip():
+            raise OfficeError("EMPTY_INSTRUCTION", "say what the document should say")
+        if len(instruction) > DR.MAX_INSTRUCTION:
+            raise OfficeError("INSTRUCTION_TOO_LONG", "")
+        layout = body.get("layout")
+        if layout is not None and (not isinstance(layout, str) or layout not in T.LAYOUTS or layout == "blank"):
+            raise OfficeError("UNKNOWN_LAYOUT", str(layout)[:40])
+        if self.brain is None:
+            raise OfficeError("BRAIN_UNAVAILABLE", "The local Brain is not connected; nothing was drafted.", 503)
+        chosen = layout or DR.choose_layout(instruction)
+        if chosen is None:
+            return {"status": "clarify", "layout": None, "missing": [], "warnings": [],
+                    "message": "Which kind of document should URI write: a letter, office order, note sheet, notice, "
+                               "circular, memo, minutes or report?",
+                    "layouts": [x for x in T.layout_list() if x["id"] != "blank"]}
+        title, paras = T.LAYOUTS[chosen]
+        r = self.brain.draft_document(instruction.strip(), layout_title=title, layout_paras=paras)
+        out = {"status": r["status"], "message": r["message"], "missing": r["missing"], "layout": chosen,
+               "layout_title": title, "warnings": []}
+        if r["status"] != "propose":
+            return out
+        data = T.from_blocks(chosen, r["blocks"])
+        out["warnings"] = DR.missing_facts(instruction, "\n".join(b["text"] for b in r["blocks"]))
+        view = self.authoring.new_document_from_bytes(f"{title} (draft).docx", data)
+        self.approvals.audit("office.document_drafted", {"authoring_id": view["authoring_id"], "layout": chosen,
+                                                         "blocks": len(r["blocks"]),
+                                                         "fact_warnings": len(out["warnings"])})
+        return {**view, **out}
+
+    # ---- OD-3: PDF text out ----------------------------------------------------------------------------------------
+    TO_WORD_MAX_CHARS = 500_000
+
+    def document_text(self, did, body) -> dict:
+        return self.documents.text(did, ocr=body.get("ocr") is True)
+
+    def document_to_word(self, did, body) -> dict:
+        """A new Word working copy whose paragraphs are the PDF's text, one heading per page (Save as card as usual)."""
+        from .authoring import docx_templates as T
+        t = self.documents.text(did, ocr=body.get("ocr") is True, max_chars=self.TO_WORD_MAX_CHARS)
+        stem = Path(t["name"]).stem
+        paras = [("Title", stem)]
+        # FB2 R3-05: a page OCR left out says which limit left it out, not that it has no text.
+        why = {n: k for k, pages in (t.get("ocr_skipped_reasons") or {}).items() for n in pages}
+        words = {"page_limit": "page limit", "size_limit": "size limit", "time_limit": "time limit"}
+        for p in t["pages"]:
+            paras.append(("Heading 1", f"Page {p['page']}"))
+            lines = [ln.strip() for ln in p["text"].splitlines() if ln.strip()]
+            empty = f"[Not read: {words[why[p['page']]]}]" if p["page"] in why else "[No text on this page]"
+            paras += [("Normal", ln) for ln in lines] or [("Normal", empty)]
+        if t["truncated"]:
+            paras.append(("Normal", "[The PDF has more text than URI copies at once; the rest is not included.]"))
+        view = self.authoring.new_document_from_bytes(f"{stem} (text).docx", T.from_paragraphs(paras))
+        return {**view, "source_document_id": did, "truncated": t["truncated"],
+                "pages_without_text": t["pages_without_text"], "ocr_skipped": t["ocr_skipped"],
+                "ocr_skipped_reasons": t["ocr_skipped_reasons"]}
 
     def request(self, body) -> dict:
         target = body.get("target") or {}
@@ -989,6 +1060,8 @@ def make_handler(office: Office, token: str):
                 # ---- authoring (milestones A/B) ----
                 if parts == ["authoring", "edit"]:
                     return office.authoring.edit_document(b.get("document_id"))
+                if parts == ["authoring", "draft"]:          # OD-2
+                    return office.draft_document(b)
                 if parts == ["authoring", "new"]:
                     if b.get("kind") == "docx":
                         return office.authoring.new_document(b.get("layout"), b.get("template_path"))
@@ -1039,6 +1112,10 @@ def make_handler(office: Office, token: str):
                         return office.documents.close(parts[1])
                     if parts[2] == "retry":
                         return office.documents.retry(parts[1])
+                    if parts[2] == "text":              # OD-3
+                        return office.document_text(parts[1], b)
+                    if parts[2] == "to_word":
+                        return office.document_to_word(parts[1], b)
                 if len(parts) == 3 and parts[0] == "workflow" and _ok_id(parts[1]):
                     wf = office.workflows
                     table = {"cancel": lambda: wf.cancel(parts[1]), "resume": lambda: wf.resume(parts[1], b),

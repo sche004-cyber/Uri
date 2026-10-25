@@ -84,13 +84,15 @@ class EngineHub:
     # ---- requests to the PDF workers, with error mapping --------------------------------------------------------
     def text_request(self, op, **kw) -> dict:
         try:
-            return self.text.request(op, timeout=kw.pop("timeout", 60.0), **kw)
+            return self.text.request(op, timeout=kw.pop("timeout", 60.0),
+                                     total_timeout=kw.pop("total_timeout", False), **kw)
         except WorkerFailed as e:
             raise OfficeError("PREVIEW_UNAVAILABLE", f"text worker {e.code}", 503) from None
 
     def raster_request(self, op, **kw) -> dict:
         try:
-            r = self.raster.request(op, timeout=kw.pop("timeout", 60.0), **kw)
+            r = self.raster.request(op, timeout=kw.pop("timeout", 60.0),
+                                    total_timeout=kw.pop("total_timeout", False), **kw)
         except WorkerFailed as e:
             if e.code == "CLM_ACTIVE":
                 self._raster_state = ("unavailable", "CLM_ACTIVE")
@@ -109,10 +111,13 @@ class EngineHub:
         os.utime(d)
         return d
 
-    def page_png(self, pdf: Path, cache: Path, page: int, width: int) -> Path:
+    def page_png(self, pdf: Path, cache: Path, page: int, width: int, timeout: float | None = None) -> Path:
+        """`timeout` (FB3 R4-03, FB4 R5-06): a caller with its own deadline (OCR) passes the time it has left; it then
+        bounds the whole render, including waiting for the worker and starting it."""
         target = cache / f"p{page}_w{width}.png"
         if not target.exists():
-            r = self.raster_request("render", pdf=str(pdf), out_dir=str(cache), pages=[page], width=width)
+            extra = {} if timeout is None else {"timeout": max(1.0, float(timeout)), "total_timeout": True}
+            r = self.raster_request("render", pdf=str(pdf), out_dir=str(cache), pages=[page], width=width, **extra)
             if not r.get("ok") or not target.exists():
                 raise OfficeError("PREVIEW_UNAVAILABLE", r.get("error", "render failed"), 422)
             self.prune_cache()

@@ -25,6 +25,17 @@ from .render import PREVIEW
 
 MAX_DOCS = 8
 MAX_PDF_PAGES = 2000
+MAX_TEXT_CHARS = 2_000_000          # OD-3: the PDF text one request returns (the worker enforces the same cap)
+MAX_OCR_PAGES = 20                  # OD-3: scanned pages read per request; the rest are listed as skipped
+_clock = time.monotonic             # FB1 R2-05: the OCR deadline's clock (tests replace it)
+# FB2 R3-06 / FB3 R4-03: one deadline for a whole text / to_word request, from the moment it arrives, below the
+# app's 240 s request timeout. Every wait inside it is bounded by the time left: the text worker gets at most
+# TEXT_OP_TIMEOUT_S, each page render at most RASTER_TIMEOUT_S, each OCR run at most OCR_TIMEOUT_S, and all OCR work
+# ends BUILD_MARGIN_S before the deadline so To Word can still build its document.
+REQUEST_DEADLINE_S = 200.0
+TEXT_OP_TIMEOUT_S = 150.0
+RASTER_TIMEOUT_S = 60.0             # the raster worker's own default per request (engine_hub.raster_request)
+BUILD_MARGIN_S = 15.0
 SUFFIX_KIND = {".docx": "docx", ".pptx": "pptx", ".pdf": "pdf"}
 
 
@@ -51,6 +62,7 @@ class DocSession:
     opened_at: float = field(default_factory=time.time)
     lock: threading.RLock = field(default_factory=threading.RLock)
     ready: threading.Event = field(default_factory=threading.Event)
+    ocr_images: set = field(default_factory=set)       # FB6 R2-04: removed on close
 
     def view(self) -> dict:
         return {"document_id": self.document_id, "kind": self.kind, "name": self.name, "pages": self.pages,
@@ -221,6 +233,87 @@ class Documents:
             raise OfficeError("NO_TEXT_LAYER", "", 422)
         return {"matches": r["matches"], "truncated": r["truncated"]}
 
+    def text(self, did, *, ocr: bool = False, max_chars: int = MAX_TEXT_CHARS) -> dict:
+        """OD-3: a PDF's text for the owner ("Copy text", "To Word"), page by page, capped in total. Pages with no
+        text layer are listed; with `ocr` (an explicit owner request only) up to MAX_OCR_PAGES of them are read with
+        Tesseract from the page images the raster path makes. Nothing is written except the page-image cache."""
+        entered = _clock()
+        work_end = entered + REQUEST_DEADLINE_S - BUILD_MARGIN_S
+        s = self.get(did)
+        if s.kind != "pdf":
+            raise OfficeError("NOT_A_PDF", "text is taken from PDF files", 409)
+        if s.state != "ready":
+            raise OfficeError("PAGE_NOT_READY", "", 202)
+        r = self.hub.text_request("text", pdf=str(s.preview_pdf), max_chars=min(int(max_chars), MAX_TEXT_CHARS),
+                                  timeout=max(1.0, min(TEXT_OP_TIMEOUT_S, work_end - _clock())),
+                                  total_timeout=True)
+        if not r.get("ok"):
+            raise OfficeError("PREVIEW_UNAVAILABLE", r.get("error", ""), 422)
+        pages = [{"page": p["page"], "text": p["text"], "source": "text" if p["text"].strip() else "none",
+                  "failed": bool(p.get("failed"))} for p in r["pages"]]
+        empty = [p["page"] for p in pages if p["source"] == "none"]
+        truncated = bool(r.get("truncated"))
+        # FB1 R2-02 / R2-05: every page OCR did not read is listed under the reason it was left out.
+        reasons = {"page_limit": [], "size_limit": [], "time_limit": []}
+        if ocr and empty:
+            from . import ocr as OCR
+            exe = OCR.tesseract_exe()
+            if exe is None:
+                raise OfficeError("OCR_UNAVAILABLE", "Tesseract is not installed on this PC", 503)
+            todo, reasons["page_limit"] = empty[:MAX_OCR_PAGES], empty[MAX_OCR_PAGES:]
+            by_page = {p["page"]: p for p in pages}
+            total = sum(len(p["text"]) for p in pages)
+            ocr_end = min(_clock() + OCR.OCR_DEADLINE_S, work_end)
+            for i, n in enumerate(todo):
+                if total >= max_chars:
+                    reasons["size_limit"].append(n)
+                    truncated = True
+                    continue
+                left = ocr_end - _clock()
+                if left < OCR.OCR_MIN_PAGE_S:
+                    reasons["time_limit"] += todo[i:]
+                    break
+                # FB3 R4-03: the render is bounded by the time left too
+                render = min(RASTER_TIMEOUT_S, left)
+                try:
+                    png = self.hub.page_png(s.preview_pdf, s.cache, n, OCR.OCR_WIDTH, timeout=render)
+                    s.ocr_images.add(Path(png))
+                except OfficeError as e:
+                    # FB4 R5-05: only the deadline (the worker's TIMEOUT, or BUSY waiting for it) is a time limit;
+                    # any other render failure is raised as before.
+                    if render < RASTER_TIMEOUT_S and e.code == "PREVIEW_UNAVAILABLE" and \
+                            e.detail in ("raster worker TIMEOUT", "raster worker BUSY"):
+                        reasons["time_limit"] += todo[i:]
+                        break
+                    raise
+                budget = min(OCR.OCR_TIMEOUT_S, ocr_end - _clock())
+                if budget < 1.0:                             # rendering used the time that was left
+                    reasons["time_limit"] += todo[i:]
+                    break
+                try:
+                    full = OCR.ocr_png(png, exe, timeout=budget)
+                except OfficeError as e:
+                    if e.code == "OCR_TIMEOUT" and budget < OCR.OCR_TIMEOUT_S:   # the request's deadline, not the page's
+                        reasons["time_limit"] += todo[i:]
+                        break
+                    raise
+                t = full[: max(0, max_chars - total)]
+                if len(t) < len(full):
+                    by_page[n]["cut"] = True
+                    truncated = True
+                total += len(t)
+                by_page[n].update(text=t, source="ocr" if t.strip() else "none")
+        skipped = sorted(x for v in reasons.values() for x in v)
+        joined = "\n\n".join(f"--- Page {p['page']} ---\n{p['text'].strip()}" for p in pages)
+        if len(joined) > max_chars:                # FB6 R2-05: the cap covers the returned text, labels included
+            joined, truncated = joined[:max_chars], True
+        no_text = [p["page"] for p in pages if p["source"] == "none"]
+        self.audit("office.document_text", {"document_id": did, "pages": len(pages), "ocr_pages":
+                                            sum(p["source"] == "ocr" for p in pages)})
+        return {"document_id": did, "name": s.name, "pages": pages, "text": joined, "chars": len(joined),
+                "truncated": truncated, "pages_without_text": no_text, "ocr_used": bool(ocr),
+                "ocr_skipped": skipped, "ocr_skipped_reasons": reasons, "total_pages": s.pages}
+
     def retry(self, did) -> dict:
         """Prepare the preview again after it was unavailable (for example the engine check had not finished). The
         sanitized copy is reused; nothing is read from the owner's file again."""
@@ -243,5 +336,15 @@ class Documents:
             self.grants.revoke(s.grant_id)
         s.ready.wait(5)
         shutil.rmtree(s.folder, ignore_errors=True)
+        # FB6 R2-04: page images made for OCR are removed with the document, unless another open document shares
+        # the same preview cache (the same file opened twice)
+        with self._lock:
+            shared = any(o.cache == s.cache for o in self.sessions.values())
+        if not shared:
+            for png in list(getattr(s, "ocr_images", ())):
+                try:
+                    png.unlink()
+                except OSError:
+                    pass
         self.audit("office.document_closed", {"document_id": did})
         return {"closed": True}

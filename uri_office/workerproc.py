@@ -60,7 +60,7 @@ class Worker:
         finally:
             q.put(None)
 
-    def _start(self):
+    def _start(self, start_timeout: float | None = None):
         made = self._make_args()
         args, self._cleanup = (made if isinstance(made, tuple) else (made, None))
         self._job = J.Job(memory_limit=self.memory_limit)
@@ -82,7 +82,7 @@ class Worker:
         threading.Thread(target=self._reader, args=(self._p, self._q), daemon=True,
                          name=f"{self.name}-reader").start()
         self.starts += 1
-        first = self._get(self.start_timeout)
+        first = self._get(self.start_timeout if start_timeout is None else min(self.start_timeout, start_timeout))
         if not first.get("ok") or not first.get("ready"):
             code = first.get("error") or "WORKER_START_FAILED"
             self.stop()
@@ -106,25 +106,39 @@ class Worker:
             self.stop()
             raise WorkerFailed("PROTOCOL", f"{self.name} sent an unreadable answer") from None
 
-    def request(self, op: str, timeout: float = 60.0, **fields) -> dict:
-        with self._lock:
-            if not self.running:
-                self._start()
-            rid = uuid.uuid4().hex[:12]
-            try:
-                self._p.stdin.write(json.dumps({"id": rid, "op": op, **fields}) + "\n")
-                self._p.stdin.flush()
-            except OSError:
-                self.stop()
-                raise WorkerFailed("CRASHED", f"{self.name} stopped") from None
-            deadline = time.monotonic() + timeout
-            while True:
-                obj = self._get(max(0.01, deadline - time.monotonic()))
-                if obj.get("id") == rid:
-                    self.last_used = time.monotonic()
-                    if self._job is not None:
-                        self.peak_memory = self._job.peak_process_memory()
-                    return obj
+    def request(self, op: str, timeout: float = 60.0, total_timeout: bool = False, **fields) -> dict:
+        """`timeout` bounds the wait for the answer. With `total_timeout` (FB4 R5-06) it bounds the whole call:
+        waiting for another request on this worker (the lock), starting the worker and the answer; a lock that does
+        not come free in time is `BUSY`."""
+        t0 = time.monotonic()
+        if total_timeout:
+            if not self._lock.acquire(timeout=max(0.0, timeout)):
+                raise WorkerFailed("BUSY", f"{self.name} was busy for {timeout:.0f} s")
+        else:
+            self._lock.acquire()
+        try:
+            return self._request(op, timeout, t0 if total_timeout else None, fields)
+        finally:
+            self._lock.release()
+
+    def _request(self, op, timeout, t0, fields) -> dict:
+        if not self.running:
+            self._start(None if t0 is None else max(0.01, t0 + timeout - time.monotonic()))
+        rid = uuid.uuid4().hex[:12]
+        try:
+            self._p.stdin.write(json.dumps({"id": rid, "op": op, **fields}) + "\n")
+            self._p.stdin.flush()
+        except OSError:
+            self.stop()
+            raise WorkerFailed("CRASHED", f"{self.name} stopped") from None
+        deadline = (t0 if t0 is not None else time.monotonic()) + timeout
+        while True:
+            obj = self._get(max(0.01, deadline - time.monotonic()))
+            if obj.get("id") == rid:
+                self.last_used = time.monotonic()
+                if self._job is not None:
+                    self.peak_memory = self._job.peak_process_memory()
+                return obj
 
     def stop(self):
         with self._lock:

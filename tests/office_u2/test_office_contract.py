@@ -67,7 +67,9 @@ def test_available_groups_in_o2_match_the_plan():
     for c in reg["capabilities"]:
         if c["status"] == "available" and c["goal"]:
             avail.setdefault(c["goal"], []).append(c["id"])
-    assert avail == {"pdfs": ["view_pdf", "save_as_pdf"], "data": ["open_workbook", "new_workbook_from_files"]}
+    # OD-2 (plan 16, 2026-10-23): write_document became available through POST /authoring/draft.
+    assert avail == {"pdfs": ["view_pdf", "save_as_pdf"], "data": ["open_workbook", "new_workbook_from_files"],
+                     "write": ["write_document"]}
 
 
 def test_engine_state_drives_readiness():

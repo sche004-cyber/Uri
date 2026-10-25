@@ -392,6 +392,50 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
     );
   }
 
+  /// OD-OD-4: what the fact check covers, shown with every URI draft (plan 16 section 4, "Fact-check scope").
+  // OD-OD-8 (plan 16): "Missing" is firm for titled names, dates, amounts, numbers and file numbers; a name without a
+  // title only ever gets "Check".
+  static const draftScopeNote = 'URI checks names with a title (Shri, Smt., Dr ...), dates, amounts, numbers and file '
+      'numbers: "Missing" means one is not in the draft as you wrote it. "Check" means a name without a title was not '
+      'found, or a fact is there only inside a longer name or file number, or a name only without its trailing '
+      'designation. Nothing else is checked: read the whole draft before saving.';
+
+  /// OD-2: facts from the owner's instruction that the drafted document does not contain, in words, and (OD-OD-4)
+  /// the fact-check scope, above the Word editor until the edit closes. OD-OD-6: FACT_MISSING lines ("Missing: ...")
+  /// are warning-coloured; FACT_CHECK lines ("Check: ...", the fact only inside a longer name or file number) are
+  /// quieter, and alone they do not colour the panel.
+  Widget _withDraftWarnings(BuildContext context, OfficeWorkspaceController c, Widget editor) {
+    if (c.draftWarnings.isEmpty && !c.fromDraft) return editor;
+    final colors = UriColors.of(context);
+    final missing = [for (final w in c.draftWarnings) if (w['code'] != 'FACT_CHECK') w];
+    final check = [for (final w in c.draftWarnings) if (w['code'] == 'FACT_CHECK') w];
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      Container(
+        key: ValueKey(c.draftWarnings.isEmpty ? 'office-draft-scope' : 'office-draft-warnings'),
+        padding: const EdgeInsets.all(UriSpace.sm),
+        color: missing.isEmpty ? colors.surfaceSunken : colors.warningSoft,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Check before saving', style: TextStyle(fontWeight: FontWeight.w600, color: colors.ink)),
+          if (missing.isNotEmpty)
+            Column(key: const ValueKey('office-draft-missing'), crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final w in missing)
+                    Text('Missing: ${w['message']}',
+                        style: TextStyle(color: colors.ink, fontWeight: FontWeight.w500)),
+                ]),
+          if (check.isNotEmpty)
+            Column(key: const ValueKey('office-draft-check'), crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final w in check) Text('Check: ${w['message']}', style: TextStyle(color: colors.inkSoft)),
+                ]),
+          Text(draftScopeNote, key: const ValueKey('office-draft-scope-note'),
+              style: TextStyle(color: colors.inkSoft)),
+        ]),
+      ),
+      Expanded(child: editor),
+    ]);
+  }
+
   /// Save as PDF and Print in the document controls (A1 §A3, owner instruction): shown only when the capability is
   /// available; Print stays hidden until O2P qualifies.
   List<Widget> _docControls(BuildContext context, OfficeWorkspaceController c) {
@@ -424,6 +468,39 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
             label: const Text('Save as PDF'),
           ),
         ),
+      // OD-3 (plan 16): a PDF's text out, to the clipboard or into a new Word document; scanned pages are read
+      // with OCR only when the owner asks.
+      if (c.centre == OfficeCentre.document && d != null && d.kind == 'pdf') ...[
+        Tooltip(
+          message: 'Copy the text of every page to the clipboard. Your file is not changed.',
+          child: TextButton.icon(
+            key: const ValueKey('office-pdf-copy-text'),
+            onPressed: c.busy || d.previewState != 'ready' ? null : () => c.copyPdfText(ocr: c.pdfOcr),
+            icon: const Icon(Icons.content_copy_rounded, size: 18),
+            label: const Text('Copy text'),
+          ),
+        ),
+        Tooltip(
+          message: 'Make a new Word document from the text. It is saved only when you approve Save as.',
+          child: TextButton.icon(
+            key: const ValueKey('office-pdf-to-word'),
+            onPressed: c.busy || c.editor != null || d.previewState != 'ready' ? null : () => c.pdfToWord(ocr: c.pdfOcr),
+            icon: const Icon(Icons.description_outlined, size: 18),
+            label: const Text('To Word'),
+          ),
+        ),
+        // Live-driver finding (2026-10-23): OCR was reachable only as a chip in the URI pane, and To Word could not
+        // use it. It is a visible toolbar switch now; off by default.
+        Tooltip(
+          message: 'Also read scanned pages (OCR) for Copy text and To Word. Slower; only text is read.',
+          child: FilterChip(
+            key: const ValueKey('office-pdf-ocr'),
+            label: const Text('Read scans'),
+            selected: c.pdfOcr,
+            onSelected: c.busy ? null : c.setPdfOcr,
+          ),
+        ),
+      ],
       if (c.available('print_document'))
         TextButton.icon(
           key: const ValueKey('office-print'),
@@ -493,7 +570,8 @@ class _OfficeWorkspaceState extends State<OfficeWorkspace> {
             OfficeCentre.edit => c.editor == null
                 ? const SizedBox.shrink()
                 : c.editor!.isWord
-                    ? WordEditor(key: ValueKey('office-editor-${c.editor!.id}'), workspace: c, editor: c.editor!)
+                    ? _withDraftWarnings(context, c,
+                        WordEditor(key: ValueKey('office-editor-${c.editor!.id}'), workspace: c, editor: c.editor!))
                     : PresentationEditor(key: ValueKey('office-editor-${c.editor!.id}'), workspace: c,
                         editor: c.editor!),
             OfficeCentre.sheet => const SizedBox.shrink(),
